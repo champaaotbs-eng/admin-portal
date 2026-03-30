@@ -1,12 +1,18 @@
 import { Store } from '@tanstack/store'
 import { useState, useEffect } from 'react'
-import type { IAdmin } from 'services/admin/admin.types'
+import { type IAdmin } from 'types/admin'
+import { refresh } from 'services/auth/auth.service'
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
 const AUTH_STORAGE_KEY = 'auth_data'
+let hasInitializedAuth = false
 
 function loadAdminFromStorage(): IAdmin | null {
+    if (typeof window === 'undefined') {
+        return null
+    }
+
     try {
         const raw = localStorage.getItem(AUTH_STORAGE_KEY)
         return raw ? (JSON.parse(raw) as IAdmin) : null
@@ -22,22 +28,56 @@ export interface AuthState {
     isLoading: boolean
 }
 
-const storedAdmin = loadAdminFromStorage()
-
 export const authStore = new Store<AuthState>({
-    admin: storedAdmin,
+    admin: null,
     accessToken: null,
-    isAuthenticated: storedAdmin !== null,
-    isLoading: storedAdmin !== null,
+    isAuthenticated: false,
+    isLoading: true,
 })
+
+async function initializeAuthOnReload() {
+    if (typeof window === 'undefined' || hasInitializedAuth) {
+        return
+    }
+
+    hasInitializedAuth = true
+
+    const storedAdmin = loadAdminFromStorage()
+    if (storedAdmin) {
+        authStore.setState((s) => ({
+            ...s,
+            admin: storedAdmin,
+            isAuthenticated: true,
+            isLoading: true,
+        }))
+    }
+
+    try {
+        await refresh()
+    } catch {
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem(AUTH_STORAGE_KEY)
+        }
+
+        authStore.setState((s) => ({
+            ...s,
+            admin: null,
+            accessToken: null,
+            isAuthenticated: false,
+            isLoading: false,
+        }))
+    }
+}
 
 // ─── Actions ────────────────────────────────────────────────────────────────────
 
 export function setAuth(admin: IAdmin | null, accessToken: string | null) {
-    if (admin) {
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(admin))
-    } else {
-        localStorage.removeItem(AUTH_STORAGE_KEY)
+    if (typeof window !== 'undefined') {
+        if (admin) {
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(admin))
+        } else {
+            localStorage.removeItem(AUTH_STORAGE_KEY)
+        }
     }
     authStore.setState((s) => ({
         ...s,
@@ -48,22 +88,11 @@ export function setAuth(admin: IAdmin | null, accessToken: string | null) {
     }))
 }
 
-export function setUser(admin: IAdmin | null) {
-    if (admin) {
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(admin))
-    } else {
+export function logout() {
+    if (typeof window !== 'undefined') {
         localStorage.removeItem(AUTH_STORAGE_KEY)
     }
-    authStore.setState((s) => ({
-        ...s,
-        admin,
-        isAuthenticated: admin !== null,
-        isLoading: false,
-    }))
-}
 
-export function logout() {
-    localStorage.removeItem(AUTH_STORAGE_KEY)
     authStore.setState((s) => ({
         ...s,
         admin: null,
@@ -84,7 +113,8 @@ export function useAuthStore(): AuthState {
     const [state, setState] = useState<AuthState>(authStore.state)
 
     useEffect(() => {
-        // subscribe returns unsubscribe fn
+        initializeAuthOnReload();
+        // subscibe returns unsubscribe fn
         return authStore.subscribe(() => {
             setState({ ...authStore.state })
         })

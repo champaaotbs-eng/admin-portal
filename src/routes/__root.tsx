@@ -1,18 +1,14 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { I18nextProvider } from 'react-i18next'
-import { AppHeader } from '@/components/shared/AppHeader'
+import { AppHeader } from 'components/shared/app-header'
 import { FileProvider } from '@/shared/contexts/files-context'
 import i18n from '#/i18n'
 import { NotFound } from './-not-found'
-
 import appCss from '../styles.css?url'
 import { ValidationProvider } from 'shared/contexts/validation-context'
 import QueryProvider from './-query-provider'
-
-const queryClient = new QueryClient()
 
 export const Route = createRootRoute({
   head: () => ({
@@ -41,7 +37,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               <head>
                 <HeadContent />
               </head>
-              <body className="min-h-screen bg-background text-foreground">
+              <body suppressHydrationWarning className="min-h-screen bg-background text-foreground">
                 <AppHeader />
                 {children}
                 <TanStackDevtools

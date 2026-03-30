@@ -1,11 +1,29 @@
-// ─── Roles ────────────────────────────────────────────────────────────────────
+export interface IPagination<T> {
+    meta: {
+        page: number;
+        limit: number;
+        totalItems: number;
+        totalPages: number;
+    },
+    result: T[]
+}
 
-// ─── User ─────────────────────────────────────────────────────────────────────
+export interface IRequestPagination<T> {
+    page: number;
+    limit: number;
+    filters?: {
+        [key in keyof T]?: any
+    },
+    sort?: {
+        orderBy: keyof T;
+        order: 'ASC' | 'DESC'
+    }[]
+}
 
-
-
-// ─── Bus Company ──────────────────────────────────────────────────────────────
-
+export interface IToastState {
+    type: 'success' | 'error'
+    message: string
+}
 export interface BusCompany {
     id: string
     name: string

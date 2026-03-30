@@ -1,22 +1,27 @@
-import { setAuth } from "store/auth.store"
-import type { ILogin, IResponseAuth } from "./auth.types"
-import { fetchAPI } from "lib/fetch-api"
+import { setAuth } from '@/store/auth.store'
+import type { ILogin, IResponseAuth } from './auth.types'
+import { api } from 'utils/axios.instance'
 
 export const login = async (payload: ILogin) => {
-    const response = await fetchAPI<IResponseAuth>('/v1/auth/admin/login', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-    })
+    const response = await api.post<IResponseAuth>('/v1/auth/admin/login', payload)
 
-    if (response.status && response.data) {
-        setAuth(response.data.admin || null, response.data.accessToken || null)
+    if (response.data && response.statusCode) {
+        console.log('Login response:', response)
+        const admin = response.data.admin || null
+        const accessToken = response.data.accessToken || null
+        setAuth(admin, accessToken)
     }
-    return response;
+
+    return response
 }
 
-export const refresh = async (refreshToken: string) => {
-    const response = await fetchAPI<IResponseAuth>('auth/refresh', {
-        method: 'POST'
-    })
+export const refresh = async () => {
+    const response = await api.get<IResponseAuth>('/v1/auth/refresh')
 
+    if (response.statusCode && response.data) {
+        const admin = response.data.admin || null
+        const accessToken = response.data.accessToken || null
+        setAuth(admin, accessToken)
+    }
+    return response
 }

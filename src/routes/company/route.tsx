@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { CompanyLayout } from '@/components/layouts/CompanyLayout'
+import { CompanyLayout } from 'components/layouts/company-layout'
 import { authStore } from '@/store/auth.store'
 import { APP_ROUTES } from '@/constants/app-routes'
 

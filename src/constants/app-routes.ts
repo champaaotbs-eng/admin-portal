@@ -1,12 +1,21 @@
 export const APP_ROUTES = {
     HOME: '/auth/login',
     LOGIN: '/auth/login',
+    FORBIDDEN: '/403',
 
     ADMIN: {
         ROOT: '/admin',
         COMPANIES: '/admin/companies',
-        USERS: '/admin/users',
-        ROLES: '/admin/roles',
+        ADMINS: {
+            ROOT: '/admin/admins',
+            ADD: '/admin/admins/add',
+            EDIT: '/admin/admins/:id'
+        },
+        ROLES: {
+            ROOT: '/admin/roles',
+            ADD: '/admin/roles/add',
+            EDIT: '/admin/roles/:id',
+        },
         ROUTES: '/admin/routes',
         REPORTS: '/admin/reports',
         BOOKINGS: '/admin/bookings',

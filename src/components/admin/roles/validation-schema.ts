@@ -2,8 +2,16 @@ import z from 'zod'
 
 export const roleSchema = (t: (key: string) => string) =>
     z.object({
-        name: z.string().min(1, t('errors.name_required')),
+        roleName: z.string().trim().min(1, t('errors.name_required')),
         description: z.string().optional(),
+        isActive: z.boolean().default(true),
+        permissions: z.array(
+            z.object({
+                module: z.string(),
+                read: z.boolean(),
+                write: z.boolean(),
+            })
+        ).default([]),
     })
 
-export type RoleFormData = z.infer<ReturnType<typeof roleSchema>>
+export type TInsertRole = z.input<ReturnType<typeof roleSchema>>;

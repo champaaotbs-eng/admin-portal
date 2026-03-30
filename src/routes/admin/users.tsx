@@ -1,4 +1,0 @@
-﻿import { createFileRoute } from '@tanstack/react-router'
-import { AdminUsersPage } from '@/components/admin/users/users-page'
-
-export const Route = createFileRoute('/admin/users')({ component: AdminUsersPage })

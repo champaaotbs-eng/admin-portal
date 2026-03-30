@@ -13,5 +13,5 @@ __unconfig*
 todos.json
 .agents
 .tanstack
-
+.claude
 *.dbml

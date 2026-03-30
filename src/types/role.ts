@@ -5,3 +5,19 @@ export enum RoleEnum {
 }
 
 export type TRole = keyof typeof RoleEnum
+
+export interface IRole {
+    roleId: string;
+
+    roleName: string;
+
+    isActive: boolean;
+
+    description?: string;
+
+    permissions: {
+        module: string;
+        read: boolean;
+        write: boolean;
+    }[]
+}

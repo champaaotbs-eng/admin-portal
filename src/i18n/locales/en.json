@@ -1,4 +1,4 @@
-﻿{
+{
     "common": {
         "loading": "Loading...",
         "save": "Save",
@@ -21,12 +21,14 @@
         "next": "Next",
         "minutes": "minutes",
         "duration_format": "{{h}}h {{m}}m",
-        "actions": "Actions"
+        "actions": "Actions",
+        "unauthorized_title": "Read-only access",
+        "unauthorized_message": "You can view this page but cannot perform this action."
     },
     "nav": {
         "dashboard": "Dashboard",
         "companies": "Bus Companies",
-        "users": "Users",
+        "admins": "Admins & Staff",
         "roles": "Roles & Permissions",
         "routes": "Routes",
         "locations": "Locations",
@@ -159,7 +161,11 @@
             "status_active": "Active",
             "status_locked": "Locked",
             "status_suspended": "Suspended",
+            "activate": "Activate",
+            "deactivate": "Deactivate",
             "unlock": "Unlock",
+            "delete_company_confirm_title": "Delete company",
+            "delete_company_confirm": "Delete company \"{{name}}\"? This action cannot be undone.",
             "owner_section": "Admin account (owner)",
             "owner_username": "Username",
             "owner_password": "Password",
@@ -194,6 +200,7 @@
             "detail_revenue_gross": "This month gross",
             "detail_revenue_commission": "Commission ({{rate}}%)",
             "detail_revenue_net": "Net received",
+            "read_only_empty_state": "You have view-only access on this page. Contact an administrator to manage companies.",
             "errors": {
                 "name_required": "Company name is required",
                 "email_required": "Email is required",
@@ -208,12 +215,12 @@
         },
         "users": {
             "title": "Manage Users",
-            "count_description": "{{count}} accounts",
+            "count_description": "{{count}} user accounts",
             "add_user": "Add User",
             "add_user_form_title": "Add New User",
             "edit_user_form_title": "Edit User",
             "search_placeholder": "Search by name or email...",
-            "no_results": "No users found.",
+            "no_results": "No admins found.",
             "table": {
                 "name": "Name",
                 "email": "Email",
@@ -239,6 +246,8 @@
             "lock_account": "Lock account",
             "unlock": "Unlock",
             "no_phone": "—",
+            "unknown_role": "Unknown role",
+            "read_only_empty_state": "You have view-only access on this page. Contact an administrator to manage users.",
             "errors": {
                 "name_required": "Full name is required",
                 "username_required": "Username is required",
@@ -247,6 +256,78 @@
                 "password_required": "Password is required",
                 "password_min": "Password must be at least 6 characters"
             }
+        },
+        "admins": {
+            "list": {
+                "title": "Admin Management",
+                "add_admin": "Add Admin"
+            },
+            "search": {
+                "placeholder": "Search by username or full name..."
+            },
+            "table": {
+                "username": "Username",
+                "full_name": "Full Name",
+                "role": "Role",
+                "status": "Status",
+                "actions": "Actions",
+                "unknown_role": "Unknown role"
+            },
+            "status": {
+                "active": "Active",
+                "inactive": "Inactive"
+            },
+            "actions": {
+                "view": "View admin",
+                "edit": "Edit admin",
+                "edit_admin": "Edit Admin",
+                "close": "Close",
+                "save": "Save",
+                "cancel": "Cancel",
+                "back_to_list": "Back to List"
+            },
+            "pagination": {
+                "previous": "Previous",
+                "next": "Next",
+                "page": "Page",
+                "showing": "Showing",
+                "no_items": "No items",
+                "page_size": "{{size}} / page"
+            },
+            "detail": {
+                "title": "Admin Details",
+                "username": "Username",
+                "full_name": "Full Name",
+                "role": "Role",
+                "status": "Status",
+                "not_found": "Admin not found",
+                "permissions": {
+                    "module": "Module",
+                    "read": "Read",
+                    "write": "Write"
+                }
+            },
+            "form": {
+                "username": "Username",
+                "username_placeholder": "Enter username",
+                "full_name": "Full Name",
+                "full_name_placeholder": "Enter full name",
+                "role": "Role",
+                "role_placeholder": "Select role",
+                "password": "Password",
+                "password_placeholder": "Enter password",
+                "confirm_password": "Confirm Password",
+                "confirm_password_placeholder": "Re-enter password",
+                "active": "Active",
+                "cannot_edit": "This field cannot be edited",
+                "password_note_create": "Set a secure password with at least 8 characters.",
+                "password_note_edit": "Leave blank to keep current password"
+            },
+            "page": {
+                "add_title": "Add New Admin",
+                "edit_title": "Edit Admin"
+            },
+            "empty": "No admins found"
         },
         "routes": {
             "title": "Routes & Trips",
@@ -279,6 +360,16 @@
         "roles": {
             "title": "Roles & Permissions",
             "description": "Manage system roles and configure per-role permissions",
+            "list": {
+                "title": "Role Management",
+                "add_role": "Add Role"
+            },
+            "filter": {
+                "search_placeholder": "Search by role name...",
+                "all": "All statuses",
+                "active": "Active",
+                "inactive": "Inactive"
+            },
             "roles_section": "Roles",
             "add_role": "Add Role",
             "add_role_form_title": "Add New Role",
@@ -288,31 +379,113 @@
             "system_role": "System",
             "permissions_for": "Permissions — {{role}}",
             "permissions_count": "permissions assigned",
+            "assigned_users": "{{count}} users",
             "unsaved_changes": "Unsaved changes",
             "select_role_hint": "Select a role on the left to manage its permissions",
+            "delete_confirm_title": "Delete role",
+            "action_blocked_title": "Action blocked",
+            "delete_confirm": "Delete role \"{{role}}\"? This action cannot be undone.",
             "admin_accounts": "Admin Accounts",
             "permissions_modules": "Permission Modules",
             "add_admin": "Add admin",
+            "loading_admin_accounts": "Loading admin accounts...",
+            "no_admin_accounts": "No admin accounts found.",
             "table": {
+                "role_name": "Role Name",
+                "description": "Description",
+                "actions": "Actions",
                 "name": "Name",
                 "email": "Email / Username",
                 "role": "Role",
                 "status": "Status",
                 "created_at": "Created At"
             },
+            "empty": "No roles found.",
             "form": {
                 "name": "Role Name",
                 "name_placeholder": "e.g. Support Staff",
                 "description": "Description",
-                "description_placeholder": "Describe this role's responsibilities"
+                "description_placeholder": "Describe this role's responsibilities",
+                "active": "Active",
+                "permissions": "Permissions",
+                "validation": {
+                    "role_name_required": "Role name is required",
+                    "role_name_min": "Role name must be at least 2 characters",
+                    "description_required": "Description is required",
+                    "description_min": "Description must be at least 5 characters"
+                }
+            },
+            "status": {
+                "active": "Active",
+                "inactive": "Inactive"
+            },
+            "actions": {
+                "view": "View role",
+                "edit": "Edit role",
+                "delete": "Delete",
+                "cancel": "Cancel",
+                "close": "Close",
+                "save": "Save",
+                "edit_role": "Edit Role",
+                "delete_role": "Delete Role",
+                "back_to_list": "Back to List"
+            },
+            "pagination": {
+                "previous": "Previous",
+                "next": "Next",
+                "page": "Page",
+                "showing": "Showing",
+                "no_items": "No items"
+            },
+            "detail": {
+                "title": "Role Details",
+                "module": "Module",
+                "read": "Read",
+                "write": "Write",
+                "permissions": "Permissions",
+                "created_at": "Created At: -",
+                "not_found": "Role not found"
+            },
+            "delete": {
+                "title": "Delete Role",
+                "message": "Are you sure you want to delete role \"{{role}}\"? This action cannot be undone."
+            },
+            "messages": {
+                "create_success": "Role created successfully.",
+                "update_success": "Role updated successfully.",
+                "delete_success": "Role deleted successfully.",
+                "load_failed": "Failed to load role data.",
+                "save_failed": "Failed to save role.",
+                "delete_failed": "Failed to delete role.",
+                "action_failed": "Action failed. Please try again."
+            },
+            "page": {
+                "add_title": "Add Role",
+                "edit_title": "Edit Role"
+            },
+            "modules": {
+                "dashboard": "Dashboard",
+                "admin": "Admin",
+                "role": "Role",
+                "company": "Company",
+                "route": "Route",
+                "location": "Location",
+                "booking": "Booking",
+                "report": "Report",
+                "revenue": "Revenue"
             },
             "search_admin_placeholder": "Search admin by name, email...",
             "system_modules_description": "System modules and their API endpoint list",
+            "module_group_description": "Permissions available in this module",
             "module_permissions_count": "{{count}} permissions",
             "status_active": "Active",
             "status_locked": "Locked",
+            "unknown_role": "Unknown role",
+            "read_only_empty_state": "You have view-only access on this page. Contact an administrator to manage roles.",
             "errors": {
-                "name_required": "Role name is required"
+                "name_required": "Role name is required",
+                "delete_system_role": "System roles cannot be deleted",
+                "delete_role_in_use": "This role is assigned to users and cannot be deleted"
             }
         },
         "bookings": {

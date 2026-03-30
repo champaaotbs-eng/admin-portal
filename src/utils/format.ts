@@ -11,18 +11,18 @@ export function formatVnd(amount: number): string {
 }
 
 /**
- * Format a Date or ISO string as "dd/MM/yyyy"
+ * Format a Date or ISO string as "DD-MM-YYYY"
  */
 export function formatDate(input: string | Date): string {
     const d = new Date(input)
     const dd = String(d.getDate()).padStart(2, '0')
     const MM = String(d.getMonth() + 1).padStart(2, '0')
     const yyyy = d.getFullYear()
-    return `${dd}/${MM}/${yyyy}`
+    return `${dd}-${MM}-${yyyy}`
 }
 
 /**
- * Format a Date or ISO string as "hh:mm:ss dd/MM/yyyy"
+ * Format a Date or ISO string as "HH:mm:ss DD-MM-YYYY"
  */
 export function formatDateTime(input: string | Date): string {
     const d = new Date(input)

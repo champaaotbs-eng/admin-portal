@@ -21,12 +21,14 @@
         "next": "Sau",
         "minutes": "phút",
         "duration_format": "{{h}}h {{m}}p",
-        "actions": "Thao tác"
+        "actions": "Thao tác",
+        "unauthorized_title": "Chế độ chỉ xem",
+        "unauthorized_message": "Bạn có thể xem trang này nhưng không thể thực hiện thao tác này."
     },
     "nav": {
         "dashboard": "Bảng điều khiển",
         "companies": "Nhà xe",
-        "users": "Người dùng",
+        "admins": "Quản trị viên & Nhân viên",
         "roles": "Vai trò & Phân quyền",
         "routes": "Tuyến đường",
         "locations": "Địa điểm",
@@ -159,7 +161,11 @@
             "status_active": "Hoạt động",
             "status_locked": "Khoá",
             "status_suspended": "Tạm dừng",
+            "activate": "Kích hoạt",
+            "deactivate": "Vô hiệu hóa",
             "unlock": "Mở khoá",
+            "delete_company_confirm_title": "Xóa nhà xe",
+            "delete_company_confirm": "Xóa nhà xe \"{{name}}\"? Hành động này không thể hoàn tác.",
             "owner_section": "Tài khoản quản trị (chủ xe)",
             "owner_username": "Tên đăng nhập",
             "owner_password": "Mật khẩu",
@@ -194,6 +200,7 @@
             "detail_revenue_gross": "Gross tháng này",
             "detail_revenue_commission": "Hoa hồng ({{rate}}%)",
             "detail_revenue_net": "Net nhận được",
+            "read_only_empty_state": "Bạn chỉ có quyền xem trên trang này. Liên hệ quản trị viên để quản lý nhà xe.",
             "errors": {
                 "name_required": "Tên nhà xe là bắt buộc",
                 "email_required": "Email là bắt buộc",
@@ -239,6 +246,8 @@
             "lock_account": "Khoá tài khoản",
             "unlock": "Mở khoá",
             "no_phone": "—",
+            "unknown_role": "Vai trò không xác định",
+            "read_only_empty_state": "Bạn chỉ có quyền xem trên trang này. Liên hệ quản trị viên để quản lý người dùng.",
             "errors": {
                 "name_required": "Họ và tên là bắt buộc",
                 "username_required": "Tên đăng nhập là bắt buộc",
@@ -247,6 +256,78 @@
                 "password_required": "Mật khẩu là bắt buộc",
                 "password_min": "Mật khẩu phải có ít nhất 6 ký tự"
             }
+        },
+        "admins": {
+            "list": {
+                "title": "Quản lý Admin",
+                "add_admin": "Thêm Admin"
+            },
+            "search": {
+                "placeholder": "Tìm theo tên đăng nhập hoặc họ tên..."
+            },
+            "table": {
+                "username": "Tên đăng nhập",
+                "full_name": "Họ và tên",
+                "role": "Vai trò",
+                "status": "Trạng thái",
+                "actions": "Thao tác",
+                "unknown_role": "Vai trò không xác định"
+            },
+            "status": {
+                "active": "Hoạt động",
+                "inactive": "Ngừng hoạt động"
+            },
+            "actions": {
+                "view": "Xem admin",
+                "edit": "Chỉnh sửa admin",
+                "edit_admin": "Chỉnh sửa Admin",
+                "close": "Đóng",
+                "save": "Lưu",
+                "cancel": "Hủy",
+                "back_to_list": "Quay lại danh sách"
+            },
+            "pagination": {
+                "previous": "Trước",
+                "next": "Sau",
+                "page": "Trang",
+                "showing": "Hiển thị",
+                "no_items": "Không có dữ liệu",
+                "page_size": "{{size}} / trang"
+            },
+            "detail": {
+                "title": "Chi tiết Admin",
+                "username": "Tên đăng nhập",
+                "full_name": "Họ và tên",
+                "role": "Vai trò",
+                "status": "Trạng thái",
+                "not_found": "Không tìm thấy admin",
+                "permissions": {
+                    "module": "Module",
+                    "read": "Đọc",
+                    "write": "Ghi"
+                }
+            },
+            "form": {
+                "username": "Tên đăng nhập",
+                "username_placeholder": "Nhập tên đăng nhập",
+                "full_name": "Họ và tên",
+                "full_name_placeholder": "Nhập họ và tên",
+                "role": "Vai trò",
+                "role_placeholder": "Chọn vai trò",
+                "password": "Mật khẩu",
+                "password_placeholder": "Nhập mật khẩu",
+                "confirm_password": "Xác nhận mật khẩu",
+                "confirm_password_placeholder": "Nhập lại mật khẩu",
+                "active": "Hoạt động",
+                "cannot_edit": "Trường này không thể chỉnh sửa",
+                "password_note_create": "Đặt mật khẩu an toàn với ít nhất 8 ký tự.",
+                "password_note_edit": "Để trống để giữ mật khẩu hiện tại"
+            },
+            "page": {
+                "add_title": "Thêm Admin mới",
+                "edit_title": "Chỉnh sửa Admin"
+            },
+            "empty": "Không tìm thấy admin"
         },
         "routes": {
             "title": "Tuyến đường & Chuyến xe",
@@ -279,6 +360,16 @@
         "roles": {
             "title": "Vai trò & Phân quyền",
             "description": "Quản lý vai trò và cấu hình quyền truy cập cho từng vai trò",
+            "list": {
+                "title": "Quản lý vai trò",
+                "add_role": "Thêm vai trò"
+            },
+            "filter": {
+                "search_placeholder": "Tìm theo tên vai trò...",
+                "all": "Tất cả trạng thái",
+                "active": "Hoạt động",
+                "inactive": "Ngừng hoạt động"
+            },
             "roles_section": "Danh sách vai trò",
             "add_role": "Thêm vai trò",
             "add_role_form_title": "Thêm vai trò mới",
@@ -288,31 +379,113 @@
             "system_role": "Hệ thống",
             "permissions_for": "Quyền hạn — {{role}}",
             "permissions_count": "quyền được gán",
+            "assigned_users": "{{count}} người dùng",
             "unsaved_changes": "Chưa lưu thay đổi",
             "select_role_hint": "Chọn một vai trò bên trái để quản lý quyền hạn",
+            "delete_confirm_title": "Xóa vai trò",
+            "action_blocked_title": "Không thể thực hiện thao tác",
+            "delete_confirm": "Xóa vai trò \"{{role}}\"? Hành động này không thể hoàn tác.",
             "admin_accounts": "Tài khoản Admin",
             "permissions_modules": "Module quyền hạn",
             "add_admin": "Thêm admin",
+            "loading_admin_accounts": "Đang tải tài khoản admin...",
+            "no_admin_accounts": "Không tìm thấy tài khoản admin.",
             "table": {
+                "role_name": "Tên vai trò",
+                "description": "Mô tả",
+                "actions": "Thao tác",
                 "name": "Tên",
                 "email": "Email / Username",
                 "role": "Vai trò",
                 "status": "Trạng thái",
                 "created_at": "Ngày tạo"
             },
+            "empty": "Không tìm thấy vai trò nào.",
             "form": {
                 "name": "Tên vai trò",
                 "name_placeholder": "VD: Nhân viên hỗ trợ",
                 "description": "Mô tả",
-                "description_placeholder": "Mô tả trách nhiệm của vai trò này"
+                "description_placeholder": "Mô tả trách nhiệm của vai trò này",
+                "active": "Hoạt động",
+                "permissions": "Phân quyền",
+                "validation": {
+                    "role_name_required": "Tên vai trò là bắt buộc",
+                    "role_name_min": "Tên vai trò phải có ít nhất 2 ký tự",
+                    "description_required": "Mô tả là bắt buộc",
+                    "description_min": "Mô tả phải có ít nhất 5 ký tự"
+                }
+            },
+            "status": {
+                "active": "Hoạt động",
+                "inactive": "Ngừng hoạt động"
+            },
+            "actions": {
+                "view": "Xem vai trò",
+                "edit": "Chỉnh sửa vai trò",
+                "delete": "Xóa",
+                "cancel": "Hủy",
+                "close": "Đóng",
+                "save": "Lưu",
+                "edit_role": "Chỉnh sửa vai trò",
+                "delete_role": "Xóa vai trò",
+                "back_to_list": "Quay lại danh sách"
+            },
+            "pagination": {
+                "previous": "Trước",
+                "next": "Sau",
+                "page": "Trang",
+                "showing": "Hiển thị",
+                "no_items": "Không có dữ liệu"
+            },
+            "detail": {
+                "title": "Chi tiết vai trò",
+                "module": "Module",
+                "read": "Đọc",
+                "write": "Ghi",
+                "permissions": "Phân quyền",
+                "created_at": "Ngày tạo: -",
+                "not_found": "Không tìm thấy vai trò"
+            },
+            "delete": {
+                "title": "Xóa vai trò",
+                "message": "Bạn có chắc muốn xóa vai trò \"{{role}}\"? Hành động này không thể hoàn tác."
+            },
+            "messages": {
+                "create_success": "Tạo vai trò thành công.",
+                "update_success": "Cập nhật vai trò thành công.",
+                "delete_success": "Xóa vai trò thành công.",
+                "load_failed": "Không thể tải dữ liệu vai trò.",
+                "save_failed": "Không thể lưu vai trò.",
+                "delete_failed": "Không thể xóa vai trò.",
+                "action_failed": "Thao tác thất bại. Vui lòng thử lại."
+            },
+            "page": {
+                "add_title": "Thêm vai trò",
+                "edit_title": "Chỉnh sửa vai trò"
+            },
+            "modules": {
+                "dashboard": "Bảng điều khiển",
+                "admin": "Quản trị viên",
+                "role": "Vai trò",
+                "company": "Nhà xe",
+                "route": "Tuyến đường",
+                "location": "Địa điểm",
+                "booking": "Đặt vé",
+                "report": "Báo cáo",
+                "revenue": "Doanh thu"
             },
             "search_admin_placeholder": "Tìm admin theo tên, email...",
             "system_modules_description": "Các module hệ thống và danh sách endpoint API tương ứng",
+            "module_group_description": "Các quyền khả dụng trong module này",
             "module_permissions_count": "{{count}} quyền",
             "status_active": "Hoạt động",
             "status_locked": "Bị khoá",
+            "unknown_role": "Vai trò không xác định",
+            "read_only_empty_state": "Bạn chỉ có quyền xem trên trang này. Liên hệ quản trị viên để quản lý vai trò.",
             "errors": {
-                "name_required": "Tên vai trò là bắt buộc"
+                "name_required": "Tên vai trò là bắt buộc",
+                "delete_system_role": "Không thể xóa vai trò hệ thống",
+                "delete_role_in_use": "Vai trò đang được gán cho người dùng nên không thể xóa"
             }
         },
         "bookings": {

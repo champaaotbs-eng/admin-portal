@@ -78,6 +78,7 @@ export interface CreateBusCompanyPayload {
     phone: string
     address: string
     serviceFee?: number
+    ownerId?: string
 }
 
 export interface UpdateBusCompanyPayload {
@@ -237,8 +238,17 @@ export async function removeCompanyAdmin(companyId: string, adminId: string): Pr
     return response.status
 }
 
-export async function getAllAdmins(): Promise<AdminApiItem[]> {
-    const response = await fetchAPI<PaginationResponse<AdminApiItem>>('/v1/admins?page=1&limit=1000')
+export async function getAllAdmins(search?: string): Promise<AdminApiItem[]> {
+    const query = new URLSearchParams()
+    query.set('page', '1')
+    query.set('limit', '1000')
+
+    if (search?.trim()) {
+        const filters = { fullName: search.trim() }
+        query.set('filters', JSON.stringify(filters))
+    }
+
+    const response = await fetchAPI<PaginationResponse<AdminApiItem>>(`/v1/admins?${query.toString()}`)
     if (!response.status || !response.data) return []
     return response.data.result
 }

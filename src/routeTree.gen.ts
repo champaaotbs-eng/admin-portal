@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as R403RouteImport } from './routes/403'
 import { Route as CompanyRouteRouteImport } from './routes/company/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -20,15 +21,27 @@ import { Route as CompanyRevenueRouteImport } from './routes/company/revenue'
 import { Route as CompanyFleetRouteImport } from './routes/company/fleet'
 import { Route as CompanyBookingsRouteImport } from './routes/company/bookings'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
-import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminRoutesRouteImport } from './routes/admin/routes'
-import { Route as AdminRolesRouteImport } from './routes/admin/roles'
 import { Route as AdminRevenueRouteImport } from './routes/admin/revenue'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminLocationsRouteImport } from './routes/admin/locations'
 import { Route as AdminCompaniesRouteImport } from './routes/admin/companies'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
+import { Route as AdminRolesIndexRouteImport } from './routes/admin/roles/index'
+import { Route as AdminCompaniesIndexRouteImport } from './routes/admin/companies/index'
+import { Route as AdminAdminsIndexRouteImport } from './routes/admin/admins/index'
+import { Route as AdminRolesNewRouteImport } from './routes/admin/roles/new'
+import { Route as AdminRolesIdRouteImport } from './routes/admin/roles/$id'
+import { Route as AdminCompaniesNewRouteImport } from './routes/admin/companies/new'
+import { Route as AdminCompaniesIdRouteImport } from './routes/admin/companies/$id'
+import { Route as AdminAdminsNewRouteImport } from './routes/admin/admins/new'
+import { Route as AdminAdminsIdRouteImport } from './routes/admin/admins/$id'
 
+const R403Route = R403RouteImport.update({
+  id: '/403',
+  path: '/403',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompanyRouteRoute = CompanyRouteRouteImport.update({
   id: '/company',
   path: '/company',
@@ -84,19 +97,9 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
 const AdminRoutesRoute = AdminRoutesRouteImport.update({
   id: '/routes',
   path: '/routes',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminRolesRoute = AdminRolesRouteImport.update({
-  id: '/roles',
-  path: '/roles',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminRevenueRoute = AdminRevenueRouteImport.update({
@@ -124,19 +127,63 @@ const AdminBookingsRoute = AdminBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminRolesIndexRoute = AdminRolesIndexRouteImport.update({
+  id: '/roles/',
+  path: '/roles/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminCompaniesIndexRoute = AdminCompaniesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminCompaniesRoute,
+} as any)
+const AdminAdminsIndexRoute = AdminAdminsIndexRouteImport.update({
+  id: '/admins/',
+  path: '/admins/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminRolesNewRoute = AdminRolesNewRouteImport.update({
+  id: '/roles/new',
+  path: '/roles/new',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminRolesIdRoute = AdminRolesIdRouteImport.update({
+  id: '/roles/$id',
+  path: '/roles/$id',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminCompaniesNewRoute = AdminCompaniesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AdminCompaniesRoute,
+} as any)
+const AdminCompaniesIdRoute = AdminCompaniesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminCompaniesRoute,
+} as any)
+const AdminAdminsNewRoute = AdminAdminsNewRouteImport.update({
+  id: '/admins/new',
+  path: '/admins/new',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAdminsIdRoute = AdminAdminsIdRouteImport.update({
+  id: '/admins/$id',
+  path: '/admins/$id',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/company': typeof CompanyRouteRouteWithChildren
+  '/403': typeof R403Route
   '/admin/bookings': typeof AdminBookingsRoute
-  '/admin/companies': typeof AdminCompaniesRoute
+  '/admin/companies': typeof AdminCompaniesRouteWithChildren
   '/admin/locations': typeof AdminLocationsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/revenue': typeof AdminRevenueRoute
-  '/admin/roles': typeof AdminRolesRoute
   '/admin/routes': typeof AdminRoutesRoute
-  '/admin/users': typeof AdminUsersRoute
   '/auth/login': typeof AuthLoginRoute
   '/company/bookings': typeof CompanyBookingsRoute
   '/company/fleet': typeof CompanyFleetRoute
@@ -145,17 +192,24 @@ export interface FileRoutesByFullPath {
   '/company/trips': typeof CompanyTripsRoute
   '/admin/': typeof AdminIndexRoute
   '/company/': typeof CompanyIndexRoute
+  '/admin/admins/$id': typeof AdminAdminsIdRoute
+  '/admin/admins/new': typeof AdminAdminsNewRoute
+  '/admin/companies/$id': typeof AdminCompaniesIdRoute
+  '/admin/companies/new': typeof AdminCompaniesNewRoute
+  '/admin/roles/$id': typeof AdminRolesIdRoute
+  '/admin/roles/new': typeof AdminRolesNewRoute
+  '/admin/admins/': typeof AdminAdminsIndexRoute
+  '/admin/companies/': typeof AdminCompaniesIndexRoute
+  '/admin/roles/': typeof AdminRolesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/403': typeof R403Route
   '/admin/bookings': typeof AdminBookingsRoute
-  '/admin/companies': typeof AdminCompaniesRoute
   '/admin/locations': typeof AdminLocationsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/revenue': typeof AdminRevenueRoute
-  '/admin/roles': typeof AdminRolesRoute
   '/admin/routes': typeof AdminRoutesRoute
-  '/admin/users': typeof AdminUsersRoute
   '/auth/login': typeof AuthLoginRoute
   '/company/bookings': typeof CompanyBookingsRoute
   '/company/fleet': typeof CompanyFleetRoute
@@ -164,20 +218,28 @@ export interface FileRoutesByTo {
   '/company/trips': typeof CompanyTripsRoute
   '/admin': typeof AdminIndexRoute
   '/company': typeof CompanyIndexRoute
+  '/admin/admins/$id': typeof AdminAdminsIdRoute
+  '/admin/admins/new': typeof AdminAdminsNewRoute
+  '/admin/companies/$id': typeof AdminCompaniesIdRoute
+  '/admin/companies/new': typeof AdminCompaniesNewRoute
+  '/admin/roles/$id': typeof AdminRolesIdRoute
+  '/admin/roles/new': typeof AdminRolesNewRoute
+  '/admin/admins': typeof AdminAdminsIndexRoute
+  '/admin/companies': typeof AdminCompaniesIndexRoute
+  '/admin/roles': typeof AdminRolesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/company': typeof CompanyRouteRouteWithChildren
+  '/403': typeof R403Route
   '/admin/bookings': typeof AdminBookingsRoute
-  '/admin/companies': typeof AdminCompaniesRoute
+  '/admin/companies': typeof AdminCompaniesRouteWithChildren
   '/admin/locations': typeof AdminLocationsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/revenue': typeof AdminRevenueRoute
-  '/admin/roles': typeof AdminRolesRoute
   '/admin/routes': typeof AdminRoutesRoute
-  '/admin/users': typeof AdminUsersRoute
   '/auth/login': typeof AuthLoginRoute
   '/company/bookings': typeof CompanyBookingsRoute
   '/company/fleet': typeof CompanyFleetRoute
@@ -186,6 +248,15 @@ export interface FileRoutesById {
   '/company/trips': typeof CompanyTripsRoute
   '/admin/': typeof AdminIndexRoute
   '/company/': typeof CompanyIndexRoute
+  '/admin/admins/$id': typeof AdminAdminsIdRoute
+  '/admin/admins/new': typeof AdminAdminsNewRoute
+  '/admin/companies/$id': typeof AdminCompaniesIdRoute
+  '/admin/companies/new': typeof AdminCompaniesNewRoute
+  '/admin/roles/$id': typeof AdminRolesIdRoute
+  '/admin/roles/new': typeof AdminRolesNewRoute
+  '/admin/admins/': typeof AdminAdminsIndexRoute
+  '/admin/companies/': typeof AdminCompaniesIndexRoute
+  '/admin/roles/': typeof AdminRolesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -193,14 +264,13 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/company'
+    | '/403'
     | '/admin/bookings'
     | '/admin/companies'
     | '/admin/locations'
     | '/admin/reports'
     | '/admin/revenue'
-    | '/admin/roles'
     | '/admin/routes'
-    | '/admin/users'
     | '/auth/login'
     | '/company/bookings'
     | '/company/fleet'
@@ -209,17 +279,24 @@ export interface FileRouteTypes {
     | '/company/trips'
     | '/admin/'
     | '/company/'
+    | '/admin/admins/$id'
+    | '/admin/admins/new'
+    | '/admin/companies/$id'
+    | '/admin/companies/new'
+    | '/admin/roles/$id'
+    | '/admin/roles/new'
+    | '/admin/admins/'
+    | '/admin/companies/'
+    | '/admin/roles/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/403'
     | '/admin/bookings'
-    | '/admin/companies'
     | '/admin/locations'
     | '/admin/reports'
     | '/admin/revenue'
-    | '/admin/roles'
     | '/admin/routes'
-    | '/admin/users'
     | '/auth/login'
     | '/company/bookings'
     | '/company/fleet'
@@ -228,19 +305,27 @@ export interface FileRouteTypes {
     | '/company/trips'
     | '/admin'
     | '/company'
+    | '/admin/admins/$id'
+    | '/admin/admins/new'
+    | '/admin/companies/$id'
+    | '/admin/companies/new'
+    | '/admin/roles/$id'
+    | '/admin/roles/new'
+    | '/admin/admins'
+    | '/admin/companies'
+    | '/admin/roles'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/company'
+    | '/403'
     | '/admin/bookings'
     | '/admin/companies'
     | '/admin/locations'
     | '/admin/reports'
     | '/admin/revenue'
-    | '/admin/roles'
     | '/admin/routes'
-    | '/admin/users'
     | '/auth/login'
     | '/company/bookings'
     | '/company/fleet'
@@ -249,17 +334,34 @@ export interface FileRouteTypes {
     | '/company/trips'
     | '/admin/'
     | '/company/'
+    | '/admin/admins/$id'
+    | '/admin/admins/new'
+    | '/admin/companies/$id'
+    | '/admin/companies/new'
+    | '/admin/roles/$id'
+    | '/admin/roles/new'
+    | '/admin/admins/'
+    | '/admin/companies/'
+    | '/admin/roles/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   CompanyRouteRoute: typeof CompanyRouteRouteWithChildren
+  R403Route: typeof R403Route
   AuthLoginRoute: typeof AuthLoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/403': {
+      id: '/403'
+      path: '/403'
+      fullPath: '/403'
+      preLoaderRoute: typeof R403RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/company': {
       id: '/company'
       path: '/company'
@@ -337,25 +439,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
     '/admin/routes': {
       id: '/admin/routes'
       path: '/routes'
       fullPath: '/admin/routes'
       preLoaderRoute: typeof AdminRoutesRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/roles': {
-      id: '/admin/roles'
-      path: '/roles'
-      fullPath: '/admin/roles'
-      preLoaderRoute: typeof AdminRolesRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/revenue': {
@@ -393,31 +481,118 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/roles/': {
+      id: '/admin/roles/'
+      path: '/roles'
+      fullPath: '/admin/roles/'
+      preLoaderRoute: typeof AdminRolesIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/companies/': {
+      id: '/admin/companies/'
+      path: '/'
+      fullPath: '/admin/companies/'
+      preLoaderRoute: typeof AdminCompaniesIndexRouteImport
+      parentRoute: typeof AdminCompaniesRoute
+    }
+    '/admin/admins/': {
+      id: '/admin/admins/'
+      path: '/admins'
+      fullPath: '/admin/admins/'
+      preLoaderRoute: typeof AdminAdminsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/roles/new': {
+      id: '/admin/roles/new'
+      path: '/roles/new'
+      fullPath: '/admin/roles/new'
+      preLoaderRoute: typeof AdminRolesNewRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/roles/$id': {
+      id: '/admin/roles/$id'
+      path: '/roles/$id'
+      fullPath: '/admin/roles/$id'
+      preLoaderRoute: typeof AdminRolesIdRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/companies/new': {
+      id: '/admin/companies/new'
+      path: '/new'
+      fullPath: '/admin/companies/new'
+      preLoaderRoute: typeof AdminCompaniesNewRouteImport
+      parentRoute: typeof AdminCompaniesRoute
+    }
+    '/admin/companies/$id': {
+      id: '/admin/companies/$id'
+      path: '/$id'
+      fullPath: '/admin/companies/$id'
+      preLoaderRoute: typeof AdminCompaniesIdRouteImport
+      parentRoute: typeof AdminCompaniesRoute
+    }
+    '/admin/admins/new': {
+      id: '/admin/admins/new'
+      path: '/admins/new'
+      fullPath: '/admin/admins/new'
+      preLoaderRoute: typeof AdminAdminsNewRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/admins/$id': {
+      id: '/admin/admins/$id'
+      path: '/admins/$id'
+      fullPath: '/admin/admins/$id'
+      preLoaderRoute: typeof AdminAdminsIdRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
   }
 }
 
+interface AdminCompaniesRouteChildren {
+  AdminCompaniesIdRoute: typeof AdminCompaniesIdRoute
+  AdminCompaniesNewRoute: typeof AdminCompaniesNewRoute
+  AdminCompaniesIndexRoute: typeof AdminCompaniesIndexRoute
+}
+
+const AdminCompaniesRouteChildren: AdminCompaniesRouteChildren = {
+  AdminCompaniesIdRoute: AdminCompaniesIdRoute,
+  AdminCompaniesNewRoute: AdminCompaniesNewRoute,
+  AdminCompaniesIndexRoute: AdminCompaniesIndexRoute,
+}
+
+const AdminCompaniesRouteWithChildren = AdminCompaniesRoute._addFileChildren(
+  AdminCompaniesRouteChildren,
+)
+
 interface AdminRouteRouteChildren {
   AdminBookingsRoute: typeof AdminBookingsRoute
-  AdminCompaniesRoute: typeof AdminCompaniesRoute
+  AdminCompaniesRoute: typeof AdminCompaniesRouteWithChildren
   AdminLocationsRoute: typeof AdminLocationsRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
-  AdminRolesRoute: typeof AdminRolesRoute
   AdminRoutesRoute: typeof AdminRoutesRoute
-  AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminAdminsIdRoute: typeof AdminAdminsIdRoute
+  AdminAdminsNewRoute: typeof AdminAdminsNewRoute
+  AdminRolesIdRoute: typeof AdminRolesIdRoute
+  AdminRolesNewRoute: typeof AdminRolesNewRoute
+  AdminAdminsIndexRoute: typeof AdminAdminsIndexRoute
+  AdminRolesIndexRoute: typeof AdminRolesIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminBookingsRoute: AdminBookingsRoute,
-  AdminCompaniesRoute: AdminCompaniesRoute,
+  AdminCompaniesRoute: AdminCompaniesRouteWithChildren,
   AdminLocationsRoute: AdminLocationsRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminRevenueRoute: AdminRevenueRoute,
-  AdminRolesRoute: AdminRolesRoute,
   AdminRoutesRoute: AdminRoutesRoute,
-  AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminAdminsIdRoute: AdminAdminsIdRoute,
+  AdminAdminsNewRoute: AdminAdminsNewRoute,
+  AdminRolesIdRoute: AdminRolesIdRoute,
+  AdminRolesNewRoute: AdminRolesNewRoute,
+  AdminAdminsIndexRoute: AdminAdminsIndexRoute,
+  AdminRolesIndexRoute: AdminRolesIndexRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
@@ -450,6 +625,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   CompanyRouteRoute: CompanyRouteRouteWithChildren,
+  R403Route: R403Route,
   AuthLoginRoute: AuthLoginRoute,
 }
 export const routeTree = rootRouteImport

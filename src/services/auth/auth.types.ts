@@ -1,4 +1,4 @@
-import type { IAdmin } from "services/admin/admin.types";
+import type { IAdmin } from "types/admin";
 
 export interface ILogin {
     username: string;

@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { deleteRole, getRoleById } from 'services/admins/roles.service'
 import { ROLE_QUERY_KEYS } from '../constants/role-query-keys.constant'
-import { PERMISSION_MODULES } from '../constants/permission.constant'
+import { getPermissionModulesByRoleType } from '../constants/permission.constant'
 
 const toErrorMessage = (error: unknown, fallbackMessage: string) => {
     if (typeof error === 'object' && error !== null && 'message' in error) {
@@ -35,7 +35,9 @@ export const useRoleDetail = (roleId: string) => {
     const mappedPermissions = useMemo(() => {
         if (!role) return []
 
-        return PERMISSION_MODULES.map((moduleConfig) => {
+        const permissionModules = getPermissionModulesByRoleType(role.type)
+
+        return permissionModules.map((moduleConfig) => {
             const found = role.permissions?.find((permission) => permission.module === moduleConfig.module)
 
             return {

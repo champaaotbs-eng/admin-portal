@@ -464,6 +464,7 @@
             "no_admin_accounts": "No admin accounts found.",
             "table": {
                 "role_name": "Role Name",
+                "role_type": "Role Type",
                 "description": "Description",
                 "actions": "Actions",
                 "name": "Name",
@@ -476,6 +477,9 @@
             "form": {
                 "name": "Role Name",
                 "name_placeholder": "e.g. Support Staff",
+                "type": "Role Type",
+                "type_placeholder": "Select role type",
+                "type_locked": "Role type cannot be edited",
                 "description": "Description",
                 "description_placeholder": "Describe this role's responsibilities",
                 "active": "Active",
@@ -546,6 +550,10 @@
                 "report": "Report",
                 "revenue": "Revenue"
             },
+            "types": {
+                "system_admin": "System Admin",
+                "company_admin": "Company Admin"
+            },
             "search_admin_placeholder": "Search admin by name, email...",
             "system_modules_description": "System modules and their API endpoint list",
             "module_group_description": "Permissions available in this module",
@@ -556,6 +564,7 @@
             "read_only_empty_state": "You have view-only access on this page. Contact an administrator to manage roles.",
             "errors": {
                 "name_required": "Role name is required",
+                "type_required": "Role type is required",
                 "delete_system_role": "System roles cannot be deleted",
                 "delete_role_in_use": "This role is assigned to users and cannot be deleted"
             }

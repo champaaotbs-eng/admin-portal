@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import type { IRole } from 'types/role'
 import { Button } from 'components/ui/button'
 import { Dialog } from 'components/ui/dialog'
-import { PERMISSION_MODULES } from '../constants/permission.constant'
+import { getPermissionModulesByRoleType } from '../constants/permission.constant'
 import { RoleStatusBadge } from './role-status-badge.component'
 
 interface RoleDetailModalProps {
@@ -16,6 +16,8 @@ export const RoleDetailModal = ({ open, role, onClose, onEdit }: RoleDetailModal
     const { t } = useTranslation('translation', { keyPrefix: 'pages.roles' })
 
     if (!role) return null
+
+    const permissionModules = getPermissionModulesByRoleType(role.type)
 
     return (
         <Dialog open={open} onClose={onClose} title={t('detail.title')} className="max-w-3xl">
@@ -34,7 +36,7 @@ export const RoleDetailModal = ({ open, role, onClose, onEdit }: RoleDetailModal
                         <span className="text-center">{t('detail.read')}</span>
                         <span className="text-center">{t('detail.write')}</span>
                     </div>
-                    {PERMISSION_MODULES.map((moduleConfig, index) => {
+                    {permissionModules.map((moduleConfig, index) => {
                         const matched = role.permissions?.find((permission) => permission.module === moduleConfig.module)
                         const read = matched?.read ?? false
                         const write = matched?.write ?? false

@@ -11,6 +11,8 @@ export interface IRole {
 
     roleName: string;
 
+    type: 'system_admin' | 'company_admin';
+
     isActive: boolean;
 
     description?: string;

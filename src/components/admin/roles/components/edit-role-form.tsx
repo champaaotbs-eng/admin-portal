@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Lock } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { getRoleById, updateRole } from 'services/admins/roles.service'
-import { PERMISSION_MODULES } from '../constants/permission.constant'
+import { getPermissionModulesByRoleType } from '../constants/permission.constant'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { roleSchema, type TInsertRole } from '../validation-schema'
 import { LoadingSpinner } from 'components/shared/loading-spinner'
@@ -13,6 +14,7 @@ import { PermissionRow } from './permission-rows'
 import type { IToastState } from 'types'
 import type { IPermissionFormItem } from '../type'
 import { ROLE_QUERY_KEYS } from '../constants/role-query-keys.constant'
+import { ADMIN_TYPE } from 'configs/constants'
 
 interface IEditRoleFormProps {
     roleId: string
@@ -24,12 +26,25 @@ export const EditRoleForm = ({ roleId, onSuccess, onCancel }: IEditRoleFormProps
     const { t } = useTranslation('translation', { keyPrefix: 'pages.roles' })
     const [toast, setToast] = useState<IToastState | null>(null)
     const queryClient = useQueryClient()
-    const createDefaultPermissions = (): IPermissionFormItem[] =>
-        PERMISSION_MODULES.map(({ module }) => ({
-            module,
-            read: false,
-            write: false,
-        }))
+
+    const roleTypeOptions = [
+        { value: ADMIN_TYPE.SYSTEM_ADMIN, label: t('types.system_admin') },
+        { value: ADMIN_TYPE.COMPANY_ADMIN, label: t('types.company_admin') },
+    ]
+
+    const buildPermissionsByType = (roleType: string, sourcePermissions: IPermissionFormItem[] = []): IPermissionFormItem[] => {
+        return getPermissionModulesByRoleType(roleType).map(({ module }) => {
+            const found = sourcePermissions.find((permission) => permission.module === module)
+
+            return {
+                module,
+                read: found?.read ?? false,
+                write: found?.write ?? false,
+            }
+        })
+    }
+
+    const createDefaultPermissions = (): IPermissionFormItem[] => buildPermissionsByType(ADMIN_TYPE.SYSTEM_ADMIN)
 
     const roleDetailQuery = useQuery({
         queryKey: ROLE_QUERY_KEYS.detail(roleId),
@@ -61,6 +76,7 @@ export const EditRoleForm = ({ roleId, onSuccess, onCancel }: IEditRoleFormProps
         resolver: zodResolver(schema),
         defaultValues: {
             roleName: '',
+            type: ADMIN_TYPE.SYSTEM_ADMIN,
             description: '',
             isActive: true,
             permissions: createDefaultPermissions(),
@@ -68,14 +84,14 @@ export const EditRoleForm = ({ roleId, onSuccess, onCancel }: IEditRoleFormProps
         mode: 'onBlur',
     })
 
-
-
     const { fields, update } = useFieldArray({
         control,
         name: 'permissions',
     })
 
     const isActive = watch('isActive')
+    const roleType = watch('type')
+    const permissionModules = useMemo(() => getPermissionModulesByRoleType(roleType), [roleType])
 
     const toastClassName = useMemo(() => {
         if (!toast) return ''
@@ -95,7 +111,14 @@ export const EditRoleForm = ({ roleId, onSuccess, onCancel }: IEditRoleFormProps
 
         const role = roleDetailQuery.data?.data
         if (role) {
-            reset(role)
+            const normalizedType = role.type ?? ADMIN_TYPE.SYSTEM_ADMIN
+            reset({
+                roleName: role.roleName,
+                type: normalizedType,
+                description: role.description,
+                isActive: role.isActive,
+                permissions: buildPermissionsByType(normalizedType, role.permissions),
+            })
         }
     }, [roleDetailQuery.data, reset, roleId])
 
@@ -196,6 +219,27 @@ export const EditRoleForm = ({ roleId, onSuccess, onCancel }: IEditRoleFormProps
                                 {errors.description ? <p className="mt-1 text-xs text-rose-600">{errors.description.message}</p> : null}
                             </div>
 
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-slate-800">
+                                    {t('form.type')} <span className="text-rose-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <select
+                                        disabled
+                                        className="h-10 w-full rounded-md border border-slate-300 bg-[#f5f5f5] px-3 pr-10 text-sm text-slate-600 outline-none"
+                                        {...register('type')}
+                                    >
+                                        <option value="">{t('form.type_placeholder')}</option>
+                                        {roleTypeOptions.map((option) => (
+                                            <option key={option.value} value={option.value}>{option.label}</option>
+                                        ))}
+                                    </select>
+                                    <Lock className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                </div>
+                                <p className="mt-1 text-xs text-slate-500">{t('form.type_locked')}</p>
+                                {errors.type ? <p className="mt-1 text-xs text-rose-600">{errors.type.message}</p> : null}
+                            </div>
+
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-slate-800">{t('form.active')}</span>
                                 <ToggleSwitch
@@ -219,7 +263,7 @@ export const EditRoleForm = ({ roleId, onSuccess, onCancel }: IEditRoleFormProps
                             </div>
 
                             {fields.map((field, index) => {
-                                const config = PERMISSION_MODULES[index]
+                                const config = permissionModules[index]
                                 if (!config) return null
 
                                 return (

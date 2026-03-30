@@ -464,6 +464,7 @@
             "no_admin_accounts": "Không tìm thấy tài khoản admin.",
             "table": {
                 "role_name": "Tên vai trò",
+                "role_type": "Loại vai trò",
                 "description": "Mô tả",
                 "actions": "Thao tác",
                 "name": "Tên",
@@ -476,6 +477,9 @@
             "form": {
                 "name": "Tên vai trò",
                 "name_placeholder": "VD: Nhân viên hỗ trợ",
+                "type": "Loại vai trò",
+                "type_placeholder": "Chọn loại vai trò",
+                "type_locked": "Không thể chỉnh sửa loại vai trò",
                 "description": "Mô tả",
                 "description_placeholder": "Mô tả trách nhiệm của vai trò này",
                 "active": "Hoạt động",
@@ -546,6 +550,10 @@
                 "report": "Báo cáo",
                 "revenue": "Doanh thu"
             },
+            "types": {
+                "system_admin": "Quản trị hệ thống",
+                "company_admin": "Quản trị công ty"
+            },
             "search_admin_placeholder": "Tìm admin theo tên, email...",
             "system_modules_description": "Các module hệ thống và danh sách endpoint API tương ứng",
             "module_group_description": "Các quyền khả dụng trong module này",
@@ -556,6 +564,7 @@
             "read_only_empty_state": "Bạn chỉ có quyền xem trên trang này. Liên hệ quản trị viên để quản lý vai trò.",
             "errors": {
                 "name_required": "Tên vai trò là bắt buộc",
+                "type_required": "Loại vai trò là bắt buộc",
                 "delete_system_role": "Không thể xóa vai trò hệ thống",
                 "delete_role_in_use": "Vai trò đang được gán cho người dùng nên không thể xóa"
             }

@@ -85,18 +85,6 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
                 <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
                     <h2 className="mb-4 text-base font-semibold text-slate-900">{t('form.company_information')}</h2>
                     <div className="grid gap-4 md:grid-cols-2">
-                        <div className="md:col-span-2">
-                            <CompanyLogoUpload
-                                currentLogoUrl={existingLogoUrl ?? undefined}
-                                previewUrl={logoPreviewUrl}
-                                fileName={logoFile?.name}
-                                fileSizeLabel={logoFile ? `${(logoFile.size / 1024 / 1024).toFixed(2)} MB` : undefined}
-                                onFileSelect={handleLogoSelect}
-                                onRemove={handleLogoRemove}
-                                error={logoError}
-                            />
-                        </div>
-
                         <div>
                             <label className="mb-2 block text-sm font-medium text-slate-800">{t('form.name')} <span className="text-rose-500">*</span></label>
                             <input {...register('name')} className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20" />
@@ -143,6 +131,18 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
                                 <option value="SUSPENDED">{t('status_suspended')}</option>
                             </select>
                         </div>
+                        <div className="md:col-span-2">
+                            <CompanyLogoUpload
+                                currentLogoUrl={existingLogoUrl ?? undefined}
+                                previewUrl={logoPreviewUrl}
+                                fileName={logoFile?.name}
+                                fileSizeLabel={logoFile ? `${(logoFile.size / 1024 / 1024).toFixed(2)} MB` : undefined}
+                                onFileSelect={handleLogoSelect}
+                                onRemove={handleLogoRemove}
+                                error={logoError}
+                            />
+                        </div>
+
                     </div>
                 </section>
 

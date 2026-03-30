@@ -4,7 +4,7 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { createRole } from 'services/admins/roles.service'
-import { PERMISSION_MODULES } from '../constants/permission.constant'
+import { getPermissionModulesByRoleType } from '../constants/permission.constant'
 import { ROLE_QUERY_KEYS } from '../constants/role-query-keys.constant'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { roleSchema, type TInsertRole } from '../validation-schema'
@@ -12,6 +12,7 @@ import { PermissionRow } from './permission-rows'
 import { ToggleSwitch } from 'components/shared/toggle-switch'
 import type { IPermissionFormItem } from '../type'
 import type { IToastState } from 'types'
+import { ADMIN_TYPE } from 'configs/constants'
 
 interface IAddRoleFormProps {
     onSuccess?: () => void
@@ -22,12 +23,25 @@ export const AddRoleForm = ({ onSuccess, onCancel }: IAddRoleFormProps) => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.roles' })
     const [toast, setToast] = useState<IToastState | null>(null)
     const queryClient = useQueryClient()
-    const createDefaultPermissions = (): IPermissionFormItem[] =>
-        PERMISSION_MODULES.map(({ module }) => ({
-            module,
-            read: false,
-            write: false,
-        }))
+
+    const roleTypeOptions = [
+        { value: ADMIN_TYPE.SYSTEM_ADMIN, label: t('types.system_admin') },
+        { value: ADMIN_TYPE.COMPANY_ADMIN, label: t('types.company_admin') },
+    ]
+
+    const buildPermissionsByType = (roleType: string, sourcePermissions: IPermissionFormItem[] = []): IPermissionFormItem[] => {
+        return getPermissionModulesByRoleType(roleType).map(({ module }) => {
+            const found = sourcePermissions.find((permission) => permission.module === module)
+
+            return {
+                module,
+                read: found?.read ?? false,
+                write: found?.write ?? false,
+            }
+        })
+    }
+
+    const createDefaultPermissions = (): IPermissionFormItem[] => buildPermissionsByType(ADMIN_TYPE.SYSTEM_ADMIN)
 
     const createRoleMutation = useMutation({
         mutationFn: (payload: TInsertRole) => createRole(payload),
@@ -44,12 +58,14 @@ export const AddRoleForm = ({ onSuccess, onCancel }: IAddRoleFormProps) => {
         register,
         watch,
         setValue,
+        getValues,
         handleSubmit,
         formState: { errors },
     } = useForm<TInsertRole>({
         resolver: zodResolver(schema),
         defaultValues: {
             roleName: '',
+            type: ADMIN_TYPE.SYSTEM_ADMIN,
             description: '',
             isActive: true,
             permissions: createDefaultPermissions(),
@@ -57,14 +73,14 @@ export const AddRoleForm = ({ onSuccess, onCancel }: IAddRoleFormProps) => {
         mode: 'onChange',
     })
 
-
-
-    const { fields, update } = useFieldArray({
+    const { fields, update, replace } = useFieldArray({
         control,
         name: 'permissions',
     })
 
     const isActive = watch('isActive')
+    const roleType = watch('type')
+    const permissionModules = useMemo(() => getPermissionModulesByRoleType(roleType), [roleType])
 
     const toastClassName = useMemo(() => {
         if (!toast) return ''
@@ -78,6 +94,11 @@ export const AddRoleForm = ({ onSuccess, onCancel }: IAddRoleFormProps) => {
         const timer = window.setTimeout(() => setToast(null), 3000)
         return () => window.clearTimeout(timer)
     }, [toast])
+
+    useEffect(() => {
+        const currentPermissions = getValues('permissions') ?? []
+        replace(buildPermissionsByType(roleType || ADMIN_TYPE.SYSTEM_ADMIN, currentPermissions))
+    }, [getValues, replace, roleType])
 
 
     const handleReadChange = (index: number, checked: boolean) => {
@@ -168,6 +189,23 @@ export const AddRoleForm = ({ onSuccess, onCancel }: IAddRoleFormProps) => {
                                 {errors.description ? <p className="mt-1 text-xs text-rose-600">{errors.description.message}</p> : null}
                             </div>
 
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-slate-800">
+                                    {t('form.type')} <span className="text-rose-500">*</span>
+                                </label>
+                                <select
+                                    disabled={isSubmitting}
+                                    className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-[#f5f5f5]"
+                                    {...register('type')}
+                                >
+                                    <option value="">{t('form.type_placeholder')}</option>
+                                    {roleTypeOptions.map((option) => (
+                                        <option key={option.value} value={option.value}>{option.label}</option>
+                                    ))}
+                                </select>
+                                {errors.type ? <p className="mt-1 text-xs text-rose-600">{errors.type.message}</p> : null}
+                            </div>
+
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-slate-800">{t('form.active')}</span>
                                 <ToggleSwitch
@@ -191,7 +229,7 @@ export const AddRoleForm = ({ onSuccess, onCancel }: IAddRoleFormProps) => {
                             </div>
 
                             {fields.map((field, index) => {
-                                const config = PERMISSION_MODULES[index]
+                                const config = permissionModules[index]
                                 if (!config) return null
 
                                 return (

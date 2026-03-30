@@ -1,4 +1,5 @@
 import { Search } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { BusCompanyStatus } from 'types/company'
 
 interface CompanyFilterBarProps {
@@ -17,6 +18,8 @@ export const CompanyFilterBar = ({
     onSearchChange,
     onStatusChange,
 }: CompanyFilterBarProps) => {
+    const { t } = useTranslation('translation', { keyPrefix: 'pages.companies' })
+
     return (
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             <div className="grid gap-3 md:grid-cols-[1fr_220px]">
@@ -26,7 +29,7 @@ export const CompanyFilterBar = ({
                         type="text"
                         value={searchText}
                         onChange={(event) => onSearchChange(event.target.value)}
-                        placeholder="Search by company name..."
+                        placeholder={t('search_placeholder')}
                         className="h-10 w-full rounded-md border border-slate-300 bg-white pl-9 pr-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />
                 </div>
@@ -36,10 +39,10 @@ export const CompanyFilterBar = ({
                     onChange={(event) => onStatusChange(event.target.value as BusCompanyStatus | '')}
                     className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                 >
-                    <option value="">All</option>
-                    <option value={BusCompanyStatus.ACTIVE}>Active</option>
-                    <option value={BusCompanyStatus.INACTIVE}>Inactive</option>
-                    <option value={BusCompanyStatus.SUSPENDED}>Suspended</option>
+                    <option value="">{t('filter_all')}</option>
+                    <option value={BusCompanyStatus.ACTIVE}>{t('filter_active')}</option>
+                    <option value={BusCompanyStatus.INACTIVE}>{t('filter_inactive')}</option>
+                    <option value={BusCompanyStatus.SUSPENDED}>{t('filter_suspended')}</option>
                 </select>
             </div>
         </div>

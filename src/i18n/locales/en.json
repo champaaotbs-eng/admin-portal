@@ -9,6 +9,7 @@
         "delete": "Delete",
         "add": "Add",
         "search": "Search",
+        "select_option": "Select an option...",
         "filter": "Filter",
         "clear_filters": "Clear filters",
         "close": "Close",
@@ -73,9 +74,15 @@
     "lang": {
         "switch": "Language"
     },
+    "app": {
+        "title": "Admin Portal",
+        "description": "Admin Portal",
+        "brand": "VéXe.vn"
+    },
     "pages": {
         "login": {
             "title": "Login",
+            "portal_title": "Admin Portal",
             "description": "Sign in to continue",
             "username_label": "Username",
             "username_placeholder": "Enter your username",
@@ -159,6 +166,7 @@
             "search_placeholder": "Search by name or address...",
             "no_results": "No companies found.",
             "status_active": "Active",
+            "status_inactive": "Inactive",
             "status_locked": "Locked",
             "status_suspended": "Suspended",
             "activate": "Activate",
@@ -200,17 +208,65 @@
             "detail_revenue_gross": "This month gross",
             "detail_revenue_commission": "Commission ({{rate}}%)",
             "detail_revenue_net": "Net received",
+            "detail_info_email": "Email",
+            "form": {
+                "back_to_list": "Back to List",
+                "company_information": "Company Information",
+                "name": "Name",
+                "email": "Email",
+                "phone": "Phone",
+                "service_fee": "Service Fee",
+                "address": "Address",
+                "status": "Status",
+                "assigned_admins": "Assigned Admins",
+                "add_another_admin": "Add Another Admin",
+                "add_admin": "Add Admin",
+                "cancel": "Cancel",
+                "save": "Save",
+                "remove": "Remove",
+                "remove_admin_title": "Remove Admin",
+                "remove_admin_confirm": "Are you sure you want to remove this admin from company?",
+                "no_assigned_admins": "No admins assigned yet",
+                "select_admin": "Select admin",
+                "position_placeholder": "e.g. Manager, Supervisor",
+                "remove_row_aria": "Remove admin row",
+                "logo": "Logo",
+                "upload_hint_title": "Click to upload or drag & drop",
+                "upload_hint_subtitle": "PNG, JPG, WEBP up to 5MB",
+                "change": "Change"
+            },
+            "detail": {
+                "title": "Company Details",
+                "load_failed": "Failed to load company details",
+                "retry": "Retry",
+                "created_at": "Created At",
+                "close": "Close",
+                "edit_company": "Edit Company",
+                "no_company_selected": "No company selected."
+            },
+            "messages": {
+                "remove_admin_failed": "Failed to remove admin",
+                "admin_removed": "Admin removed",
+                "company_updated": "Company updated!",
+                "company_created": "Company created!",
+                "unexpected_error": "Something went wrong"
+            },
             "read_only_empty_state": "You have view-only access on this page. Contact an administrator to manage companies.",
             "errors": {
                 "name_required": "Company name is required",
+                "name_min": "Company name must be at least 2 characters",
                 "email_required": "Email is required",
                 "email_invalid": "Invalid email format",
                 "phone_required": "Phone number is required",
+                "phone_invalid": "Phone must be 10-11 digits",
                 "address_required": "Address is required",
                 "service_fee_invalid": "Service fee must be between 0 and 100",
                 "owner_username_required": "Owner username is required",
                 "owner_password_required": "Password is required",
-                "owner_password_min": "Password must be at least 6 characters"
+                "owner_password_min": "Password must be at least 6 characters",
+                "logo_type": "Only JPG, PNG, WEBP are allowed",
+                "logo_size": "File size must be <= 5MB",
+                "created_id_missing": "Created company id is missing"
             }
         },
         "users": {
@@ -274,6 +330,7 @@
                 "unknown_role": "Unknown role"
             },
             "status": {
+                "all": "All",
                 "active": "Active",
                 "inactive": "Inactive"
             },
@@ -322,6 +379,21 @@
                 "cannot_edit": "This field cannot be edited",
                 "password_note_create": "Set a secure password with at least 8 characters.",
                 "password_note_edit": "Leave blank to keep current password"
+            },
+            "validation": {
+                "username_min": "Username must be at least 3 characters",
+                "username_no_spaces": "Username cannot contain spaces",
+                "full_name_min": "Full name must be at least 2 characters",
+                "role_required": "Role is required",
+                "password_min": "Password must be at least 8 characters",
+                "confirm_password_required": "Confirm password is required",
+                "confirm_password_required_on_change": "Confirm password is required when changing password",
+                "confirm_password_mismatch": "Confirm password does not match"
+            },
+            "messages": {
+                "create_success": "Admin created successfully.",
+                "update_success": "Admin updated successfully.",
+                "save_failed": "Failed to save admin."
             },
             "page": {
                 "add_title": "Add New Admin",
@@ -778,6 +850,15 @@
                 "seats_required": "Number of seats is required",
                 "seats_min": "Must have at least 1 seat"
             }
+        },
+        "not_found": {
+            "title": "Page not found",
+            "description": "The page you are looking for does not exist.",
+            "back_to_login": "Back to login"
+        },
+        "forbidden": {
+            "description": "You do not have permission to access this page.",
+            "back_to_dashboard": "Back to dashboard"
         }
     }
 }

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Check, ChevronsUpDown, Loader2, Search } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useDebounce } from '@/components/shared/hooks/use-debounce'
 import { cn } from '@/lib/utils'
 
@@ -30,6 +31,7 @@ export function AsyncSelect({
     className,
     disabled = false,
 }: AsyncSelectProps) {
+    const { t } = useTranslation()
     const [open, setOpen] = useState(false)
     const [search, setSearch] = useState('')
     const [options, setOptions] = useState<AsyncSelectOption[]>([])
@@ -84,6 +86,9 @@ export function AsyncSelect({
     }, [])
 
     const selectedOption = options.find(opt => opt.value === value)
+    const resolvedPlaceholder = placeholder === 'Select an option...' ? t('common.select_option') : placeholder
+    const resolvedSearchPlaceholder = searchPlaceholder === 'Search...' ? t('common.search') : searchPlaceholder
+    const resolvedNoOptionsMessage = noOptionsMessage === 'No options found.' ? t('common.no_results') : noOptionsMessage
 
     return (
         <div className={cn('relative w-full', className)} ref={containerRef}>
@@ -94,7 +99,7 @@ export function AsyncSelect({
                 className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
                 <span className={cn('truncate', !selectedOption && 'text-muted-foreground')}>
-                    {selectedOption ? selectedOption.label : placeholder}
+                    {selectedOption ? selectedOption.label : resolvedPlaceholder}
                 </span>
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </button>
@@ -105,7 +110,7 @@ export function AsyncSelect({
                         <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
                         <input
                             className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                            placeholder={searchPlaceholder}
+                            placeholder={resolvedSearchPlaceholder}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
@@ -114,11 +119,11 @@ export function AsyncSelect({
                         {loading ? (
                             <div className="flex items-center justify-center p-4 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Loading...
+                                {t('common.loading')}
                             </div>
                         ) : options.length === 0 ? (
                             <div className="flex items-center justify-center p-4 text-sm text-muted-foreground">
-                                {noOptionsMessage}
+                                {resolvedNoOptionsMessage}
                             </div>
                         ) : (
                             options.map((option) => (

@@ -13,7 +13,7 @@ export const AppHeader = () => {
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2 font-bold text-primary">
                     <Bus className="h-6 w-6" />
-                    <span>VéXe.vn</span>
+                    <span>{t('app.brand')}</span>
                 </Link>
 
                 <div className="flex-1" />

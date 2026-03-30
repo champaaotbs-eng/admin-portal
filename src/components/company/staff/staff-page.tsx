@@ -7,12 +7,14 @@ import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { formatDate } from '@/utils/format'
 import { COMPANY_ROLE_COLORS } from '@/constants/colors'
-import { COMPANY_ROLES, ROLE_LABELS } from './data'
+import { COMPANY_ROLES } from './data'
 import type { CompanyRole, StaffItem } from './data'
 import { useStaffPage } from './hooks/use-staff-page'
 import { StaffForm } from './components/StaffForm'
 
 export const CompanyStaffPage = () => {
+    const { t } = useTranslation('translation', { keyPrefix: 'pages.staff' })
+    const { t: tCommon } = useTranslation()
     const [search, setSearch] = useState('')
     const [roleFilter, setRoleFilter] = useState<CompanyRole | 'all'>('all')
     const [dialogOpen, setDialogOpen] = useState(false)
@@ -27,26 +29,26 @@ export const CompanyStaffPage = () => {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold">Quan Ly Nhan Vien</h1>
-                    <p className="text-sm text-muted-foreground">Danh sach nhan vien va quan ly vai tro cong ty</p>
+                    <h1 className="text-2xl font-bold">{t('title')}</h1>
+                    <p className="text-sm text-muted-foreground">{t('description')}</p>
                 </div>
                 <Button onClick={openAdd}>
-                    <Plus className="h-4 w-4" /> Them nhan vien
+                    <Plus className="h-4 w-4" /> {t('add_staff')}
                 </Button>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 <Card>
                     <CardContent className="p-4">
-                        <p className="text-xs text-muted-foreground">Tong nhan vien</p>
+                        <p className="text-xs text-muted-foreground">{t('stats.total')}</p>
                         <p className="text-3xl font-bold">{stats.total}</p>
-                        <p className="text-xs text-green-600">{stats.active} dang lam viec</p>
+                        <p className="text-xs text-green-600">{`${stats.active} ${t('stats.active_suffix')}`}</p>
                     </CardContent>
                 </Card>
                 {COMPANY_ROLES.map(r => (
                     <Card key={r}>
                         <CardContent className="p-4">
-                            <p className="text-xs text-muted-foreground">{ROLE_LABELS[r]}</p>
+                            <p className="text-xs text-muted-foreground">{t(`roles.${r}`)}</p>
                             <p className="text-3xl font-bold">{stats.byRole[r]}</p>
                         </CardContent>
                     </Card>
@@ -56,14 +58,14 @@ export const CompanyStaffPage = () => {
             <div className="flex flex-wrap gap-3">
                 <div className="relative flex-1 min-w-48 max-w-sm">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tim ten, email, sdt..."
+                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('search_placeholder')}
                         className="w-full rounded-md border border-input bg-background pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                 </div>
                 <div className="flex rounded-md border border-border overflow-hidden text-sm">
                     {(['all', ...COMPANY_ROLES] as const).map(r => (
                         <button key={r} onClick={() => setRoleFilter(r)}
                             className={`px-3 py-2 ${roleFilter === r ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}>
-                            {r === 'all' ? 'Tat ca' : ROLE_LABELS[r]}
+                            {r === 'all' ? t('roles.all') : t(`roles.${r}`)}
                         </button>
                     ))}
                 </div>
@@ -78,11 +80,11 @@ export const CompanyStaffPage = () => {
                 <table className="w-full text-sm">
                     <thead className="bg-muted/50">
                         <tr>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nhan vien</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Lien he</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Vai tro</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Trang thai</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Ngay vao</th>
+                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.name')}</th>
+                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.email')} / {t('table.phone')}</th>
+                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.role')}</th>
+                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.status')}</th>
+                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.joined_at')}</th>
                             <th className="px-4 py-3" />
                         </tr>
                     </thead>
@@ -104,12 +106,12 @@ export const CompanyStaffPage = () => {
                                 <td className="px-4 py-3">
                                     <span className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${COMPANY_ROLE_COLORS[s.role]}`}>
                                         <ShieldCheck className="h-3 w-3" />
-                                        {ROLE_LABELS[s.role]}
+                                        {t(`roles.${s.role}`)}
                                     </span>
                                 </td>
                                 <td className="px-4 py-3">
                                     <Badge variant={s.isActive ? 'success' : 'secondary'} className="text-xs">
-                                        {s.isActive ? 'Dang lam' : 'Tam nghỉ'}
+                                        {s.isActive ? tCommon('status.active') : tCommon('status.inactive')}
                                     </Badge>
                                 </td>
                                 <td className="px-4 py-3 text-xs text-muted-foreground">{formatDate(s.joinedAt)}</td>
@@ -124,7 +126,7 @@ export const CompanyStaffPage = () => {
                         {filtered.length === 0 && (
                             <tr>
                                 <td colSpan={6} className="py-10 text-center text-muted-foreground">
-                                    Khong tim thay nhan vien nao
+                                    {tCommon('common.no_results')}
                                 </td>
                             </tr>
                         )}
@@ -132,7 +134,7 @@ export const CompanyStaffPage = () => {
                 </table>
             </div>
 
-            <Dialog open={dialogOpen} onClose={closeDialog} title={selected ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên mới'}>
+            <Dialog open={dialogOpen} onClose={closeDialog} title={selected ? t('edit_staff_title') : t('add_staff_title')}>
                 <StaffForm
                     mode={selected ? 'edit' : 'create'}
                     defaultValues={selected ? { name: selected.name, email: selected.email, phone: selected.phone, role: selected.role } : undefined}

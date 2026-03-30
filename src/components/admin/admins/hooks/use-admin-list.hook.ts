@@ -26,17 +26,20 @@ export const useAdminList = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [pageSize, setPageSize] = useState(10)
     const [searchText, setSearchText] = useState('')
+    const [statusFilter, setStatusFilter] = useState('')
     const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null)
     const debouncedSearch = useDebounce(searchText, 300)
+    const debouncedStatus = useDebounce(statusFilter, 300)
 
     const { data, isLoading, isError } = useQuery({
-        queryKey: ADMIN_QUERY_KEYS.list(currentPage, pageSize, debouncedSearch),
+        queryKey: ADMIN_QUERY_KEYS.list(currentPage, pageSize, debouncedSearch, debouncedStatus === 'active' ? true : debouncedStatus === 'inactive' ? false : undefined),
         queryFn: () => getAllAdmins({
             page: currentPage,
             limit: pageSize,
             filters: {
                 fullName: debouncedSearch.trim(),
                 username: debouncedSearch.trim(),
+                isActive: debouncedStatus === 'active' ? true : debouncedStatus === 'inactive' ? false : undefined,
             }
         }),
         placeholderData: (previousData) => previousData,
@@ -106,9 +109,10 @@ export const useAdminList = () => {
         currentPage,
         setCurrentPage,
         pageSize,
-        setPageSize,
         searchText,
         setSearchText,
+        statusFilter,
+        setStatusFilter,
         selectedAdminId,
         isDetailOpen: Boolean(selectedAdminId),
         openDetail,

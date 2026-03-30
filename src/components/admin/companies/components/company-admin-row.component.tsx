@@ -1,6 +1,7 @@
 import type { Control } from 'react-hook-form'
 import { Controller } from 'react-hook-form'
 import { Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { IAdmin } from 'types/admin'
 
 interface PendingAdminRowProps {
@@ -21,6 +22,8 @@ export const CompanyAdminRow = ({
     onRemove,
     isLoadingAdmins,
 }: PendingAdminRowProps) => {
+    const { t } = useTranslation('translation', { keyPrefix: 'pages.companies.form' })
+
     return (
         <div className="flex flex-col gap-3 md:flex-row">
             <Controller
@@ -33,7 +36,7 @@ export const CompanyAdminRow = ({
                             disabled={isLoadingAdmins}
                             className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                         >
-                            <option value="">Select admin</option>
+                            <option value="">{t('select_admin')}</option>
                             {adminOptions.map((admin) => (
                                 <option key={admin.adminId} value={admin.adminId}>
                                     {admin.fullName} ({admin.username ?? '—'})
@@ -53,7 +56,7 @@ export const CompanyAdminRow = ({
                         <input
                             {...field}
                             type="text"
-                            placeholder="e.g. Manager, Supervisor"
+                            placeholder={t('position_placeholder')}
                             className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                         />
                         {fieldState.error ? <p className="mt-1 text-xs text-rose-600">{fieldState.error.message}</p> : null}
@@ -65,7 +68,7 @@ export const CompanyAdminRow = ({
                 type="button"
                 onClick={onRemove}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-rose-200 text-rose-600 transition hover:bg-rose-50"
-                aria-label="Remove admin row"
+                aria-label={t('remove_row_aria')}
             >
                 <Trash2 className="h-4 w-4" />
             </button>

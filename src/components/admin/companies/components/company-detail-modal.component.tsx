@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Building2, RefreshCcw } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { CompanyStatusBadge } from './company-status-badge.component'
@@ -15,11 +16,12 @@ interface CompanyDetailModalProps {
  * Detail modal for bus company information and assigned admins.
  */
 export const CompanyDetailModal = ({ companyId, open, onClose }: CompanyDetailModalProps) => {
+    const { t } = useTranslation('translation', { keyPrefix: 'pages.companies' })
     const navigate = useNavigate()
     const { company, isLoading, isError, refetch } = useCompanyDetail(companyId)
 
     return (
-        <Dialog open={open} onClose={onClose} title="Company Details" className="max-w-2xl">
+        <Dialog open={open} onClose={onClose} title={t('detail.title')} className="max-w-2xl">
             {isLoading ? (
                 <div className="space-y-4">
                     <div className="h-20 w-20 animate-pulse rounded-full bg-slate-200" />
@@ -32,9 +34,9 @@ export const CompanyDetailModal = ({ companyId, open, onClose }: CompanyDetailMo
                 </div>
             ) : isError ? (
                 <div className="space-y-3">
-                    <p className="text-sm text-rose-600">Failed to load company details</p>
+                    <p className="text-sm text-rose-600">{t('detail.load_failed')}</p>
                     <Button type="button" variant="outline" onClick={() => refetch()}>
-                        <RefreshCcw className="mr-1 h-4 w-4" /> Retry
+                        <RefreshCcw className="mr-1 h-4 w-4" /> {t('detail.retry')}
                     </Button>
                 </div>
             ) : company ? (
@@ -55,22 +57,22 @@ export const CompanyDetailModal = ({ companyId, open, onClose }: CompanyDetailMo
                                     <CompanyStatusBadge status={company.status} />
                                 </div>
                                 <p className="text-xs text-slate-500">
-                                    Created At: {new Date(company.createdAt).toLocaleDateString('en-GB')}
+                                    {t('detail.created_at')}: {new Date(company.createdAt).toLocaleDateString('en-GB')}
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                        <div className="rounded-md border border-slate-200 bg-white p-3"><p className="text-xs text-slate-500">Email</p><p className="text-sm text-slate-800">{company.email ?? '—'}</p></div>
-                        <div className="rounded-md border border-slate-200 bg-white p-3"><p className="text-xs text-slate-500">Phone</p><p className="text-sm text-slate-800">{company.phone ?? '—'}</p></div>
-                        <div className="rounded-md border border-slate-200 bg-white p-3"><p className="text-xs text-slate-500">Address</p><p className="text-sm text-slate-800">{company.address ?? '—'}</p></div>
-                        <div className="rounded-md border border-slate-200 bg-white p-3"><p className="text-xs text-slate-500">Service Fee</p><p className="text-sm text-slate-800">{company.serviceFee}%</p></div>
+                        <div className="rounded-md border border-slate-200 bg-white p-3"><p className="text-xs text-slate-500">{t('detail_info_email')}</p><p className="text-sm text-slate-800">{company.email ?? '—'}</p></div>
+                        <div className="rounded-md border border-slate-200 bg-white p-3"><p className="text-xs text-slate-500">{t('detail_info_phone')}</p><p className="text-sm text-slate-800">{company.phone ?? '—'}</p></div>
+                        <div className="rounded-md border border-slate-200 bg-white p-3"><p className="text-xs text-slate-500">{t('detail_info_address')}</p><p className="text-sm text-slate-800">{company.address ?? '—'}</p></div>
+                        <div className="rounded-md border border-slate-200 bg-white p-3"><p className="text-xs text-slate-500">{t('detail_info_fee')}</p><p className="text-sm text-slate-800">{company.serviceFee}%</p></div>
                     </div>
 
                     <section className="rounded-lg border border-slate-200 bg-white p-4">
                         <div className="mb-3 flex items-center justify-between">
-                            <h4 className="text-sm font-semibold text-slate-900">Assigned Admins</h4>
+                            <h4 className="text-sm font-semibold text-slate-900">{t('form.assigned_admins')}</h4>
                             <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
                                 {((company as { admins?: unknown[] }).admins ?? []).length}
                             </span>
@@ -103,12 +105,12 @@ export const CompanyDetailModal = ({ companyId, open, onClose }: CompanyDetailMo
                                 })}
                             </div>
                         ) : (
-                            <p className="text-sm text-slate-500">No admins assigned yet</p>
+                            <p className="text-sm text-slate-500">{t('form.no_assigned_admins')}</p>
                         )}
                     </section>
 
                     <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" onClick={onClose}>Close</Button>
+                        <Button type="button" variant="outline" onClick={onClose}>{t('detail.close')}</Button>
                         <Button
                             type="button"
                             onClick={() => {
@@ -116,12 +118,12 @@ export const CompanyDetailModal = ({ companyId, open, onClose }: CompanyDetailMo
                                 navigate({ to: `/admin/companies/${company.busCompanyId}` })
                             }}
                         >
-                            Edit Company
+                            {t('detail.edit_company')}
                         </Button>
                     </div>
                 </div>
             ) : (
-                <p className="text-sm text-slate-600">No company selected.</p>
+                <p className="text-sm text-slate-600">{t('detail.no_company_selected')}</p>
             )}
         </Dialog>
     )

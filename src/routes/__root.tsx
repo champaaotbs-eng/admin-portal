@@ -15,10 +15,10 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'Admin Portal' },
+      { title: i18n.t('app.title') },
       {
         name: 'description',
-        content: 'Admin Portal',
+        content: i18n.t('app.description'),
       },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],

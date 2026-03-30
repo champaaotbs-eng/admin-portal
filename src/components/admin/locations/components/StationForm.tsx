@@ -22,10 +22,10 @@ export const StationForm = ({ onSubmit, onCancel }: StationFormProps) => {
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2">
             <Controller name="name" control={control} render={({ field }) => (
-                <Input {...field} label={t('station_name')} placeholder="Bến xe Miền Đông" className="sm:col-span-2" error={errors.name?.message} />
+                <Input {...field} label={t('station_name')} placeholder={t('form_station.name_placeholder')} className="sm:col-span-2" error={errors.name?.message} />
             )} />
             <Controller name="address" control={control} render={({ field }) => (
-                <Input {...field} label={t('address')} placeholder="292 Đinh Bộ Lĩnh, Q. Bình Thạnh" className="sm:col-span-2" error={errors.address?.message} />
+                <Input {...field} label={t('address')} placeholder={t('form_station.address_placeholder')} className="sm:col-span-2" error={errors.address?.message} />
             )} />
             <Controller name="province" control={control} render={({ field }) => (
                 <div>

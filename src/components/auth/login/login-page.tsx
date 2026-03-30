@@ -16,7 +16,7 @@ export const LoginPage = () => {
                             <LoginIcon className="h-6 w-6 text-primary" />
                         </span>
                     </div>
-                    <h1 className="text-2xl font-semibold">Admin Portal</h1>
+                    <h1 className="text-2xl font-semibold">{t('portal_title')}</h1>
                     <p className="mt-1 text-sm text-muted-foreground">{t('description')}</p>
                 </div>
 

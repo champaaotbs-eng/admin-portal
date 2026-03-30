@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import type { IRole } from 'types/role'
 import { createAdmin, getAdminById, updateAdmin } from 'services/admins/admin.service'
@@ -45,6 +46,7 @@ const toErrorMessage = (error: unknown, fallbackMessage: string) => {
  * Handle add/edit admin form state, validation, data loading and mutations.
  */
 export const useAdminForm = ({ adminId }: UseAdminFormProps) => {
+    const { t } = useTranslation('translation', { keyPrefix: 'pages.admins' })
     const navigate = useNavigate()
     const queryClient = useQueryClient()
     const isEditMode = Boolean(adminId)
@@ -56,10 +58,10 @@ export const useAdminForm = ({ adminId }: UseAdminFormProps) => {
         const base = z.object({
             username: z
                 .string()
-                .min(3, 'Username must be at least 3 characters')
-                .regex(/^\S+$/, 'Username cannot contain spaces'),
-            fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-            roleId: z.string().min(1, 'Role is required'),
+                .min(3, t('validation.username_min'))
+                .regex(/^\S+$/, t('validation.username_no_spaces')),
+            fullName: z.string().min(2, t('validation.full_name_min')),
+            roleId: z.string().min(1, t('validation.role_required')),
             password: z.string(),
             confirmPassword: z.string(),
             isActive: z.boolean(),
@@ -70,7 +72,7 @@ export const useAdminForm = ({ adminId }: UseAdminFormProps) => {
                 if (values.password.length < 8) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.custom,
-                        message: 'Password must be at least 8 characters',
+                        message: t('validation.password_min'),
                         path: ['password'],
                     })
                 }
@@ -78,7 +80,7 @@ export const useAdminForm = ({ adminId }: UseAdminFormProps) => {
                 if (!values.confirmPassword) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.custom,
-                        message: 'Confirm password is required',
+                        message: t('validation.confirm_password_required'),
                         path: ['confirmPassword'],
                     })
                 }
@@ -86,7 +88,7 @@ export const useAdminForm = ({ adminId }: UseAdminFormProps) => {
                 if (values.confirmPassword !== values.password) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.custom,
-                        message: 'Confirm password does not match',
+                        message: t('validation.confirm_password_mismatch'),
                         path: ['confirmPassword'],
                     })
                 }
@@ -97,7 +99,7 @@ export const useAdminForm = ({ adminId }: UseAdminFormProps) => {
             if (values.password && values.password.length < 8) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
-                    message: 'Password must be at least 8 characters',
+                    message: t('validation.password_min'),
                     path: ['password'],
                 })
             }
@@ -105,7 +107,7 @@ export const useAdminForm = ({ adminId }: UseAdminFormProps) => {
             if (values.password && !values.confirmPassword) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
-                    message: 'Confirm password is required when changing password',
+                    message: t('validation.confirm_password_required_on_change'),
                     path: ['confirmPassword'],
                 })
             }
@@ -113,12 +115,12 @@ export const useAdminForm = ({ adminId }: UseAdminFormProps) => {
             if (values.password && values.confirmPassword !== values.password) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
-                    message: 'Confirm password does not match',
+                    message: t('validation.confirm_password_mismatch'),
                     path: ['confirmPassword'],
                 })
             }
         })
-    }, [isEditMode])
+    }, [isEditMode, t])
 
     const form = useForm<AdminFormValues>({
         resolver: zodResolver(formSchema),
@@ -212,13 +214,13 @@ export const useAdminForm = ({ adminId }: UseAdminFormProps) => {
 
             setToast({
                 type: 'success',
-                message: isEditMode ? 'Admin updated successfully.' : 'Admin created successfully.',
+                message: isEditMode ? t('messages.update_success') : t('messages.create_success'),
             })
             navigate({ to: '/admin/admins' })
         } catch (error) {
             setToast({
                 type: 'error',
-                message: toErrorMessage(error, 'Failed to save admin.'),
+                message: toErrorMessage(error, t('messages.save_failed')),
             })
         }
     })

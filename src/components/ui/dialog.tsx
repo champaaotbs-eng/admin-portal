@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
 
 interface DialogProps {
@@ -11,6 +12,7 @@ interface DialogProps {
 }
 
 export const Dialog = ({ open, onClose, title, children, className }: DialogProps) => {
+    const { t } = useTranslation()
     const onCloseRef = useRef(onClose)
     useEffect(() => { onCloseRef.current = onClose }, [onClose])
 
@@ -42,7 +44,7 @@ export const Dialog = ({ open, onClose, title, children, className }: DialogProp
                         type="button"
                         onClick={onClose}
                         className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-                        aria-label="Close"
+                        aria-label={t('common.close')}
                     >
                         <X className="h-4 w-4" />
                     </button>

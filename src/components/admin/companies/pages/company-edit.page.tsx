@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { ConfirmationModal } from 'components/shared/confirmation-modal'
 import { CompanyLogoUpload } from '../components/company-logo-upload.component'
@@ -14,6 +15,7 @@ interface CompanyEditPageProps {
  * Edit bus company page.
  */
 export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
+    const { t } = useTranslation('translation', { keyPrefix: 'pages.companies' })
     const navigate = useNavigate()
     const {
         form,
@@ -75,13 +77,13 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
             ) : null}
 
             <div className="flex items-center justify-between gap-3">
-                <h1 className="text-2xl font-bold text-slate-900">Edit Company</h1>
-                <Button variant="outline" onClick={() => navigate({ to: '/admin/companies' })}>Back to List</Button>
+                <h1 className="text-2xl font-bold text-slate-900">{t('edit_company_form_title')}</h1>
+                <Button variant="outline" onClick={() => navigate({ to: '/admin/companies' })}>{t('form.back_to_list')}</Button>
             </div>
 
             <form onSubmit={onSubmit} className="space-y-6">
                 <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 className="mb-4 text-base font-semibold text-slate-900">Company Information</h2>
+                    <h2 className="mb-4 text-base font-semibold text-slate-900">{t('form.company_information')}</h2>
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="md:col-span-2">
                             <CompanyLogoUpload
@@ -96,25 +98,25 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-slate-800">Name <span className="text-rose-500">*</span></label>
+                            <label className="mb-2 block text-sm font-medium text-slate-800">{t('form.name')} <span className="text-rose-500">*</span></label>
                             <input {...register('name')} className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20" />
                             {errors.name ? <p className="mt-1 text-xs text-rose-600">{errors.name.message}</p> : null}
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-slate-800">Email</label>
+                            <label className="mb-2 block text-sm font-medium text-slate-800">{t('form.email')}</label>
                             <input {...register('email')} type="email" className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20" />
                             {errors.email ? <p className="mt-1 text-xs text-rose-600">{errors.email.message}</p> : null}
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-slate-800">Phone</label>
+                            <label className="mb-2 block text-sm font-medium text-slate-800">{t('form.phone')}</label>
                             <input {...register('phone')} className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20" />
                             {errors.phone ? <p className="mt-1 text-xs text-rose-600">{errors.phone.message}</p> : null}
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-slate-800">Service Fee <span className="text-rose-500">*</span></label>
+                            <label className="mb-2 block text-sm font-medium text-slate-800">{t('form.service_fee')} <span className="text-rose-500">*</span></label>
                             <div className="relative">
                                 <input
                                     {...register('serviceFee', { valueAsNumber: true })}
@@ -129,23 +131,23 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
                         </div>
 
                         <div className="md:col-span-2">
-                            <label className="mb-2 block text-sm font-medium text-slate-800">Address</label>
+                            <label className="mb-2 block text-sm font-medium text-slate-800">{t('form.address')}</label>
                             <textarea {...register('address')} rows={3} className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20" />
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-slate-800">Status <span className="text-rose-500">*</span></label>
+                            <label className="mb-2 block text-sm font-medium text-slate-800">{t('form.status')} <span className="text-rose-500">*</span></label>
                             <select {...register('status')} className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20">
-                                <option value="ACTIVE">Active</option>
-                                <option value="INACTIVE">Inactive</option>
-                                <option value="SUSPENDED">Suspended</option>
+                                <option value="ACTIVE">{t('status_active')}</option>
+                                <option value="INACTIVE">{t('status_inactive')}</option>
+                                <option value="SUSPENDED">{t('status_suspended')}</option>
                             </select>
                         </div>
                     </div>
                 </section>
 
                 <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 className="mb-4 text-base font-semibold text-slate-900">Assigned Admins</h2>
+                    <h2 className="mb-4 text-base font-semibold text-slate-900">{t('form.assigned_admins')}</h2>
 
                     <div className="space-y-2">
                         {existingAdmins.map((admin) => {
@@ -174,14 +176,14 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
                                             onClick={() => setConfirmRemoveId(admin.adminId)}
                                             className="text-sm text-rose-600 transition hover:underline"
                                         >
-                                            Remove
+                                            {t('form.remove')}
                                         </button>
                                     </div>
                                 </div>
                             )
                         })}
 
-                        {existingAdmins.length === 0 ? <p className="text-sm text-slate-500">No admins assigned yet</p> : null}
+                        {existingAdmins.length === 0 ? <p className="text-sm text-slate-500">{t('form.no_assigned_admins')}</p> : null}
                     </div>
 
                     <div className="mt-4 space-y-3">
@@ -201,23 +203,23 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
                         onClick={appendPendingAdmin}
                         className="mt-4 text-sm font-medium text-blue-600 transition hover:underline"
                     >
-                        + Add Admin
+                        {`+ ${t('form.add_admin')}`}
                     </button>
                 </section>
 
                 <div className="flex justify-end gap-3">
-                    <Button type="button" variant="outline" onClick={() => navigate({ to: '/admin/companies' })} disabled={isSubmitting}>Cancel</Button>
-                    <Button type="submit" loading={isSubmitting}>Save</Button>
+                    <Button type="button" variant="outline" onClick={() => navigate({ to: '/admin/companies' })} disabled={isSubmitting}>{t('form.cancel')}</Button>
+                    <Button type="submit" loading={isSubmitting}>{t('form.save')}</Button>
                 </div>
             </form>
 
             <ConfirmationModal
                 open={Boolean(confirmRemoveId)}
                 onClose={() => setConfirmRemoveId(null)}
-                title="Remove Admin"
-                description="Are you sure you want to remove this admin from company?"
-                confirmLabel="Remove"
-                cancelLabel="Cancel"
+                title={t('form.remove_admin_title')}
+                description={t('form.remove_admin_confirm')}
+                confirmLabel={t('form.remove')}
+                cancelLabel={t('form.cancel')}
                 loading={isRemovingAdmin}
                 destructive
                 onConfirm={() => {

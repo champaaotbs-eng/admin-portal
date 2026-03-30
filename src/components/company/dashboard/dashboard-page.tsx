@@ -1,4 +1,5 @@
 import { Bus, Ticket, DollarSign, TrendingUp, MapPin, Clock } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LineChart, DonutChart, HorizontalBarChart } from '@/components/ui/charts'
 import { MOCK_DAILY_REVENUES } from '@/data/mock-extended'
@@ -36,22 +37,26 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export const CompanyDashboardPage = () => {
+    const { t } = useTranslation('translation', { keyPrefix: 'pages.dashboard' })
+    const { t: tTrips } = useTranslation('translation', { keyPrefix: 'pages.trips' })
+    const { t: tFleet } = useTranslation('translation', { keyPrefix: 'pages.fleet' })
+    const { t: tCommon } = useTranslation()
     const { weekRevenue, monthRevenue, confirmedToday, donutData } = useCompanyDashboard()
 
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold">Dashboard Nha Xe</h1>
-                <p className="text-sm text-muted-foreground">Tong quan hoat dong chuyen xe hom nay</p>
+                <h1 className="text-2xl font-bold">{t('title')}</h1>
+                <p className="text-sm text-muted-foreground">{t('description')}</p>
             </div>
 
             {/* KPI Cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {[
-                    { label: 'Doanh thu tuan', value: formatVnd(weekRevenue), icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10', trend: '+12%' },
-                    { label: 'Doanh thu thang', value: formatVnd(monthRevenue), icon: TrendingUp, color: 'text-green-500', bg: 'bg-green-500/10', trend: '+8%' },
-                    { label: 'Dat ve hom nay', value: confirmedToday, icon: Ticket, color: 'text-purple-500', bg: 'bg-purple-500/10', trend: '+5%' },
-                    { label: 'Tong xe', value: 27, icon: Bus, color: 'text-orange-500', bg: 'bg-orange-500/10', trend: null },
+                    { label: t('kpi_platform_revenue'), value: formatVnd(weekRevenue), icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10', trend: '+12%' },
+                    { label: t('revenue_title'), value: formatVnd(monthRevenue), icon: TrendingUp, color: 'text-green-500', bg: 'bg-green-500/10', trend: '+8%' },
+                    { label: t('kpi_bookings_today'), value: confirmedToday, icon: Ticket, color: 'text-purple-500', bg: 'bg-purple-500/10', trend: '+5%' },
+                    { label: tFleet('stats.total'), value: 27, icon: Bus, color: 'text-orange-500', bg: 'bg-orange-500/10', trend: null },
                 ].map(kpi => {
                     const Icon = kpi.icon
                     return (
@@ -64,7 +69,7 @@ export const CompanyDashboardPage = () => {
                                     <p className="text-xs text-muted-foreground">{kpi.label}</p>
                                     <p className="text-2xl font-bold">{kpi.value}</p>
                                     {kpi.trend && (
-                                        <p className="text-xs text-green-600 font-medium">{kpi.trend} so thang truoc</p>
+                                        <p className="text-xs text-green-600 font-medium">{kpi.trend} {tCommon('common.prev')}</p>
                                     )}
                                 </div>
                             </CardContent>
@@ -78,7 +83,7 @@ export const CompanyDashboardPage = () => {
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium flex items-center gap-2">
-                            <Bus className="h-4 w-4 text-primary" /> Trang thai xe
+                            <Bus className="h-4 w-4 text-primary" /> {tFleet('table.status')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -90,7 +95,7 @@ export const CompanyDashboardPage = () => {
                 <Card className="lg:col-span-2">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-primary" /> Doanh thu theo tuyen (thang nay)
+                            <MapPin className="h-4 w-4 text-primary" /> {t('chart_top_companies')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -102,7 +107,7 @@ export const CompanyDashboardPage = () => {
             {/* Revenue trend */}
             <Card>
                 <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Doanh thu 30 ngay qua</CardTitle>
+                    <CardTitle className="text-sm font-medium">{t('chart_platform_revenue')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <LineChart
@@ -121,7 +126,7 @@ export const CompanyDashboardPage = () => {
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-primary" /> Chuyen di hom nay
+                        <Clock className="h-4 w-4 text-primary" /> {t('kpi_trips_today')}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -129,12 +134,12 @@ export const CompanyDashboardPage = () => {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-border">
-                                    <th className="pb-2 text-left font-medium text-muted-foreground">Tuyen xe</th>
-                                    <th className="pb-2 text-left font-medium text-muted-foreground">Gio xuat phat</th>
-                                    <th className="pb-2 text-center font-medium text-muted-foreground">Ghe</th>
-                                    <th className="pb-2 text-center font-medium text-muted-foreground">Da ban</th>
-                                    <th className="pb-2 text-center font-medium text-muted-foreground">Ty le</th>
-                                    <th className="pb-2 text-left font-medium text-muted-foreground">Trang thai</th>
+                                    <th className="pb-2 text-left font-medium text-muted-foreground">{tTrips('table.route')}</th>
+                                    <th className="pb-2 text-left font-medium text-muted-foreground">{tTrips('table.departure')}</th>
+                                    <th className="pb-2 text-center font-medium text-muted-foreground">{tTrips('table.seats_sold')}</th>
+                                    <th className="pb-2 text-center font-medium text-muted-foreground">{t('col_tickets')}</th>
+                                    <th className="pb-2 text-center font-medium text-muted-foreground">%</th>
+                                    <th className="pb-2 text-left font-medium text-muted-foreground">{tTrips('table.status')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -156,7 +161,11 @@ export const CompanyDashboardPage = () => {
                                         </td>
                                         <td className="py-2.5">
                                             <span className={`inline-flex rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[trip.status] ?? ''}`}>
-                                                {trip.status === 'completed' ? 'Hoan thanh' : trip.status === 'in_progress' ? 'Dang chay' : 'Cho khoi hanh'}
+                                                {trip.status === 'completed'
+                                                    ? tCommon('status.completed')
+                                                    : trip.status === 'in_progress'
+                                                        ? tCommon('status.in_progress')
+                                                        : tCommon('status.scheduled')}
                                             </span>
                                         </td>
                                     </tr>

@@ -1,4 +1,5 @@
 import { Building2, UploadCloud } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface CompanyLogoUploadProps {
     currentLogoUrl?: string
@@ -22,6 +23,7 @@ export const CompanyLogoUpload = ({
     onRemove,
     error,
 }: CompanyLogoUploadProps) => {
+    const { t } = useTranslation('translation', { keyPrefix: 'pages.companies.form' })
     const activeLogo = previewUrl ?? currentLogoUrl ?? null
 
     const handleSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,7 +34,7 @@ export const CompanyLogoUpload = ({
 
     return (
         <div className="space-y-2">
-            <label className="mb-2 block text-sm font-medium text-slate-800">Logo</label>
+            <label className="mb-2 block text-sm font-medium text-slate-800">{t('logo')}</label>
 
             {activeLogo ? (
                 <div className="rounded-lg border border-slate-200 bg-white p-4">
@@ -42,11 +44,11 @@ export const CompanyLogoUpload = ({
                         {fileSizeLabel ? <p className="text-xs text-slate-500">{fileSizeLabel}</p> : null}
                         <div className="flex items-center gap-3 text-sm">
                             <label className="cursor-pointer text-blue-600 hover:underline">
-                                Change
+                                {t('change')}
                                 <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleSelect} />
                             </label>
                             <button type="button" onClick={onRemove} className="text-rose-600 hover:underline">
-                                Remove
+                                {t('remove')}
                             </button>
                         </div>
                     </div>
@@ -57,8 +59,8 @@ export const CompanyLogoUpload = ({
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">
                             <UploadCloud className="h-5 w-5" />
                         </div>
-                        <p className="text-sm font-medium text-slate-700">Click to upload or drag & drop</p>
-                        <p className="text-xs text-slate-500">PNG, JPG, WEBP up to 5MB</p>
+                        <p className="text-sm font-medium text-slate-700">{t('upload_hint_title')}</p>
+                        <p className="text-xs text-slate-500">{t('upload_hint_subtitle')}</p>
                     </div>
                     <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleSelect} />
                 </label>

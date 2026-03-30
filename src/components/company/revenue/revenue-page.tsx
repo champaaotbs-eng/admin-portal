@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { DollarSign, TrendingUp, Wallet, CalendarDays } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -20,6 +21,8 @@ const ROUTE_BREAKDOWN = [
 ]
 
 export function CompanyRevenuePage() {
+    const { t } = useTranslation('translation', { keyPrefix: 'pages.revenue' })
+    const { t: tCommon } = useTranslation()
     const totalGross = useMemo(() => MY_REVENUES.reduce((s, r) => s + r.grossAmount, 0), [])
     const totalCommission = useMemo(() => MY_REVENUES.reduce((s, r) => s + r.commissionAmount, 0), [])
     const totalNet = useMemo(() => MY_REVENUES.reduce((s, r) => s + r.netAmount, 0), [])
@@ -29,17 +32,17 @@ export function CompanyRevenuePage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold">Doanh Thu Cong Ty</h1>
-                <p className="text-sm text-muted-foreground">Bao cao doanh thu va lich su quyet toan</p>
+                <h1 className="text-2xl font-bold">{t('company_title')}</h1>
+                <p className="text-sm text-muted-foreground">{t('company_description')}</p>
             </div>
 
             {/* KPI Cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {[
-                    { label: 'Tong gross', value: formatVnd(totalGross), icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                    { label: 'Hoa hong nen tang', value: formatVnd(totalCommission), icon: TrendingUp, color: 'text-red-500', bg: 'bg-red-500/10' },
-                    { label: 'Net cong ty nhan', value: formatVnd(totalNet), icon: Wallet, color: 'text-green-500', bg: 'bg-green-500/10' },
-                    { label: 'Cho quyet toan', value: formatVnd(pendingSettlement), icon: CalendarDays, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+                    { label: t('stats.total_gross'), value: formatVnd(totalGross), icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                    { label: t('stats.commission'), value: formatVnd(totalCommission), icon: TrendingUp, color: 'text-red-500', bg: 'bg-red-500/10' },
+                    { label: t('stats.net'), value: formatVnd(totalNet), icon: Wallet, color: 'text-green-500', bg: 'bg-green-500/10' },
+                    { label: t('stats.pending_settlement'), value: formatVnd(pendingSettlement), icon: CalendarDays, color: 'text-orange-500', bg: 'bg-orange-500/10' },
                 ].map(kpi => {
                     const Icon = kpi.icon
                     return (
@@ -62,7 +65,7 @@ export function CompanyRevenuePage() {
             <div className="grid gap-4 lg:grid-cols-3">
                 <Card className="lg:col-span-2">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Doanh thu 30 ngay qua</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('chart_30d')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <LineChart
@@ -78,7 +81,7 @@ export function CompanyRevenuePage() {
                 </Card>
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Theo tuyen xe</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('chart_by_route')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <HorizontalBarChart data={ROUTE_BREAKDOWN} />
@@ -88,8 +91,8 @@ export function CompanyRevenuePage() {
 
             <Tabs defaultValue="transactions">
                 <TabsList>
-                    <TabsTrigger value="transactions">Giao dich</TabsTrigger>
-                    <TabsTrigger value="settlements">Quyet toan</TabsTrigger>
+                    <TabsTrigger value="transactions">{t('tab_revenue')}</TabsTrigger>
+                    <TabsTrigger value="settlements">{t('tab_settlements')}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="transactions">
@@ -97,12 +100,12 @@ export function CompanyRevenuePage() {
                         <table className="w-full text-sm">
                             <thead className="bg-muted/50">
                                 <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Ma dat ve</th>
-                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Thoi gian</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Gross</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Phi %</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Hoa hong</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Net cong ty nhan</th>
+                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.booking_code')}</th>
+                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.time')}</th>
+                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.gross')}</th>
+                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.fee_pct')}</th>
+                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.commission')}</th>
+                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.net')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -118,7 +121,7 @@ export function CompanyRevenuePage() {
                                 ))}
                                 {MY_REVENUES.length === 0 && (
                                     <tr>
-                                        <td colSpan={6} className="py-10 text-center text-muted-foreground">Chua co giao dich</td>
+                                        <td colSpan={6} className="py-10 text-center text-muted-foreground">{t('no_data')}</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -131,13 +134,13 @@ export function CompanyRevenuePage() {
                         <table className="w-full text-sm">
                             <thead className="bg-muted/50">
                                 <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Ma quyet toan</th>
-                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Ky ke toan</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Gross</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Hoa hong</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Net chuyen</th>
-                                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">Dat ve</th>
-                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Trang thai</th>
+                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('settlements_table.code')}</th>
+                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('settlements_table.period')}</th>
+                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('settlements_table.gross')}</th>
+                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('settlements_table.commission')}</th>
+                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('settlements_table.net')}</th>
+                                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('settlements_table.bookings')}</th>
+                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('settlements_table.status')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -153,14 +156,14 @@ export function CompanyRevenuePage() {
                                         <td className="px-4 py-3 text-center">{s.bookingCount}</td>
                                         <td className="px-4 py-3">
                                             <Badge variant={s.status === 'paid' ? 'success' : 'warning'} className="text-xs">
-                                                {s.status === 'paid' ? 'Da thanh toan' : 'Cho thanh toan'}
+                                                {s.status === 'paid' ? tCommon('payment_status.paid') : tCommon('payment_status.pending')}
                                             </Badge>
                                         </td>
                                     </tr>
                                 ))}
                                 {MY_SETTLEMENTS.length === 0 && (
                                     <tr>
-                                        <td colSpan={7} className="py-10 text-center text-muted-foreground">Chua co quyet toan</td>
+                                        <td colSpan={7} className="py-10 text-center text-muted-foreground">{t('no_settlements')}</td>
                                     </tr>
                                 )}
                             </tbody>

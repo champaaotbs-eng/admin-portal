@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Building2, Eye, Pencil } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { ICompany } from 'types/company'
 import { PaginatedTable, type PaginatedTableColumn } from 'components/shared/pagination-table'
 import { CompanyStatusBadge } from './company-status-badge.component'
@@ -30,6 +31,9 @@ export const CompanyTable = ({
     onView,
     onEdit,
 }: CompanyTableProps) => {
+    const { t } = useTranslation('translation', { keyPrefix: 'pages.companies' })
+    const { t: tCommon } = useTranslation()
+
     const columns = useMemo<PaginatedTableColumn<ICompany>[]>(
         () => [
             {
@@ -39,7 +43,7 @@ export const CompanyTable = ({
             },
             {
                 id: 'logo',
-                header: 'Logo',
+                header: t('form.logo'),
                 renderCell: (company) =>
                     company.logoUrl ? (
                         <img src={company.logoUrl} alt={company.name} className="h-10 w-10 rounded-full object-cover" />
@@ -51,32 +55,32 @@ export const CompanyTable = ({
             },
             {
                 id: 'name',
-                header: 'Company Name',
+                header: t('table.name'),
                 renderCell: (company) => <span className="font-medium text-slate-900">{company.name}</span>,
             },
             {
                 id: 'email',
-                header: 'Email',
+                header: t('table.email'),
                 renderCell: (company) => <span>{company.email ?? '—'}</span>,
             },
             {
                 id: 'phone',
-                header: 'Phone',
+                header: t('table.phone'),
                 renderCell: (company) => <span>{company.phone ?? '—'}</span>,
             },
             {
                 id: 'serviceFee',
-                header: 'Service Fee',
+                header: t('table.service_fee'),
                 renderCell: (company) => <span>{company.serviceFee}%</span>,
             },
             {
                 id: 'status',
-                header: 'Status',
+                header: t('table.status'),
                 renderCell: (company) => <CompanyStatusBadge status={company.status} />,
             },
             {
                 id: 'actions',
-                header: 'Actions',
+                header: tCommon('common.actions'),
                 headerClassName: 'text-center',
                 cellClassName: 'text-center',
                 renderCell: (company) => (
@@ -85,7 +89,7 @@ export const CompanyTable = ({
                             type="button"
                             onClick={() => onView(company)}
                             className="rounded p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-blue-600"
-                            aria-label="View company"
+                            aria-label={t('action_detail')}
                         >
                             <Eye className="h-4 w-4" />
                         </button>
@@ -93,7 +97,7 @@ export const CompanyTable = ({
                             type="button"
                             onClick={() => onEdit(company)}
                             className="rounded p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-blue-600"
-                            aria-label="Edit company"
+                            aria-label={t('edit_company_form_title')}
                         >
                             <Pencil className="h-4 w-4" />
                         </button>
@@ -101,7 +105,7 @@ export const CompanyTable = ({
                 ),
             },
         ],
-        [currentPage, onEdit, onView, pageSize],
+        [currentPage, onEdit, onView, pageSize, t],
     )
 
     return (
@@ -110,20 +114,13 @@ export const CompanyTable = ({
             data={companies}
             rowKey={(company) => company.busCompanyId}
             isLoading={isLoading}
-            emptyMessage="No companies found"
+            emptyMessage={t('no_results')}
             pagination={{
                 currentPage,
                 totalPages,
                 totalItems,
                 pageSize,
                 onPageChange,
-                labels: {
-                    previous: 'Previous',
-                    next: 'Next',
-                    page: 'Page',
-                    showing: 'Showing',
-                    noItems: 'No items',
-                },
             }}
         />
     )

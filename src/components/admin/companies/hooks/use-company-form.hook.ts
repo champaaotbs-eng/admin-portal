@@ -4,6 +4,7 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { IAdmin } from 'types/admin'
 import { BusCompanyStatus, type ICompany } from 'types/company'
+import { useTranslation } from 'react-i18next'
 import { getAllAdmins } from 'services/admins/admin.service'
 import { addAdmin, createCompany, getCompanyById, removeAdmin, updateCompany } from 'services/admins/company.service'
 import { deleteFile, uploadFile } from 'services/upload-file.service'
@@ -53,6 +54,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024
  * Manage create/edit company form state, upload flow, and admin assignments.
  */
 export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
+    const { t } = useTranslation('translation', { keyPrefix: 'pages.companies' })
     const isEditMode = Boolean(companyId)
     const navigate = useNavigate()
     const queryClient = useQueryClient()
@@ -129,10 +131,10 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
         },
         onError: () => {
             setExistingAdmins(companyQuery.data?.admins ?? [])
-            setToast({ type: 'error', message: 'Failed to remove admin' })
+            setToast({ type: 'error', message: t('messages.remove_admin_failed') })
         },
         onSuccess: () => {
-            setToast({ type: 'success', message: 'Admin removed' })
+            setToast({ type: 'success', message: t('messages.admin_removed') })
         },
     })
 
@@ -145,12 +147,12 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
         setLogoError(undefined)
 
         if (!VALID_IMAGE_TYPES.includes(file.type)) {
-            setLogoError('Only JPG, PNG, WEBP are allowed')
+            setLogoError(t('errors.logo_type'))
             return
         }
 
         if (file.size > MAX_FILE_SIZE) {
-            setLogoError('File size must be <= 5MB')
+            setLogoError(t('errors.logo_size'))
             return
         }
 
@@ -185,27 +187,27 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
 
     const onSubmit = form.handleSubmit(async (values) => {
         if (!values.name.trim()) {
-            form.setError('name', { message: 'Company name is required' })
+            form.setError('name', { message: t('errors.name_required') })
             return
         }
 
         if (values.name.trim().length < 2) {
-            form.setError('name', { message: 'Company name must be at least 2 characters' })
+            form.setError('name', { message: t('errors.name_min') })
             return
         }
 
         if (values.email && !/^\S+@\S+\.\S+$/.test(values.email)) {
-            form.setError('email', { message: 'Invalid email format' })
+            form.setError('email', { message: t('errors.email_invalid') })
             return
         }
 
         if (values.phone && !/^\d{10,11}$/.test(values.phone)) {
-            form.setError('phone', { message: 'Phone must be 10-11 digits' })
+            form.setError('phone', { message: t('errors.phone_invalid') })
             return
         }
 
         if (values.serviceFee < 0 || values.serviceFee > 100) {
-            form.setError('serviceFee', { message: 'Service fee must be between 0 and 100' })
+            form.setError('serviceFee', { message: t('errors.service_fee_invalid') })
             return
         }
 
@@ -241,7 +243,7 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
                 const created = await createMutation.mutateAsync(payload)
                 resolvedCompanyId = created.data?.busCompanyId ?? ''
                 if (!resolvedCompanyId) {
-                    throw new Error('Created company id is missing')
+                    throw new Error(t('errors.created_id_missing'))
                 }
             }
 
@@ -251,13 +253,13 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
             await queryClient.invalidateQueries({ queryKey: COMPANY_QUERY_KEYS.all })
             await queryClient.invalidateQueries({ queryKey: COMPANY_QUERY_KEYS.detail(resolvedCompanyId) })
 
-            setToast({ type: 'success', message: isEditMode ? 'Company updated!' : 'Company created!' })
+            setToast({ type: 'success', message: isEditMode ? t('messages.company_updated') : t('messages.company_created') })
             navigate({ to: '/admin/companies' })
         } catch (error) {
             if (!isEditMode && uploadedPublicId) {
                 await deleteFile(uploadedPublicId).catch(() => undefined)
             }
-            setToast({ type: 'error', message: 'Something went wrong' })
+            setToast({ type: 'error', message: t('messages.unexpected_error') })
         }
     })
 

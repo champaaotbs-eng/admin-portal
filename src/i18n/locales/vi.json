@@ -9,6 +9,7 @@
         "delete": "Xoá",
         "add": "Thêm",
         "search": "Tìm kiếm",
+        "select_option": "Chọn một mục...",
         "filter": "Lọc",
         "clear_filters": "Xoá bộ lọc",
         "close": "Đóng",
@@ -73,9 +74,15 @@
     "lang": {
         "switch": "Ngôn ngữ"
     },
+    "app": {
+        "title": "Cổng Quản Trị",
+        "description": "Cổng Quản Trị",
+        "brand": "VéXe.vn"
+    },
     "pages": {
         "login": {
             "title": "Đăng nhập",
+            "portal_title": "Cổng Quản Trị",
             "username_label": "Tên đăng nhập",
             "description": "Đăng nhập để tiếp tục",
             "username_placeholder": "Nhập tên đăng nhập",
@@ -159,6 +166,7 @@
             "search_placeholder": "Tìm theo tên hoặc địa chỉ...",
             "no_results": "Không tìm thấy nhà xe nào.",
             "status_active": "Hoạt động",
+            "status_inactive": "Ngừng hoạt động",
             "status_locked": "Khoá",
             "status_suspended": "Tạm dừng",
             "activate": "Kích hoạt",
@@ -200,17 +208,65 @@
             "detail_revenue_gross": "Gross tháng này",
             "detail_revenue_commission": "Hoa hồng ({{rate}}%)",
             "detail_revenue_net": "Net nhận được",
+            "detail_info_email": "Email",
+            "form": {
+                "back_to_list": "Quay lại danh sách",
+                "company_information": "Thông tin nhà xe",
+                "name": "Tên",
+                "email": "Email",
+                "phone": "Số điện thoại",
+                "service_fee": "Phí dịch vụ",
+                "address": "Địa chỉ",
+                "status": "Trạng thái",
+                "assigned_admins": "Quản trị viên được gán",
+                "add_another_admin": "Thêm quản trị viên",
+                "add_admin": "Thêm admin",
+                "cancel": "Hủy",
+                "save": "Lưu",
+                "remove": "Gỡ",
+                "remove_admin_title": "Gỡ quản trị viên",
+                "remove_admin_confirm": "Bạn có chắc muốn gỡ quản trị viên này khỏi nhà xe?",
+                "no_assigned_admins": "Chưa có quản trị viên nào",
+                "select_admin": "Chọn quản trị viên",
+                "position_placeholder": "VD: Quản lý, Giám sát",
+                "remove_row_aria": "Xóa dòng quản trị viên",
+                "logo": "Logo",
+                "upload_hint_title": "Nhấn để tải lên hoặc kéo thả",
+                "upload_hint_subtitle": "PNG, JPG, WEBP tối đa 5MB",
+                "change": "Đổi"
+            },
+            "detail": {
+                "title": "Chi tiết nhà xe",
+                "load_failed": "Không thể tải chi tiết nhà xe",
+                "retry": "Thử lại",
+                "created_at": "Ngày tạo",
+                "close": "Đóng",
+                "edit_company": "Chỉnh sửa nhà xe",
+                "no_company_selected": "Chưa chọn nhà xe."
+            },
+            "messages": {
+                "remove_admin_failed": "Gỡ quản trị viên thất bại",
+                "admin_removed": "Đã gỡ quản trị viên",
+                "company_updated": "Cập nhật nhà xe thành công!",
+                "company_created": "Tạo nhà xe thành công!",
+                "unexpected_error": "Đã có lỗi xảy ra"
+            },
             "read_only_empty_state": "Bạn chỉ có quyền xem trên trang này. Liên hệ quản trị viên để quản lý nhà xe.",
             "errors": {
                 "name_required": "Tên nhà xe là bắt buộc",
+                "name_min": "Tên nhà xe phải có ít nhất 2 ký tự",
                 "email_required": "Email là bắt buộc",
                 "email_invalid": "Định dạng email không hợp lệ",
                 "phone_required": "Số điện thoại là bắt buộc",
+                "phone_invalid": "Số điện thoại phải có 10-11 chữ số",
                 "address_required": "Địa chỉ là bắt buộc",
                 "service_fee_invalid": "Phí dịch vụ phải từ 0 đến 100",
                 "owner_username_required": "Tên đăng nhập chủ sở hữu là bắt buộc",
                 "owner_password_required": "Mật khẩu là bắt buộc",
-                "owner_password_min": "Mật khẩu phải có ít nhất 6 ký tự"
+                "owner_password_min": "Mật khẩu phải có ít nhất 6 ký tự",
+                "logo_type": "Chỉ hỗ trợ JPG, PNG, WEBP",
+                "logo_size": "Kích thước tệp phải <= 5MB",
+                "created_id_missing": "Thiếu ID nhà xe vừa tạo"
             }
         },
         "users": {
@@ -274,6 +330,7 @@
                 "unknown_role": "Vai trò không xác định"
             },
             "status": {
+                "all": "Tất cả",
                 "active": "Hoạt động",
                 "inactive": "Ngừng hoạt động"
             },
@@ -322,6 +379,21 @@
                 "cannot_edit": "Trường này không thể chỉnh sửa",
                 "password_note_create": "Đặt mật khẩu an toàn với ít nhất 8 ký tự.",
                 "password_note_edit": "Để trống để giữ mật khẩu hiện tại"
+            },
+            "validation": {
+                "username_min": "Tên đăng nhập phải có ít nhất 3 ký tự",
+                "username_no_spaces": "Tên đăng nhập không được chứa khoảng trắng",
+                "full_name_min": "Họ và tên phải có ít nhất 2 ký tự",
+                "role_required": "Vai trò là bắt buộc",
+                "password_min": "Mật khẩu phải có ít nhất 8 ký tự",
+                "confirm_password_required": "Xác nhận mật khẩu là bắt buộc",
+                "confirm_password_required_on_change": "Xác nhận mật khẩu là bắt buộc khi đổi mật khẩu",
+                "confirm_password_mismatch": "Xác nhận mật khẩu không khớp"
+            },
+            "messages": {
+                "create_success": "Tạo admin thành công.",
+                "update_success": "Cập nhật admin thành công.",
+                "save_failed": "Không thể lưu admin."
             },
             "page": {
                 "add_title": "Thêm Admin mới",
@@ -778,6 +850,15 @@
                 "seats_required": "Số ghế là bắt buộc",
                 "seats_min": "Phải có ít nhất 1 ghế"
             }
+        },
+        "not_found": {
+            "title": "Không tìm thấy trang",
+            "description": "Trang bạn đang tìm kiếm không tồn tại.",
+            "back_to_login": "Quay lại đăng nhập"
+        },
+        "forbidden": {
+            "description": "Bạn không có quyền truy cập trang này.",
+            "back_to_dashboard": "Quay lại bảng điều khiển"
         }
     }
 }

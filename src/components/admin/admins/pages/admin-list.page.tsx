@@ -20,9 +20,10 @@ export const AdminListPage = () => {
         currentPage,
         setCurrentPage,
         pageSize,
-        setPageSize,
         searchText,
         setSearchText,
+        statusFilter,
+        setStatusFilter,
         selectedAdminId,
         isDetailOpen,
         openDetail,
@@ -36,21 +37,12 @@ export const AdminListPage = () => {
                 <Button onClick={() => navigate({ to: '/admin/admins/new' })}>+ {t('list.add_admin')}</Button>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <AdminSearchBar value={searchText} onChange={setSearchText} />
-
-                <select
-                    value={pageSize}
-                    onChange={(event) => setPageSize(Number(event.target.value))}
-                    className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                >
-                    {[10, 20, 50].map((size) => (
-                        <option key={size} value={size}>
-                            {t('pagination.page_size', { size })}
-                        </option>
-                    ))}
-                </select>
-            </div>
+            <AdminSearchBar
+                search={searchText}
+                onChange={setSearchText}
+                statusFilter={statusFilter}
+                onStatusChange={setStatusFilter}
+            />
 
             <AdminTable
                 admins={admins}

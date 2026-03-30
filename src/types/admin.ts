@@ -11,6 +11,7 @@ export interface IAdmin {
         read: boolean;
         write: boolean;
     }[]
+    isActive: boolean;
     modules?: string[];
     avatarUrl?: string;
     publicId?: string;

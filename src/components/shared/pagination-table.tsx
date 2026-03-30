@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
 
 export interface PaginatedTableColumn<T> {
     id: string
@@ -43,8 +44,10 @@ export function PaginatedTable<T>({
     skeletonRows = 5,
     pagination,
 }: PaginatedTableProps<T>) {
+    const { t } = useTranslation()
     const startItem = pagination ? (pagination.currentPage - 1) * pagination.pageSize + 1 : 0
     const endItem = pagination ? Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems) : 0
+    const resolvedEmptyMessage = emptyMessage === 'No data found' ? t('common.no_results') : emptyMessage
 
     return (
         <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -70,7 +73,7 @@ export function PaginatedTable<T>({
                     ) : data.length === 0 ? (
                         <tr>
                             <td colSpan={columns.length} className="px-4 py-14 text-center text-sm text-slate-600">
-                                {emptyMessage}
+                                {resolvedEmptyMessage}
                             </td>
                         </tr>
                     ) : (
@@ -91,8 +94,10 @@ export function PaginatedTable<T>({
                 <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 text-sm text-slate-600">
                     <span>
                         {pagination.totalItems > 0
-                            ? `${pagination.labels?.showing ?? 'Showing'} ${startItem}-${endItem} ${pagination.labels?.page ?? 'of'} ${pagination.totalItems}`
-                            : (pagination.labels?.noItems ?? 'No items')}
+                            ? (pagination.labels?.showing
+                                ? `${pagination.labels.showing} ${startItem}-${endItem} ${pagination.labels?.page ?? t('common.all')} ${pagination.totalItems}`
+                                : t('common.showing', { shown: `${startItem}-${endItem}`, total: pagination.totalItems }))
+                            : (pagination.labels?.noItems ?? t('common.no_results'))}
                     </span>
 
                     <div className="flex items-center gap-2">
@@ -103,10 +108,12 @@ export function PaginatedTable<T>({
                             onClick={() => pagination.onPageChange(Math.max(1, pagination.currentPage - 1))}
                             disabled={pagination.currentPage <= 1}
                         >
-                            {pagination.labels?.previous ?? 'Previous'}
+                            {pagination.labels?.previous ?? t('common.prev')}
                         </Button>
                         <span className="px-2">
-                            {(pagination.labels?.page ?? 'Page')} {pagination.currentPage} / {Math.max(1, pagination.totalPages)}
+                            {pagination.labels?.page
+                                ? `${pagination.labels.page} ${pagination.currentPage} / ${Math.max(1, pagination.totalPages)}`
+                                : t('common.page', { page: pagination.currentPage, total: Math.max(1, pagination.totalPages) })}
                         </span>
                         <Button
                             type="button"
@@ -115,7 +122,7 @@ export function PaginatedTable<T>({
                             onClick={() => pagination.onPageChange(Math.min(pagination.totalPages, pagination.currentPage + 1))}
                             disabled={pagination.currentPage >= pagination.totalPages}
                         >
-                            {pagination.labels?.next ?? 'Next'}
+                            {pagination.labels?.next ?? t('common.next')}
                         </Button>
                     </div>
                 </div>

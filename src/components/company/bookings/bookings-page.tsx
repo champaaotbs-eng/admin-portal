@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Search, Eye, X, Ticket, CheckCircle2, XCircle, Clock } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -10,13 +11,6 @@ import { formatDate, formatVnd } from '@/utils/format'
 // Filter to just this company's bookings (c1 = Phuong Trang)
 const MY_BOOKINGS = MOCK_BOOKINGS.filter(b => b.companyId === 'c1')
 
-const STATUS_LABELS: Record<string, string> = {
-    confirmed: 'Da xac nhan',
-    pending_payment: 'Cho thanh toan',
-    cancelled: 'Da huy',
-    expired: 'Het han',
-    completed: 'Hoan thanh',
-}
 const STATUS_VARIANTS: Record<string, 'success' | 'warning' | 'destructive' | 'secondary'> = {
     confirmed: 'success',
     pending_payment: 'warning',
@@ -26,6 +20,8 @@ const STATUS_VARIANTS: Record<string, 'success' | 'warning' | 'destructive' | 's
 }
 
 export function CompanyBookingsPage() {
+    const { t } = useTranslation('translation', { keyPrefix: 'pages.bookings' })
+    const { t: tCommon } = useTranslation()
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
     const [page, setPage] = useState(1)
@@ -59,16 +55,16 @@ export function CompanyBookingsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold">Quan Ly Dat Ve</h1>
-                <p className="text-sm text-muted-foreground">Danh sach dat ve cua cong ty</p>
+                <h1 className="text-2xl font-bold">{t('company_title')}</h1>
+                <p className="text-sm text-muted-foreground">{t('company_description')}</p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-4">
                 {[
-                    { label: 'Tong dat ve', value: stats.total, color: 'text-foreground', icon: Ticket },
-                    { label: 'Da xac nhan', value: stats.confirmed, color: 'text-green-500', icon: CheckCircle2 },
-                    { label: 'Cho thanh toan', value: stats.pending, color: 'text-orange-500', icon: Clock },
-                    { label: 'Da huy', value: stats.cancelled, color: 'text-red-500', icon: XCircle },
+                    { label: t('stats.total'), value: stats.total, color: 'text-foreground', icon: Ticket },
+                    { label: t('stats.confirmed'), value: stats.confirmed, color: 'text-green-500', icon: CheckCircle2 },
+                    { label: t('stats.pending'), value: stats.pending, color: 'text-orange-500', icon: Clock },
+                    { label: t('stats.cancelled'), value: stats.cancelled, color: 'text-red-500', icon: XCircle },
                 ].map(s => {
                     const Icon = s.icon
                     return (
@@ -89,16 +85,16 @@ export function CompanyBookingsPage() {
             <div className="flex flex-wrap gap-3">
                 <div className="relative flex-1 min-w-48 max-w-sm">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} placeholder="Tim ma ve, email, tuyen..."
+                    <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} placeholder={t('search_placeholder')}
                         className="w-full rounded-md border border-input bg-background pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                 </div>
                 <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
                     className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none">
-                    <option value="all">Tat ca</option>
-                    <option value="confirmed">Da xac nhan</option>
-                    <option value="pending_payment">Cho TT</option>
-                    <option value="cancelled">Da huy</option>
-                    <option value="completed">Hoan thanh</option>
+                    <option value="all">{tCommon('status.all')}</option>
+                    <option value="confirmed">{tCommon('status.confirmed')}</option>
+                    <option value="pending_payment">{tCommon('status.pending_payment')}</option>
+                    <option value="cancelled">{tCommon('status.cancelled')}</option>
+                    <option value="completed">{tCommon('status.completed')}</option>
                 </select>
                 {(search || statusFilter !== 'all') && (
                     <Button variant="outline" size="sm" onClick={() => { setSearch(''); setStatusFilter('all') }}>
@@ -112,13 +108,13 @@ export function CompanyBookingsPage() {
                 <table className="w-full text-sm">
                     <thead className="bg-muted/50">
                         <tr>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Ma ve</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Tuyen xe</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Khach hang</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Dat luc</th>
-                            <th className="px-4 py-3 text-center font-medium text-muted-foreground">Ghe</th>
-                            <th className="px-4 py-3 text-right font-medium text-muted-foreground">Tong tien</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Trang thai</th>
+                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.booking_code')}</th>
+                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.route')}</th>
+                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.customer')}</th>
+                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.booking_date')}</th>
+                            <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('table.seats')}</th>
+                            <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.amount')}</th>
+                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.booking_status')}</th>
                             <th className="px-4 py-3" />
                         </tr>
                     </thead>
@@ -133,7 +129,7 @@ export function CompanyBookingsPage() {
                                 <td className="px-4 py-3 text-right font-medium">{formatVnd(b.totalAmount)}</td>
                                 <td className="px-4 py-3">
                                     <Badge variant={STATUS_VARIANTS[b.status] ?? 'secondary'} className="text-xs">
-                                        {STATUS_LABELS[b.status] ?? b.status}
+                                        {tCommon(`status.${b.status}`)}
                                     </Badge>
                                 </td>
                                 <td className="px-4 py-3">
@@ -145,7 +141,7 @@ export function CompanyBookingsPage() {
                         ))}
                         {paginated.length === 0 && (
                             <tr>
-                                <td colSpan={8} className="py-10 text-center text-muted-foreground">Khong co du lieu</td>
+                                <td colSpan={8} className="py-10 text-center text-muted-foreground">{tCommon('common.no_results')}</td>
                             </tr>
                         )}
                     </tbody>
@@ -154,34 +150,34 @@ export function CompanyBookingsPage() {
 
             {/* Pagination */}
             <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>{filtered.length} ket qua</span>
+                <span>{tCommon('common.showing', { shown: filtered.length, total: filtered.length })}</span>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Truoc</Button>
+                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>{tCommon('common.prev')}</Button>
                     <span>{page} / {totalPages}</span>
-                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Sau</Button>
+                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>{tCommon('common.next')}</Button>
                 </div>
             </div>
 
             {/* Detail Dialog */}
             {selectedBooking && (
-                <Dialog open={!!selectedBooking} onClose={() => setSelectedBooking(null)} title="Chi tiet dat ve">
+                <Dialog open={!!selectedBooking} onClose={() => setSelectedBooking(null)} title={t('detail.title', { code: selectedBooking.bookingCode })}>
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
                             <span className="font-mono text-lg font-bold">{selectedBooking.bookingCode}</span>
                             <Badge variant={STATUS_VARIANTS[selectedBooking.status] ?? 'secondary'}>
-                                {STATUS_LABELS[selectedBooking.status] ?? selectedBooking.status}
+                                {tCommon(`status.${selectedBooking.status}`)}
                             </Badge>
                         </div>
                         <div className="rounded-lg bg-muted/40 p-3 space-y-2 text-sm">
-                            <div className="flex justify-between"><span className="text-muted-foreground">Tuyen xe</span><span className="font-medium">{selectedBooking.routeLabel}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Khach hang</span><span>{selectedBooking.userName}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Email</span><span>{selectedBooking.userEmail}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">So ghe</span><span>{selectedBooking.seatCount}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Tong tien</span><span className="font-semibold text-green-600">{formatVnd(selectedBooking.totalAmount)}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Phuong thuc TT</span><span>{selectedBooking.paymentMethod}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Dat luc</span><span>{formatDate(selectedBooking.createdAt)}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">{t('table.route')}</span><span className="font-medium">{selectedBooking.routeLabel}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">{t('table.customer')}</span><span>{selectedBooking.userName}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">{tCommon('pages.companies.email')}</span><span>{selectedBooking.userEmail}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">{t('table.seats')}</span><span>{selectedBooking.seatCount}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">{t('table.amount')}</span><span className="font-semibold text-green-600">{formatVnd(selectedBooking.totalAmount)}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">{t('table.payment_status')}</span><span>{selectedBooking.paymentMethod}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">{t('table.booking_date')}</span><span>{formatDate(selectedBooking.createdAt)}</span></div>
                         </div>
-                        <Button variant="outline" className="w-full" onClick={() => setSelectedBooking(null)}>Dong</Button>
+                        <Button variant="outline" className="w-full" onClick={() => setSelectedBooking(null)}>{tCommon('common.close')}</Button>
                     </div>
                 </Dialog>
             )}

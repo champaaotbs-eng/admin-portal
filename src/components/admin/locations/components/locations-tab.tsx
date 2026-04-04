@@ -3,9 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Search, Plus, MapPin, Pencil, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Dialog } from '@/components/ui/dialog'
-import { StationForm } from './StationForm'
-import { provinces } from '../data'
+import { AddLocationModal } from './add-location-modal'
 import { useLocationsTab } from '../hooks/use-locations-tab'
 
 export const LocationsTab = () => {
@@ -13,7 +11,16 @@ export const LocationsTab = () => {
     const [search, setSearch] = useState('')
     const [provinceFilter, setProvinceFilter] = useState('')
     const [dialogOpen, setDialogOpen] = useState(false)
-    const { openDialog, closeDialog, filtered } = useLocationsTab({ search, provinceFilter, setDialogOpen })
+    const {
+        openDialog,
+        closeDialog,
+        filtered,
+        provinces,
+        submitStation,
+        isSubmitting,
+        isLoading,
+        submitError,
+    } = useLocationsTab({ search, provinceFilter, setDialogOpen })
 
     return (
         <div className="space-y-4">
@@ -26,16 +33,18 @@ export const LocationsTab = () => {
                 <select value={provinceFilter} onChange={e => setProvinceFilter(e.target.value)}
                     className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
                     <option value="">{t('all_provinces')}</option>
-                    {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    {provinces.map((province) => <option key={province.provinceId} value={province.provinceId}>{province.name}</option>)}
                 </select>
                 <Button size="sm" onClick={openDialog}>
                     <Plus className="h-4 w-4" /> {t('add_station')}
                 </Button>
             </div>
 
+            {isLoading ? <p className="text-sm text-muted-foreground">{t('loading', { defaultValue: 'Dang tai du lieu...' })}</p> : null}
+
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {filtered.map(l => (
-                    <div key={l.id} className="rounded-lg border border-border p-4 hover:bg-muted/20 transition-colors">
+                    <div key={l.locationId} className="rounded-lg border border-border p-4 hover:bg-muted/20 transition-colors">
                         <div className="flex items-start justify-between gap-2 mb-2">
                             <div className="flex items-center gap-2">
                                 <span className="h-6 w-6 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -53,9 +62,9 @@ export const LocationsTab = () => {
                             </div>
                         </div>
                         <p className="text-xs text-muted-foreground mb-1">{l.address}</p>
-                        <Badge variant="outline" className="text-xs">{l.provinceName}</Badge>
+                        <Badge variant="outline" className="text-xs">{provinces.find((p) => p.provinceId === l.provinceId)?.name ?? l.provinceId}</Badge>
                         <p className="text-xs text-muted-foreground mt-2 font-mono">
-                            {l.lat.toFixed(4)}, {l.lng.toFixed(4)}
+                            {l.latitude.toFixed(4)}, {l.longitude.toFixed(4)}
                         </p>
                     </div>
                 ))}
@@ -64,9 +73,14 @@ export const LocationsTab = () => {
                 )}
             </div>
 
-            <Dialog open={dialogOpen} onClose={closeDialog} title={t('add_station_title')}>
-                <StationForm onSubmit={closeDialog} onCancel={closeDialog} />
-            </Dialog>
+            <AddLocationModal
+                open={dialogOpen}
+                onClose={closeDialog}
+                provinces={provinces}
+                onSubmit={submitStation}
+                isSubmitting={isSubmitting}
+                submitError={submitError}
+            />
         </div>
     )
 }

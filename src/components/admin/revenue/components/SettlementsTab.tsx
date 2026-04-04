@@ -1,27 +1,60 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Search, Plus, CheckCircle2, Clock, DollarSign, FileText } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
-import { MOCK_COMPANIES } from '@/data/mock'
-import { MOCK_SETTLEMENTS } from '@/data/mock-extended'
 import { formatDate, formatVnd } from '@/utils/format'
 import { useSettlementsTab } from '../hooks/use-settlements-tab'
 import type { SettlementStatus } from '../hooks/use-settlements-tab'
-import type { Settlement } from '@/types'
 
 export const SettlementsTab = () => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.revenue' })
     const { t: tCommon } = useTranslation()
     const [dialogOpen, setDialogOpen] = useState(false)
-    const [settlements, setSettlements] = useState<Settlement[]>(MOCK_SETTLEMENTS)
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState<SettlementStatus>('all')
-    const { openDialog, closeDialog, filtered, companyMap, markPaid } = useSettlementsTab({
-        dialogOpen, setDialogOpen, settlements, setSettlements, search, setSearch, statusFilter, setStatusFilter,
+    const [companyId, setCompanyId] = useState('')
+    const [periodFrom, setPeriodFrom] = useState('')
+    const [periodTo, setPeriodTo] = useState('')
+    const {
+        settlements,
+        openDialog,
+        closeDialog,
+        filtered,
+        companyMap,
+        companies,
+        markPaid,
+        createSettlement,
+        isLoading,
+        isError,
+        isMarkingPaid,
+        isCreatingSettlement,
+    } = useSettlementsTab({
+        dialogOpen, setDialogOpen, search, setSearch, statusFilter, setStatusFilter,
     })
+
+    useEffect(() => {
+        if (!companyId && companies.length > 0) {
+            setCompanyId(companies[0].busCompanyId)
+        }
+    }, [companies, companyId])
+
+    const submitSettlement = async () => {
+        if (!companyId || !periodFrom || !periodTo) {
+            return
+        }
+
+        await createSettlement({
+            companyId,
+            periodFrom,
+            periodTo,
+        })
+
+        setPeriodFrom('')
+        setPeriodTo('')
+    }
 
     const summaryItems = [
         { label: t('filter_pending'), value: settlements.filter(s => s.status === 'pending').length, color: 'text-orange-500', bg: 'bg-orange-500/10', icon: Clock },
@@ -75,6 +108,9 @@ export const SettlementsTab = () => {
                 </Button>
             </div>
 
+            {isLoading ? <p className="text-sm text-muted-foreground">{tCommon('common.loading')}</p> : null}
+            {isError ? <p className="text-sm text-destructive">{tCommon('common.error')}</p> : null}
+
             <div className="overflow-x-auto rounded-lg border border-border">
                 <table className="w-full text-sm">
                     <thead className="bg-muted/50">
@@ -113,7 +149,8 @@ export const SettlementsTab = () => {
                                             <FileText className="h-4 w-4" />
                                         </button>
                                         {s.status === 'pending' && (
-                                            <button onClick={() => markPaid(s.id)}
+                                            <button onClick={() => { void markPaid(s.id) }}
+                                                disabled={isMarkingPaid}
                                                 className="text-xs font-medium text-green-600 hover:text-green-700 border border-green-200 rounded px-2 py-1 hover:bg-green-50">
                                                 {t('mark_paid')}
                                             </button>
@@ -135,24 +172,42 @@ export const SettlementsTab = () => {
                 <div className="grid gap-4">
                     <div>
                         <label className="text-sm font-medium mb-1 block">{t('company_label')}</label>
-                        <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                            {MOCK_COMPANIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        <select
+                            value={companyId}
+                            onChange={(event) => setCompanyId(event.target.value)}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        >
+                            {companies.map((company) => (
+                                <option key={company.busCompanyId} value={company.busCompanyId}>{company.name}</option>
+                            ))}
                         </select>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="text-sm font-medium mb-1 block">{t('date_from')}</label>
-                            <input type="date" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none" />
+                            <input
+                                type="date"
+                                value={periodFrom}
+                                onChange={(event) => setPeriodFrom(event.target.value)}
+                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none"
+                            />
                         </div>
                         <div>
                             <label className="text-sm font-medium mb-1 block">{t('date_to')}</label>
-                            <input type="date" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none" />
+                            <input
+                                type="date"
+                                value={periodTo}
+                                onChange={(event) => setPeriodTo(event.target.value)}
+                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none"
+                            />
                         </div>
                     </div>
                     <div className="rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">{t('auto_calculate_info')}</div>
                     <div className="flex gap-2">
-                        <Button>{t('create_settlement')}</Button>
-                        <Button variant="outline" onClick={closeDialog}>{tCommon('common.cancel')}</Button>
+                        <Button onClick={() => { void submitSettlement() }} disabled={!companyId || !periodFrom || !periodTo || isCreatingSettlement}>
+                            {t('create_settlement')}
+                        </Button>
+                        <Button variant="outline" onClick={closeDialog} disabled={isCreatingSettlement}>{tCommon('common.cancel')}</Button>
                     </div>
                 </div>
             </Dialog>

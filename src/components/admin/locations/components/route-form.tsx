@@ -4,14 +4,16 @@ import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { routeSchema, type RouteFormData } from '../validation-schema'
-import { locations } from '../data'
+import type { ILocation } from 'types/location'
 
 interface RouteFormProps {
-    onSubmit: (data: RouteFormData) => void
+    locations: ILocation[]
+    onSubmit: (data: RouteFormData) => Promise<void> | void
     onCancel: () => void
+    isSubmitting?: boolean
 }
 
-export const RouteForm = ({ onSubmit, onCancel }: RouteFormProps) => {
+export const RouteForm = ({ locations, onSubmit, onCancel, isSubmitting = false }: RouteFormProps) => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.locations' })
     const { t: tCommon } = useTranslation()
     const { control, handleSubmit, formState: { errors } } = useForm<RouteFormData>({
@@ -26,7 +28,7 @@ export const RouteForm = ({ onSubmit, onCancel }: RouteFormProps) => {
                     <label className="text-sm font-medium mb-1 block">{t('departure')}</label>
                     <select {...field} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
                         <option value="">{t('select_station')}</option>
-                        {locations.map(l => <option key={l.id} value={l.id}>{l.name} ({l.provinceName})</option>)}
+                        {locations.map((location) => <option key={location.locationId} value={location.locationId}>{location.name}</option>)}
                     </select>
                     {errors.from && <p className="text-xs text-destructive mt-1">{errors.from.message}</p>}
                 </div>
@@ -36,7 +38,7 @@ export const RouteForm = ({ onSubmit, onCancel }: RouteFormProps) => {
                     <label className="text-sm font-medium mb-1 block">{t('destination')}</label>
                     <select {...field} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
                         <option value="">{t('select_station')}</option>
-                        {locations.map(l => <option key={l.id} value={l.id}>{l.name} ({l.provinceName})</option>)}
+                        {locations.map((location) => <option key={location.locationId} value={location.locationId}>{location.name}</option>)}
                     </select>
                     {errors.to && <p className="text-xs text-destructive mt-1">{errors.to.message}</p>}
                 </div>
@@ -50,8 +52,8 @@ export const RouteForm = ({ onSubmit, onCancel }: RouteFormProps) => {
                 )} />
             </div>
             <div className="flex gap-2">
-                <Button type="submit">{tCommon('common.save')}</Button>
-                <Button type="button" variant="outline" onClick={onCancel}>{tCommon('common.cancel')}</Button>
+                <Button type="submit" disabled={isSubmitting}>{tCommon('common.save')}</Button>
+                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>{tCommon('common.cancel')}</Button>
             </div>
         </form>
     )

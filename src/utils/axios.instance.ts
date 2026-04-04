@@ -1,6 +1,7 @@
 import axios from "axios";
+import i18n from '@/i18n'
 import { refresh } from "services/auth/auth.service";
-import { authStore } from "store/auth.store";
+import { authStore, logout } from "store/auth.store";
 
 const rawBaseUrl = String(import.meta.env.VITE_BASE_API_URL ?? '').replace(/\/+$/, '')
 export const BASE_API_URL = rawBaseUrl.endsWith('/api') ? rawBaseUrl : `${rawBaseUrl}/api`
@@ -10,6 +11,36 @@ export const instance = axios.create({
     timeout: 10000,
     withCredentials: true,
 });
+
+const resolveErrorKey = (error: any): string | null => {
+    const message = error?.response?.data?.message
+
+    if (typeof message === 'string' && message.length > 0) {
+        return message
+    }
+
+    if (Array.isArray(message)) {
+        const firstString = message.find((item) => typeof item === 'string' && item.length > 0)
+        return firstString ?? null
+    }
+
+    return null
+}
+
+const resolveLocalizedMessage = (error: any) => {
+    const status = error?.response?.status
+    const key = resolveErrorKey(error)
+
+    if (key && i18n.exists(`errors.${key}`)) {
+        return i18n.t(`errors.${key}`)
+    }
+
+    if (status === 401) {
+        return i18n.t('errors.unauthorized')
+    }
+
+    return i18n.t('errors.internal_server_error')
+}
 
 instance.interceptors.request.use(
     function (config) {
@@ -39,11 +70,17 @@ instance.interceptors.response.use(
         const requestUrl = String(error?.config?.url ?? '')
         const isAuthEndpoint = requestUrl.includes('/v1/auth/admin/login') || requestUrl.includes('/v1/auth/refresh')
 
+        error.localizedMessage = resolveLocalizedMessage(error)
+
         if (status === 401 && !isAuthEndpoint) {
             try {
                 await refresh()
             } catch {
-                // Let caller handle the original request failure.
+                logout()
+
+                if (typeof window !== 'undefined' && window.location.pathname !== '/auth/login') {
+                    window.location.assign('/auth/login')
+                }
             }
         }
 

@@ -8,3 +8,9 @@ declare global {
         data?: T;
     }
 }
+
+declare module 'axios' {
+    interface AxiosError<T = unknown, D = any> {
+        localizedMessage?: string
+    }
+}

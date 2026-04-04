@@ -4,7 +4,7 @@ import { Search, Plus, ArrowRight, Navigation, Clock, Pencil, Trash2 } from 'luc
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
-import { RouteForm } from './RouteForm'
+import { RouteForm } from './route-form'
 import { fmtDuration } from '../data'
 import { useRoutesTab } from '../hooks/use-routes-tab'
 
@@ -13,7 +13,15 @@ export const RoutesTab = () => {
     const { t: tCommon } = useTranslation()
     const [search, setSearch] = useState('')
     const [dialogOpen, setDialogOpen] = useState(false)
-    const { openDialog, closeDialog, filtered } = useRoutesTab({ search, setDialogOpen })
+    const {
+        openDialog,
+        closeDialog,
+        filtered,
+        locations,
+        submitRoute,
+        isSubmitting,
+        isLoading,
+    } = useRoutesTab({ search, setDialogOpen })
 
     return (
         <div className="space-y-4">
@@ -27,6 +35,8 @@ export const RoutesTab = () => {
                     <Plus className="h-4 w-4" /> {t('add_route')}
                 </Button>
             </div>
+
+            {isLoading ? <p className="text-sm text-muted-foreground">{t('loading', { defaultValue: 'Dang tai du lieu...' })}</p> : null}
 
             <div className="overflow-x-auto rounded-lg border border-border">
                 <table className="w-full text-sm">
@@ -88,7 +98,12 @@ export const RoutesTab = () => {
             </div>
 
             <Dialog open={dialogOpen} onClose={closeDialog} title={t('add_route_title')}>
-                <RouteForm onSubmit={closeDialog} onCancel={closeDialog} />
+                <RouteForm
+                    locations={locations}
+                    onSubmit={submitRoute}
+                    onCancel={closeDialog}
+                    isSubmitting={isSubmitting}
+                />
             </Dialog>
         </div>
     )

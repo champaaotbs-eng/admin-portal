@@ -7,7 +7,7 @@ export const Route = createFileRoute('/company')({
     beforeLoad: () => {
         if (typeof window === 'undefined') return
         const { admin } = authStore.state
-        if (!admin) {
+        if (!admin || admin.role?.type !== 'company_admin') {
             throw redirect({ to: APP_ROUTES.LOGIN })
         }
     },

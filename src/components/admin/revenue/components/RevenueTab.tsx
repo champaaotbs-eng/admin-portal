@@ -15,6 +15,8 @@ export const RevenueTab = () => {
     const [dateTo, setDateTo] = useState('')
     const {
         filtered, totals, companyMap, clearFilters, hasFilter, dailyRevenues,
+        isLoading,
+        isError,
     } = useRevenueTab({ search, dateFrom, dateTo, setSearch, setDateFrom, setDateTo })
 
     return (
@@ -40,6 +42,8 @@ export const RevenueTab = () => {
                     <CardTitle className="text-sm font-medium">{t('chart_30d')}</CardTitle>
                 </CardHeader>
                 <CardContent>
+                    {isLoading ? <p className="text-sm text-muted-foreground">{tCommon('common.loading')}</p> : null}
+                    {isError ? <p className="text-sm text-destructive">{tCommon('common.error')}</p> : null}
                     <LineChart
                         data={dailyRevenues as unknown as Record<string, string | number>[]}
                         series={[

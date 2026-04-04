@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { formatDate, formatVnd } from '@/utils/format'
-import type { BookingExtended } from '@/types'
+import type { AdminBookingRow } from '../hooks/use-bookings-page'
 
 export function statusBadge(status: string, t: (k: string) => string) {
     const map: Record<string, 'success' | 'destructive' | 'warning' | 'secondary'> = {
@@ -16,26 +16,32 @@ export function statusBadge(status: string, t: (k: string) => string) {
         pending_payment: 'warning',
     }
     const variant = map[status] ?? 'secondary'
-    return <Badge variant={variant} className="text-xs whitespace-nowrap">{t(`status.${status}`)}</Badge>
+    return <Badge variant={variant} className="text-xs whitespace-nowrap">{t(`status.${status}`, { defaultValue: status })}</Badge>
 }
 
 export function paymentBadge(status: string, t: (k: string) => string) {
     const map: Record<string, 'success' | 'destructive' | 'warning' | 'secondary'> = {
         paid: 'success',
         unpaid: 'warning',
+        pending: 'warning',
+        completed: 'success',
         refunded: 'secondary',
         failed: 'destructive',
     }
     const variant = map[status] ?? 'secondary'
-    return <Badge variant={variant} className="text-xs whitespace-nowrap">{t(`payment_status.${status}`)}</Badge>
+    return <Badge variant={variant} className="text-xs whitespace-nowrap">{t(`payment_status.${status}`, { defaultValue: status })}</Badge>
 }
 
-export const BookingDetailModal = ({ booking, onClose }: { booking: BookingExtended; onClose: () => void }) => {
+export const BookingDetailModal = ({ booking, onClose }: { booking: AdminBookingRow; onClose: () => void }) => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.bookings' })
     const { t: tCommon } = useTranslation()
     const timeline = [
         { label: t('detail.timeline.booked'), time: formatDate(booking.createdAt), done: true },
-        { label: t('detail.timeline.paid'), time: booking.paymentStatus === 'paid' ? formatDate(booking.createdAt) : '-', done: booking.paymentStatus === 'paid' },
+        {
+            label: t('detail.timeline.paid'),
+            time: booking.paymentStatus === 'paid' ? formatDate(booking.createdAt) : '-',
+            done: booking.paymentStatus === 'paid',
+        },
         { label: t('detail.timeline.confirmed'), time: booking.status === 'confirmed' || booking.status === 'completed' ? formatDate(booking.createdAt) : '-', done: booking.status === 'confirmed' || booking.status === 'completed' },
         { label: t('detail.timeline.completed'), time: booking.status === 'completed' ? formatDate(booking.departureTime) : '-', done: booking.status === 'completed' },
     ]

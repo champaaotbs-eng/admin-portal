@@ -24,7 +24,7 @@ export const AdminLayout = () => {
         { label: t('nav.companies'), to: APP_ROUTES.ADMIN.COMPANIES, icon: Building2, moduleName: ADMIN_MODULES.COMPANY },
         { label: t('nav.admins'), to: APP_ROUTES.ADMIN.ADMINS.ROOT, icon: Users, moduleName: ADMIN_MODULES.ADMIN },
         { label: t('nav.roles'), to: APP_ROUTES.ADMIN.ROLES.ROOT, icon: ShieldCheck, moduleName: ADMIN_MODULES.ROLE },
-        { label: t('nav.routes'), to: APP_ROUTES.ADMIN.ROUTES, icon: MapPin, moduleName: ADMIN_MODULES.ROUTE },
+        // { label: t('nav.routes'), to: APP_ROUTES.ADMIN.ROUTES, icon: MapPin, moduleName: ADMIN_MODULES.ROUTE },
         { label: t('nav.locations'), to: APP_ROUTES.ADMIN.LOCATIONS, icon: MapPin, moduleName: ADMIN_MODULES.LOCATION },
         { label: t('nav.bookings'), to: APP_ROUTES.ADMIN.BOOKINGS, icon: Ticket, moduleName: ADMIN_MODULES.BOOKING },
         { label: t('nav.revenue'), to: APP_ROUTES.ADMIN.REVENUE, icon: DollarSign, moduleName: ADMIN_MODULES.REVENUE },

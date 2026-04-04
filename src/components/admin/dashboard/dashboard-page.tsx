@@ -5,7 +5,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LineChart, DonutChart, HorizontalBarChart, Heatmap, TrendBadge, Sparkline } from '@/components/ui/charts'
 import { formatDate, formatVnd } from '@/utils/format'
-import { MOCK_DAILY_REVENUES, MOCK_BOOKINGS, MOCK_COMPANY_REVENUE } from '@/data/mock-extended'
 import { useAdminDashboard } from './hooks/use-admin-dashboard'
 
 // Generate heatmap data: 7 days × 24 hours
@@ -19,7 +18,19 @@ const HEATMAP_DATA = Array.from({ length: 7 }, (_, day) =>
 )
 
 export const AdminDashboardPage = () => {
-    const { t, tCommon, kpiCards, donutSegments, pendingSettlements, BOOKING_COLORS } = useAdminDashboard()
+    const {
+        t,
+        tCommon,
+        kpiCards,
+        donutSegments,
+        pendingSettlements,
+        recentBookings,
+        dailyRevenueSeries,
+        companyRevenueSeries,
+        BOOKING_COLORS,
+        isLoading,
+        isError,
+    } = useAdminDashboard()
 
     return (
         <div className="space-y-6">
@@ -80,8 +91,10 @@ export const AdminDashboardPage = () => {
                         </div>
                     </CardHeader>
                     <CardContent className="pt-0">
+                        {isLoading ? <p className="text-sm text-muted-foreground pb-2">{tCommon('common.loading')}</p> : null}
+                        {isError ? <p className="text-sm text-destructive pb-2">{tCommon('common.error')}</p> : null}
                         <LineChart
-                            data={MOCK_DAILY_REVENUES as unknown as Record<string, string | number>[]}
+                            data={dailyRevenueSeries as unknown as Record<string, string | number>[]}
                             series={[
                                 { key: 'gross', color: '#3b82f6', label: t('chart_gross') },
                                 { key: 'commission', color: '#10b981', label: t('chart_commission') },
@@ -114,7 +127,7 @@ export const AdminDashboardPage = () => {
                     </CardHeader>
                     <CardContent>
                         <HorizontalBarChart
-                            data={MOCK_COMPANY_REVENUE.map(c => ({ label: c.name, value: c.revenue }))}
+                            data={companyRevenueSeries}
                             formatValue={formatVnd}
                             color="#f97316"
                         />
@@ -166,23 +179,30 @@ export const AdminDashboardPage = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {MOCK_BOOKINGS.slice(0, 10).map(b => (
-                                        <tr key={b.id} className="border-b border-border/50 hover:bg-muted/20 last:border-0">
-                                            <td className="px-4 py-2 font-mono font-medium text-primary">{b.bookingCode}</td>
-                                            <td className="px-4 py-2 text-muted-foreground">{b.routeLabel}</td>
-                                            <td className="px-4 py-2 font-medium">{formatVnd(b.totalAmount)}</td>
+                                    {recentBookings.map((booking) => (
+                                        <tr key={booking.id} className="border-b border-border/50 hover:bg-muted/20 last:border-0">
+                                            <td className="px-4 py-2 font-mono font-medium text-primary">{booking.bookingCode}</td>
+                                            <td className="px-4 py-2 text-muted-foreground">{booking.routeLabel}</td>
+                                            <td className="px-4 py-2 font-medium">{formatVnd(booking.totalAmount)}</td>
                                             <td className="px-4 py-2">
                                                 <span className="inline-flex items-center gap-1 text-xs">
-                                                    {b.status === 'confirmed' && <CheckCircle2 className="h-3 w-3 text-green-500" />}
-                                                    {b.status === 'cancelled' && <XCircle className="h-3 w-3 text-red-500" />}
-                                                    {b.status === 'pending_payment' && <AlertCircle className="h-3 w-3 text-yellow-500" />}
-                                                    <span style={{ color: BOOKING_COLORS[b.status] ?? '#94a3b8' }}>
-                                                        {tCommon(`status.${b.status}`, { defaultValue: b.status })}
+                                                    {booking.status === 'confirmed' && <CheckCircle2 className="h-3 w-3 text-green-500" />}
+                                                    {booking.status === 'cancelled' && <XCircle className="h-3 w-3 text-red-500" />}
+                                                    {booking.status === 'pending_payment' && <AlertCircle className="h-3 w-3 text-yellow-500" />}
+                                                    <span style={{ color: BOOKING_COLORS[booking.status] ?? '#94a3b8' }}>
+                                                        {tCommon(`status.${booking.status}`, { defaultValue: booking.status })}
                                                     </span>
                                                 </span>
                                             </td>
                                         </tr>
                                     ))}
+                                    {recentBookings.length === 0 && (
+                                        <tr>
+                                            <td colSpan={4} className="px-4 py-6 text-center text-muted-foreground">
+                                                {tCommon('common.no_results')}
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>

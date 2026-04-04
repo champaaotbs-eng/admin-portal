@@ -2,13 +2,12 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Search } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { locations } from '../data'
 import { useProvincesTab } from '../hooks/use-provinces-tab'
 
 export const ProvincesTab = () => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.locations' })
     const [search, setSearch] = useState('')
-    const { filtered } = useProvincesTab({ search })
+    const { filtered, stationCountMap, isLoading } = useProvincesTab({ search })
 
     return (
         <div className="space-y-4">
@@ -20,6 +19,9 @@ export const ProvincesTab = () => {
                 </div>
                 <p className="text-sm text-muted-foreground">{t('results_count', { count: filtered.length })}</p>
             </div>
+
+            {isLoading ? <p className="text-sm text-muted-foreground">{t('loading', { defaultValue: 'Dang tai du lieu...' })}</p> : null}
+
             <div className="overflow-x-auto rounded-lg border border-border">
                 <table className="w-full text-sm">
                     <thead className="bg-muted/50">
@@ -33,7 +35,7 @@ export const ProvincesTab = () => {
                     </thead>
                     <tbody>
                         {filtered.map((p, i) => (
-                            <tr key={p.id} className="border-t border-border hover:bg-muted/30">
+                            <tr key={p.provinceId} className="border-t border-border hover:bg-muted/30">
                                 <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
                                 <td className="px-4 py-3 font-medium">{p.name}</td>
                                 <td className="px-4 py-3 text-muted-foreground font-mono">{p.code}</td>
@@ -43,7 +45,7 @@ export const ProvincesTab = () => {
                                     </Badge>
                                 </td>
                                 <td className="px-4 py-3 text-muted-foreground">
-                                    {locations.filter(l => l.provinceId === p.id).length}
+                                    {stationCountMap.get(p.provinceId) ?? 0}
                                 </td>
                             </tr>
                         ))}

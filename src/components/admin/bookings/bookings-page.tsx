@@ -5,8 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatDate, formatVnd } from '@/utils/format'
 import { useBookingsPage } from './hooks/use-bookings-page'
-import type { BookingStatus, PaymentStatus, PaymentMethod } from './hooks/use-bookings-page'
-import type { BookingExtended } from '@/types'
+import type { AdminBookingRow, BookingStatus, PaymentStatus, PaymentMethod } from './hooks/use-bookings-page'
 import { BookingDetailModal, statusBadge, paymentBadge } from './components/BookingDetailModal'
 
 export const AdminBookingsPage = () => {
@@ -18,13 +17,15 @@ export const AdminBookingsPage = () => {
     const [methodFilter, setMethodFilter] = useState<PaymentMethod>('all')
     const [dateFrom, setDateFrom] = useState('')
     const [dateTo, setDateTo] = useState('')
-    const [detailBooking, setDetailBooking] = useState<BookingExtended | null>(null)
+    const [detailBooking, setDetailBooking] = useState<AdminBookingRow | null>(null)
     const [page, setPage] = useState(1)
 
     const {
         filtered, paginated, totalPages, hasFilter, statCounts,
         handleSearch, handleStatusFilter, handlePaymentFilter, handleDateFrom, handleDateTo,
         clearFilters,
+        isLoading,
+        isError,
     } = useBookingsPage({ search, setSearch, statusFilter, setStatusFilter, paymentFilter, setPaymentFilter, methodFilter, setMethodFilter, dateFrom, setDateFrom, dateTo, setDateTo, page, setPage })
 
     const stats = [
@@ -98,6 +99,9 @@ export const AdminBookingsPage = () => {
             </div>
 
             <p className="text-sm text-muted-foreground">{tCommon('common.showing', { shown: paginated.length, total: filtered.length })}</p>
+
+            {isLoading ? <p className="text-sm text-muted-foreground">{tCommon('common.loading')}</p> : null}
+            {isError ? <p className="text-sm text-destructive">{tCommon('common.error')}</p> : null}
 
             <div className="overflow-x-auto rounded-lg border border-border">
                 <table className="w-full text-sm">

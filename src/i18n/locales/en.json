@@ -32,7 +32,7 @@
         "admins": "Admins & Staff",
         "roles": "Roles & Permissions",
         "routes": "Routes",
-        "locations": "Locations",
+        "locations": "Locations & Routes",
         "bookings": "Bookings",
         "revenue": "Revenue",
         "reports": "Reports",
@@ -674,7 +674,7 @@
             "date_to": "To date"
         },
         "locations": {
-            "title": "Locations",
+            "title": "Locations & Routes",
             "description": "Provinces, stations and inter-city routes",
             "tab_provinces": "Provinces",
             "tab_locations": "Stations",
@@ -693,6 +693,11 @@
             "no_routes": "No routes found",
             "province_city": "City",
             "province_province": "Province",
+            "select_station": "Select station",
+            "distance_km": "Distance (km)",
+            "duration_minutes": "Duration (minutes)",
+            "departure": "Departure",
+            "destination": "Destination",
             "stats": {
                 "provinces": "Provinces",
                 "stations": "Stations",

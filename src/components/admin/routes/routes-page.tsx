@@ -1,18 +1,34 @@
 import { useQuery } from '@tanstack/react-query'
-import { getAllRoutes, getAllTrips } from '@/services/trip.service'
+import { getRoutes } from 'services/admins/route.service'
+import { getAdminTrips } from 'services/admins/trip.service'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatDuration, formatDate, formatVnd } from '@/utils/format'
 import { useTranslation } from 'react-i18next'
+import type { IRoute } from 'types/route'
+import type { ITrip } from 'types/trip'
 
 const tripStatusVariant = (s: string) => {
+    const normalizedStatus = s.toLowerCase()
     const map: Record<string, 'default' | 'success' | 'secondary' | 'destructive' | 'warning'> = {
         scheduled: 'default',
         active: 'warning',
         completed: 'success',
         cancelled: 'destructive',
     }
-    return map[s] ?? 'secondary'
+    return map[normalizedStatus] ?? 'secondary'
+}
+
+const readPaginationRows = <T,>(payload: unknown): T[] => {
+    if (!payload || typeof payload !== 'object') {
+        return []
+    }
+
+    const value = payload as { data?: T[]; result?: T[] }
+    if (Array.isArray(value.data)) return value.data
+    if (Array.isArray(value.result)) return value.result
+
+    return []
 }
 
 export function AdminRoutesPage() {
@@ -21,12 +37,14 @@ export function AdminRoutesPage() {
 
     const { data: routes = [], isLoading: loadingRoutes } = useQuery({
         queryKey: ['admin', 'routes'],
-        queryFn: getAllRoutes,
+        queryFn: () => getRoutes({ page: 1, limit: 100 }),
+        select: (response) => readPaginationRows<IRoute>(response.data),
     })
 
     const { data: trips = [], isLoading: loadingTrips } = useQuery({
         queryKey: ['admin', 'trips'],
-        queryFn: getAllTrips,
+        queryFn: () => getAdminTrips({ page: 1, limit: 200 }),
+        select: (response) => readPaginationRows<ITrip>(response.data),
     })
 
     if (loadingRoutes || loadingTrips) return <div className="text-muted-foreground">{tCommon('common.loading')}</div>
@@ -44,11 +62,11 @@ export function AdminRoutesPage() {
                 <h2 className="mb-3 text-lg font-semibold">{t('routes_section')}</h2>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {routes.map((r) => (
-                        <Card key={r.id}>
+                        <Card key={r.routeId}>
                             <CardContent className="pt-5">
-                                <p className="font-semibold">{r.from} → {r.to}</p>
+                                <p className="font-semibold">{r.fromLocation?.name ?? r.fromLocationId} → {r.toLocation?.name ?? r.toLocationId}</p>
                                 <p className="mt-1 text-sm text-muted-foreground">
-                                    {r.distanceKm} km · {formatDuration(r.estimatedMinutes)}
+                                    {r.distanceKm} km · {formatDuration(r.estimateDurationMins)}
                                 </p>
                             </CardContent>
                         </Card>
@@ -75,16 +93,16 @@ export function AdminRoutesPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {trips.map((tr) => (
-                                <tr key={tr.id} className="border-t border-border hover:bg-muted/30">
-                                    <td className="px-4 py-3 font-medium">{tr.route.from} → {tr.route.to}</td>
-                                    <td className="px-4 py-3">{tr.company.name}</td>
-                                    <td className="px-4 py-3 text-muted-foreground">{formatDate(tr.departureTime, true)}</td>
-                                    <td className="px-4 py-3">{formatVnd(tr.pricePerSeat)}</td>
-                                    <td className="px-4 py-3">{tr.availableSeats}</td>
+                            {trips.map((trip) => (
+                                <tr key={trip.tripId} className="border-t border-border hover:bg-muted/30">
+                                    <td className="px-4 py-3 font-medium">{trip.route?.fromLocation?.name ?? trip.routeId} → {trip.route?.toLocation?.name ?? trip.routeId}</td>
+                                    <td className="px-4 py-3">{trip.busCompanyId}</td>
+                                    <td className="px-4 py-3 text-muted-foreground">{formatDate(trip.departureTime)}</td>
+                                    <td className="px-4 py-3">{formatVnd(trip.basePrice)}</td>
+                                    <td className="px-4 py-3">-</td>
                                     <td className="px-4 py-3">
-                                        <Badge variant={tripStatusVariant(tr.status)}>
-                                            {tCommon(`status.${tr.status}`)}
+                                        <Badge variant={tripStatusVariant(trip.status)}>
+                                            {tCommon(`status.${trip.status.toLowerCase()}`, { defaultValue: trip.status })}
                                         </Badge>
                                     </td>
                                 </tr>

@@ -32,7 +32,7 @@
         "admins": "Quản trị viên & Nhân viên",
         "roles": "Vai trò & Phân quyền",
         "routes": "Tuyến đường",
-        "locations": "Địa điểm",
+        "locations": "Địa điểm & Tuyến đường",
         "bookings": "Đặt vé",
         "revenue": "Doanh thu",
         "reports": "Báo cáo",
@@ -672,6 +672,76 @@
             "company_label": "Nhà xe",
             "date_from": "Từ ngày",
             "date_to": "Đến ngày"
+        },
+        "locations": {
+            "title": "Địa điểm & Tuyến đường",
+            "description": "Quản lý danh sách tỉnh thành, bến xe và tuyến đường trên toàn quốc",
+            "tab_provinces": "Tỉnh thành",
+            "tab_locations": "Bến xe",
+            "tab_routes": "Tuyến đường",
+            "search_province": "Tìm tỉnh thành...",
+            "search_station": "Tìm bến xe...",
+            "search_route": "Tìm tuyến đường...",
+            "add_station": "Thêm bến xe",
+            "add_station_title": "Thêm điểm đón/trả mới",
+            "add_route": "Thêm tuyến đường",
+            "add_route_title": "Thêm tuyến đường mới",
+            "all_provinces": "Tất cả tỉnh thành",
+            "results_count": "{{count}} kết quả",
+            "stations_count": "{{count}} bến xe",
+            "no_stations": "Không tìm thấy bến xe nào",
+            "no_routes": "Không tìm thấy tuyến đường nào",
+            "province_city": "Thành phố",
+            "province_province": "Tỉnh",
+            "select_station": "Chọn bến xe",
+            "distance_km": "Khoảng cách (km)",
+            "duration_minutes": "Thời gian dự kiến (phút)",
+            "departure": "Điểm xuất phát",
+            "destination": "Điểm đến",
+            "stats": {
+                "provinces": "Tỉnh thành",
+                "stations": "Bến xe",
+                "routes": "Tuyến đường",
+                "active_routes": "Tuyến đường hoạt động"
+            },
+            "table_provinces": {
+                "index": "#",
+                "name": "Tỉnh/Thành phố",
+                "code": "Mã",
+                "type": "Loại",
+                "stations": "Bến xe"
+            },
+            "table_routes": {
+                "route": "Tuyến đường",
+                "distance": "Khoảng cách",
+                "duration": "Thời gian dự kiến",
+                "trips": "Chuyến đi",
+                "status": "Trạng thái"
+            },
+            "form_station": {
+                "name": "Tên bến xe",
+                "name_placeholder": "Bến xe Miền Đông",
+                "address": "Địa chỉ",
+                "address_placeholder": "Đường, quận, thành phố",
+                "province": "Tỉnh/Thành phố",
+                "lat": "Vĩ độ",
+                "lng": "Kinh độ"
+            },
+            "form_route": {
+                "from": "Từ",
+                "to": "Đến",
+                "distance": "Khoảng cách (km)",
+                "duration": "Thời gian dự kiến (phút)"
+            },
+            "errors": {
+                "name_required": "Tên bến xe là bắt buộc",
+                "address_required": "Địa chỉ là bắt buộc",
+                "province_required": "Tỉnh/Thành phố là bắt buộc",
+                "from_required": "Điểm xuất phát là bắt buộc",
+                "to_required": "Điểm đến là bắt buộc",
+                "distance_required": "Khoảng cách là bắt buộc",
+                "duration_required": "Thời gian dự kiến là bắt buộc"
+            }
         },
         "fleet": {
             "title": "Quản lý xe",

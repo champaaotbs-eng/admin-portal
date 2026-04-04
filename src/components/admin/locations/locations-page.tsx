@@ -1,19 +1,80 @@
 import { useTranslation } from 'react-i18next'
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Map, MapPin, Route, Navigation } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { ProvincesTab } from './components/ProvincesTab'
-import { LocationsTab } from './components/LocationsTab'
-import { RoutesTab } from './components/RoutesTab'
-import { provinces, locations, routes } from './data'
+import { ProvincesTab } from './components/provinces-tab'
+import { LocationsTab } from './components/locations-tab'
+import { RoutesTab } from './components/routes-tab'
+import { getLocations, getProvinces } from 'services/admins/location.service'
+import { getRoutes } from 'services/admins/route.service'
+import type { ILocation } from 'types/location'
+import type { IRoute } from 'types/route'
+import type { IProvince } from 'types/province'
 
 export const AdminLocationsPage = () => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.locations' })
+
+    const provincesQuery = useQuery({
+        queryKey: ['admin-locations', 'provinces'],
+        queryFn: getProvinces,
+    })
+
+    const locationsQuery = useQuery({
+        queryKey: ['admin-locations', 'locations', 'all'],
+        queryFn: () => getLocations({ page: 1, limit: 1000 }),
+    })
+
+    const routesQuery = useQuery({
+        queryKey: ['admin-locations', 'routes', 'all'],
+        queryFn: () => getRoutes({ page: 1, limit: 1000 }),
+    })
+
+    const provinces = useMemo(() => {
+        const data = provincesQuery.data?.data
+        return Array.isArray(data) ? data : ([] as IProvince[])
+    }, [provincesQuery.data])
+
+    const locations = useMemo(() => {
+        const data = locationsQuery.data?.data
+        if (Array.isArray(data)) {
+            return data as ILocation[]
+        }
+
+        if (data && Array.isArray((data as unknown as { data?: ILocation[] }).data)) {
+            return (data as unknown as { data: ILocation[] }).data
+        }
+
+        if (data && Array.isArray((data as unknown as { result?: ILocation[] }).result)) {
+            return (data as unknown as { result: ILocation[] }).result
+        }
+
+        return [] as ILocation[]
+    }, [locationsQuery.data])
+
+    const routes = useMemo(() => {
+        const data = routesQuery.data?.data
+        if (Array.isArray(data)) {
+            return data as IRoute[]
+        }
+
+        if (data && Array.isArray((data as unknown as { data?: IRoute[] }).data)) {
+            return (data as unknown as { data: IRoute[] }).data
+        }
+
+        if (data && Array.isArray((data as unknown as { result?: IRoute[] }).result)) {
+            return (data as unknown as { result: IRoute[] }).result
+        }
+
+        return [] as IRoute[]
+    }, [routesQuery.data])
+
     const stats = [
         { label: t('stats.provinces'), value: provinces.length, icon: Map, color: 'text-blue-500', bg: 'bg-blue-500/10' },
         { label: t('stats.stations'), value: locations.length, icon: MapPin, color: 'text-green-500', bg: 'bg-green-500/10' },
         { label: t('stats.routes'), value: routes.length, icon: Route, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-        { label: t('stats.active_routes'), value: routes.filter(r => r.isActive).length, icon: Navigation, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+        { label: t('stats.active_routes'), value: routes.length, icon: Navigation, color: 'text-purple-500', bg: 'bg-purple-500/10' },
     ]
 
     return (

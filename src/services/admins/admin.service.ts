@@ -16,6 +16,11 @@ export const getAllAdmins = async (query: IRequestPagination<IAdmin>) => {
     return response;
 }
 
+export const getAvailableAdmins = async () => {
+    const response = await api.get<IAdmin[]>(`/v1/admins/company-admins/available`);
+    return response;
+}
+
 export const getAdminById = async (adminId: string) => {
     const response = await api.get<IAdmin>(`/v1/admins/${adminId}`);
     return response;

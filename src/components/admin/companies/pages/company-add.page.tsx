@@ -14,7 +14,6 @@ export const CompanyAddPage = () => {
     const navigate = useNavigate()
     const {
         form,
-        allAdmins,
         isLoadingAdmins,
         pendingFields,
         appendPendingAdmin,
@@ -34,7 +33,6 @@ export const CompanyAddPage = () => {
 
     const {
         register,
-        watch,
         formState: { errors },
     } = form
 
@@ -133,7 +131,7 @@ export const CompanyAddPage = () => {
                             <CompanyAdminRow
                                 key={field.id}
                                 index={index}
-                                adminOptions={availableAdmins.length > 0 ? availableAdmins : allAdmins}
+                                adminOptions={availableAdmins}
                                 control={form.control}
                                 onRemove={() => removePendingAdmin(index)}
                                 isLoadingAdmins={isLoadingAdmins}

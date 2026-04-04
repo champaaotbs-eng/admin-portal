@@ -4,10 +4,10 @@ import { useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { isAuthError } from '@/services/auth.service'
-import { APP_ROUTES } from '@/constants/app-routes'
 import { loginValidationSchema } from './validation-schema'
 import { login } from 'services/auth/auth.service'
 import type { ILogin } from 'services/auth/auth.types'
+import { ADMIN_TYPE } from 'configs/constants'
 
 export const useLogin = () => {
     const navigate = useNavigate()
@@ -27,11 +27,10 @@ export const useLogin = () => {
 
     const loginMutation = useMutation({
         mutationFn: login,
-        onSuccess: () => {
-            navigate({
-                to: APP_ROUTES.ADMIN.ROOT,
-                replace: true,
-            })
+        onSuccess: (data) => {
+            const admin = data.data?.admin;
+            if (admin && admin.role?.type === ADMIN_TYPE.SYSTEM_ADMIN) navigate({ to: '/admin' });
+            if (admin && admin.role?.type === ADMIN_TYPE.COMPANY_ADMIN) navigate({ to: '/company' });
         },
         onError: (error) => {
             console.error('Login failed:', error)

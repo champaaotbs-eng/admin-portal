@@ -3,48 +3,29 @@ import { useNavigate } from '@tanstack/react-router'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { IAdmin } from 'types/admin'
-import { BusCompanyStatus, type ICompany } from 'types/company'
+import { BusCompanyAdminPosition, BusCompanyStatus, type ICompany, type ICompanyAdmins } from 'types/company'
 import { useTranslation } from 'react-i18next'
-import { getAllAdmins } from 'services/admins/admin.service'
-import { addAdmin, createCompany, getCompanyById, removeAdmin, updateCompany } from 'services/admins/company.service'
+import { getAvailableAdmins } from 'services/admins/admin.service'
+import { createCompany, getCompanyById, updateCompany } from 'services/admins/company.service'
 import { deleteFile, uploadFile } from 'services/upload-file.service'
 import { ADMIN_QUERY_KEYS } from 'components/admin/admins/constants/admin-query-keys.constant'
 import { COMPANY_QUERY_KEYS } from '../constants/company-query-keys.constant'
-
-interface PendingAdminRow {
-    adminId: string
-    position: string
-}
-
-interface ExistingCompanyAdmin {
-    adminId: string
-    fullName: string
-    username: string
-    position: string
-}
-
-export interface CompanyFormValues {
-    name: string
-    email: string
-    phone: string
-    address: string
-    serviceFee: number
-    status: BusCompanyStatus
-    pendingAdmins: PendingAdminRow[]
-}
+import type { CompanyFormData } from '../validation-schema'
 
 interface UseCompanyFormProps {
     companyId?: string
 }
 
-const DEFAULT_VALUES: CompanyFormValues = {
+const DEFAULT_VALUES: CompanyFormData = {
     name: '',
     email: '',
     phone: '',
     address: '',
     serviceFee: 0,
     status: BusCompanyStatus.ACTIVE,
-    pendingAdmins: [{ adminId: '', position: '' }],
+    logoUrl: '',
+    publicId: '',
+    companyAdmins: [{ adminId: '', position: BusCompanyAdminPosition.OWNER }],
 }
 
 const VALID_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -59,14 +40,14 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
     const navigate = useNavigate()
     const queryClient = useQueryClient()
 
-    const form = useForm<CompanyFormValues>({
+    const form = useForm<CompanyFormData>({
         defaultValues: DEFAULT_VALUES,
         mode: 'onChange',
     })
 
     const { fields, append, remove } = useFieldArray({
         control: form.control,
-        name: 'pendingAdmins',
+        name: 'companyAdmins',
     })
 
     const [logoFile, setLogoFile] = useState<File | null>(null)
@@ -74,28 +55,26 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
     const [logoError, setLogoError] = useState<string | undefined>(undefined)
     const [existingLogoUrl, setExistingLogoUrl] = useState<string | null>(null)
     const [existingPublicId, setExistingPublicId] = useState<string | null>(null)
-    const [existingAdmins, setExistingAdmins] = useState<ExistingCompanyAdmin[]>([])
+    const [existingAdmins, setExistingAdmins] = useState<ICompanyAdmins[]>([])
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+
+    const removeExistingAdmin = (adminId: string) => {
+        setExistingAdmins((previous) => previous.filter((admin) => admin.adminId !== adminId))
+    }
 
     const companyQuery = useQuery({
         queryKey: COMPANY_QUERY_KEYS.detail(companyId ?? ''),
         queryFn: async () => {
             const response = await getCompanyById(companyId as string)
-            return response.data as ICompany & {
-                admins?: ExistingCompanyAdmin[]
-                logoPublicId?: string
-            }
+            return response.data as ICompany
         },
         enabled: isEditMode,
     })
 
     const adminsQuery = useQuery({
-        queryKey: ADMIN_QUERY_KEYS.all,
-        queryFn: () => getAllAdmins({ page: 1, limit: 1000, filters: {} }),
-        select: (response) => {
-            const payload = response.data as { results?: IAdmin[]; result?: IAdmin[] }
-            return payload.results ?? payload.result ?? []
-        },
+        queryKey: ADMIN_QUERY_KEYS.detail(companyId ?? ''),
+        queryFn: getAvailableAdmins,
+        select: (response) => response.data as IAdmin[],
     })
 
     useEffect(() => {
@@ -108,12 +87,14 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
             address: companyQuery.data.address ?? '',
             serviceFee: companyQuery.data.serviceFee,
             status: companyQuery.data.status,
-            pendingAdmins: [],
+            logoUrl: companyQuery.data.logoUrl ?? '',
+            publicId: companyQuery.data.publicId ?? '',
+            companyAdmins: [],
         })
 
-        setExistingAdmins(companyQuery.data.admins ?? [])
+        setExistingAdmins(companyQuery.data.companyAdmins ?? [])
         setExistingLogoUrl(companyQuery.data.logoUrl ?? null)
-        setExistingPublicId(companyQuery.data.logoPublicId ?? null)
+        setExistingPublicId(companyQuery.data.publicId ?? null)
     }, [companyQuery.data, form])
 
     useEffect(() => {
@@ -124,22 +105,8 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
         }
     }, [logoPreviewUrl])
 
-    const removeAdminMutation = useMutation({
-        mutationFn: ({ adminId }: { adminId: string }) => removeAdmin(companyId as string, adminId),
-        onMutate: ({ adminId }) => {
-            setExistingAdmins((previous) => previous.filter((admin) => admin.adminId !== adminId))
-        },
-        onError: () => {
-            setExistingAdmins(companyQuery.data?.admins ?? [])
-            setToast({ type: 'error', message: t('messages.remove_admin_failed') })
-        },
-        onSuccess: () => {
-            setToast({ type: 'success', message: t('messages.admin_removed') })
-        },
-    })
-
     const createMutation = useMutation({ mutationFn: createCompany })
-    const updateMutation = useMutation({ mutationFn: ({ id, payload }: { id: string; payload: Partial<ICompany> }) => updateCompany(id, payload) })
+    const updateMutation = useMutation({ mutationFn: ({ id, payload }: { id: string; payload: CompanyFormData }) => updateCompany(id, payload) })
 
     const isSubmitting = createMutation.isPending || updateMutation.isPending
 
@@ -174,18 +141,14 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
     }
 
     const availableAdmins = useMemo(() => {
-        const selectedPending = new Set(
-            form
-                .watch('pendingAdmins')
-                .map((item) => item.adminId)
-                .filter(Boolean),
-        )
         const existingSet = new Set(existingAdmins.map((admin) => admin.adminId))
 
-        return (adminsQuery.data ?? []).filter((admin) => !existingSet.has(admin.adminId) && !selectedPending.has(admin.adminId))
-    }, [adminsQuery.data, existingAdmins, form])
+        return (adminsQuery.data ?? []).filter((admin) => !existingSet.has(admin.adminId))
+    }, [adminsQuery.data, existingAdmins])
 
     const onSubmit = form.handleSubmit(async (values) => {
+        const normalizedServiceFee = values.serviceFee ?? 0
+
         if (!values.name.trim()) {
             form.setError('name', { message: t('errors.name_required') })
             return
@@ -206,52 +169,75 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
             return
         }
 
-        if (values.serviceFee < 0 || values.serviceFee > 100) {
+        if (normalizedServiceFee < 0 || normalizedServiceFee > 100) {
             form.setError('serviceFee', { message: t('errors.service_fee_invalid') })
             return
         }
+
+        if (Number.isNaN(normalizedServiceFee)) {
+            form.setError('serviceFee', { message: t('errors.service_fee_invalid') })
+            return
+        }
+
+        const pendingAdmins = (values.companyAdmins ?? []).filter(
+            (row): row is { adminId: string; position: BusCompanyAdminPosition } =>
+                Boolean(row.adminId) && (row.position === BusCompanyAdminPosition.OWNER || row.position === BusCompanyAdminPosition.STAFF),
+        )
+
+        const mergedByAdminId = new Map<string, BusCompanyAdminPosition>()
+        existingAdmins.forEach((admin) => {
+            if (admin.position === BusCompanyAdminPosition.OWNER || admin.position === BusCompanyAdminPosition.STAFF) {
+                mergedByAdminId.set(admin.adminId, admin.position)
+            }
+        })
+        pendingAdmins.forEach((admin) => {
+            mergedByAdminId.set(admin.adminId, admin.position)
+        })
+
+        const companyAdmins = Array.from(mergedByAdminId.entries()).map(([adminId, position]) => ({
+            adminId,
+            position,
+        }))
 
         let uploadedPublicId: string | undefined
 
         try {
             let logoUrl: string | undefined = existingLogoUrl ?? undefined
+            let publicId: string | undefined = existingPublicId ?? undefined
 
             if (logoFile) {
                 if (isEditMode && existingPublicId) {
                     await deleteFile(existingPublicId)
                 }
                 const uploaded = await uploadFile(logoFile)
+                console.log('Upload response:', uploaded)
                 logoUrl = uploaded.data?.url
+                publicId = uploaded.data?.publicId
                 uploadedPublicId = uploaded.data?.publicId
             }
 
-            const payload: Partial<ICompany> = {
-                name: values.name,
+            const payload: CompanyFormData = {
+                name: values.name.trim(),
                 email: values.email || undefined,
                 phone: values.phone || undefined,
                 address: values.address || undefined,
-                serviceFee: values.serviceFee,
+                serviceFee: normalizedServiceFee,
                 status: values.status,
-                ...(logoUrl ? { logoUrl } : {}),
+                companyAdmins,
+                logoUrl,
+                publicId,
             }
-
-            let resolvedCompanyId = companyId as string
 
             if (isEditMode) {
                 await updateMutation.mutateAsync({ id: companyId as string, payload })
             } else {
-                const created = await createMutation.mutateAsync(payload)
-                resolvedCompanyId = created.data?.busCompanyId ?? ''
-                if (!resolvedCompanyId) {
-                    throw new Error(t('errors.created_id_missing'))
-                }
+                await createMutation.mutateAsync(payload)
             }
 
-            const validPending = values.pendingAdmins.filter((row) => row.adminId && row.position)
-            await Promise.all(validPending.map((row) => addAdmin(resolvedCompanyId, row.adminId, row.position)))
-
             await queryClient.invalidateQueries({ queryKey: COMPANY_QUERY_KEYS.all })
-            await queryClient.invalidateQueries({ queryKey: COMPANY_QUERY_KEYS.detail(resolvedCompanyId) })
+            if (isEditMode) {
+                await queryClient.invalidateQueries({ queryKey: COMPANY_QUERY_KEYS.detail(companyId as string) })
+            }
 
             setToast({ type: 'success', message: isEditMode ? t('messages.company_updated') : t('messages.company_created') })
             navigate({ to: '/admin/companies' })
@@ -267,13 +253,11 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
         form,
         isEditMode,
         isLoadingCompany: companyQuery.isLoading,
-        allAdmins: adminsQuery.data ?? [],
         isLoadingAdmins: adminsQuery.isLoading,
         existingAdmins,
-        removeExistingAdmin: (adminId: string) => removeAdminMutation.mutate({ adminId }),
-        isRemovingAdmin: removeAdminMutation.isPending,
+        removeExistingAdmin,
         pendingFields: fields,
-        appendPendingAdmin: () => append({ adminId: '', position: '' }),
+        appendPendingAdmin: () => append({ adminId: '', position: BusCompanyAdminPosition.OWNER }),
         removePendingAdmin: remove,
         logoPreviewUrl,
         logoFile,

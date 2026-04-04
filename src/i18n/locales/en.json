@@ -228,7 +228,9 @@
                 "remove_admin_confirm": "Are you sure you want to remove this admin from company?",
                 "no_assigned_admins": "No admins assigned yet",
                 "select_admin": "Select admin",
-                "position_placeholder": "e.g. Manager, Supervisor",
+                "select_position": "Select position",
+                "position_owner": "Owner",
+                "position_staff": "Staff",
                 "remove_row_aria": "Remove admin row",
                 "logo": "Logo",
                 "upload_hint_title": "Click to upload or drag & drop",
@@ -261,6 +263,7 @@
                 "phone_invalid": "Phone must be 10-11 digits",
                 "address_required": "Address is required",
                 "service_fee_invalid": "Service fee must be between 0 and 100",
+                "admin_required": "Admin is required",
                 "owner_username_required": "Owner username is required",
                 "owner_password_required": "Password is required",
                 "owner_password_min": "Password must be at least 6 characters",
@@ -407,6 +410,14 @@
             "trips_count": "{{count}} trips",
             "routes_section": "Routes",
             "all_trips_section": "All Trips",
+            "table": {
+                "route": "Route",
+                "distance": "Distance",
+                "duration": "Duration",
+                "trips": "Trips",
+                "status": "Status",
+                "actions": "Actions"
+            },
             "trips_table": {
                 "route": "Route",
                 "company": "Company",

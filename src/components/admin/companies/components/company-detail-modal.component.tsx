@@ -78,9 +78,9 @@ export const CompanyDetailModal = ({ companyId, open, onClose }: CompanyDetailMo
                             </span>
                         </div>
 
-                        {((company as { admins?: Array<{ adminId: string; fullName: string; username: string; position: string }> }).admins ?? []).length > 0 ? (
+                        {company && company.companyAdmins ? (
                             <div className="space-y-2">
-                                {((company as { admins?: Array<{ adminId: string; fullName: string; username: string; position: string }> }).admins ?? []).map((admin) => {
+                                {company.companyAdmins.map(admin => {
                                     const initials = admin.fullName
                                         .split(' ')
                                         .filter(Boolean)

@@ -1,5 +1,6 @@
+import type { CompanyFormData } from "components/admin/companies/validation-schema"
 import { type IPagination, type IRequestPagination } from "types"
-import { type ICompany } from "types/company"
+import { BusCompanyAdminPosition, BusCompanyStatus, type ICompany } from "types/company"
 import { api } from "utils/axios.instance"
 
 export const getAllCompanies = async (query: IRequestPagination<ICompany>) => {
@@ -18,21 +19,12 @@ export const getCompanyById = async (companyId: string) => {
     return response
 }
 
-export const createCompany = async (payload: Partial<ICompany>) => {
+export const createCompany = async (payload: CompanyFormData) => {
     const response = await api.post<ICompany>('/v1/bus-companies', payload)
     return response
 }
 
-export const updateCompany = async (companyId: string, payload: Partial<ICompany>) => {
+export const updateCompany = async (companyId: string, payload: CompanyFormData) => {
     const response = await api.patch<ICompany>(`/v1/bus-companies/${companyId}`, payload)
     return response
-}
-
-export const addAdmin = async (companyId: string, adminId: string, position: string) => {
-    const response = await api.post(`/v1/bus-companies/${companyId}/admins`, { adminId, position })
-    return response
-}
-
-export const removeAdmin = async (companyId: string, adminId: string) => {
-    const response = await api.delete(`/v1/bus-companies/${companyId}/admins/${adminId}`)
 }

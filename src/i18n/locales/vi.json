@@ -228,7 +228,9 @@
                 "remove_admin_confirm": "Bạn có chắc muốn gỡ quản trị viên này khỏi nhà xe?",
                 "no_assigned_admins": "Chưa có quản trị viên nào",
                 "select_admin": "Chọn quản trị viên",
-                "position_placeholder": "VD: Quản lý, Giám sát",
+                "select_position": "Chọn vị trí",
+                "position_owner": "Chủ xe",
+                "position_staff": "Nhân viên",
                 "remove_row_aria": "Xóa dòng quản trị viên",
                 "logo": "Logo",
                 "upload_hint_title": "Nhấn để tải lên hoặc kéo thả",
@@ -261,6 +263,7 @@
                 "phone_invalid": "Số điện thoại phải có 10-11 chữ số",
                 "address_required": "Địa chỉ là bắt buộc",
                 "service_fee_invalid": "Phí dịch vụ phải từ 0 đến 100",
+                "admin_required": "Vui lòng chọn quản trị viên",
                 "owner_username_required": "Tên đăng nhập chủ sở hữu là bắt buộc",
                 "owner_password_required": "Mật khẩu là bắt buộc",
                 "owner_password_min": "Mật khẩu phải có ít nhất 6 ký tự",
@@ -407,6 +410,14 @@
             "trips_count": "{{count}} chuyến xe",
             "routes_section": "Tuyến đường",
             "all_trips_section": "Tất cả chuyến xe",
+            "table": {
+                "route": "Tuyến",
+                "distance": "Khoảng cách",
+                "duration": "Thời gian",
+                "trips": "Chuyến",
+                "status": "Trạng thái",
+                "actions": "Thao tác"
+            },
             "trips_table": {
                 "route": "Tuyến",
                 "company": "Nhà xe",
@@ -661,71 +672,6 @@
             "company_label": "Nhà xe",
             "date_from": "Từ ngày",
             "date_to": "Đến ngày"
-        },
-        "locations": {
-            "title": "Địa điểm",
-            "description": "Tỉnh thành, bến xe và tuyến liên tỉnh",
-            "tab_provinces": "Tỉnh / Thành",
-            "tab_locations": "Bến xe",
-            "tab_routes": "Tuyến đường",
-            "search_province": "Tìm tỉnh/thành...",
-            "search_station": "Tìm bến xe, địa chỉ...",
-            "search_route": "Tìm tuyến xe...",
-            "add_station": "Thêm điểm đón",
-            "add_station_title": "Thêm điểm đón/trả mới",
-            "add_route": "Thêm tuyến",
-            "add_route_title": "Thêm tuyến xe mới",
-            "all_provinces": "Tất cả tỉnh/thành",
-            "results_count": "{{count}} kết quả",
-            "stations_count": "{{count}} bến xe",
-            "no_stations": "Không tìm thấy bến xe nào",
-            "no_routes": "Không tìm thấy tuyến xe nào",
-            "province_city": "Thành phố",
-            "province_province": "Tỉnh",
-            "stats": {
-                "provinces": "Tỉnh/Thành",
-                "stations": "Điểm đón/trả",
-                "routes": "Tuyến xe",
-                "active_routes": "Tuyến đang hoạt động"
-            },
-            "table_provinces": {
-                "index": "#",
-                "name": "Tên tỉnh/thành",
-                "code": "Mã",
-                "type": "Loại",
-                "stations": "Số bến xe"
-            },
-            "table_routes": {
-                "route": "Tuyến",
-                "distance": "Khoảng cách",
-                "duration": "Thời gian ước tính",
-                "trips": "Chuyến xe",
-                "status": "Trạng thái"
-            },
-            "form_station": {
-                "name": "Tên điểm",
-                "name_placeholder": "Bến xe Miền Đông",
-                "address": "Địa chỉ",
-                "address_placeholder": "Số nhà, đường, quận, thành phố",
-                "province": "Tỉnh/Thành",
-                "lat": "Vĩ độ (Lat)",
-                "lng": "Kinh độ (Lng)"
-            },
-            "form_route": {
-                "from": "Điểm đi",
-                "to": "Điểm đến",
-                "distance": "Khoảng cách (km)",
-                "duration": "Thời gian ước tính (phút)"
-            },
-            "errors": {
-                "name_required": "Tên bến xe là bắt buộc",
-                "address_required": "Địa chỉ là bắt buộc",
-                "province_required": "Tỉnh/Thành là bắt buộc",
-                "from_required": "Điểm đi là bắt buộc",
-                "to_required": "Điểm đến là bắt buộc",
-                "distance_required": "Khoảng cách là bắt buộc",
-                "duration_required": "Thời gian là bắt buộc"
-            }
         },
         "fleet": {
             "title": "Quản lý xe",

@@ -20,11 +20,9 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
     const {
         form,
         isLoadingCompany,
-        allAdmins,
         isLoadingAdmins,
         existingAdmins,
         removeExistingAdmin,
-        isRemovingAdmin,
         pendingFields,
         appendPendingAdmin,
         removePendingAdmin,
@@ -170,7 +168,9 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <span className="rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-600">{admin.position}</span>
+                                        <span className="rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-600">
+                                            {admin.position === 'owner' ? t('detail_position_owner') : t('detail_position_staff')}
+                                        </span>
                                         <button
                                             type="button"
                                             onClick={() => setConfirmRemoveId(admin.adminId)}
@@ -191,7 +191,7 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
                             <CompanyAdminRow
                                 key={field.id}
                                 index={index}
-                                adminOptions={availableAdmins.length > 0 ? availableAdmins : allAdmins}
+                                adminOptions={availableAdmins}
                                 control={form.control}
                                 onRemove={() => removePendingAdmin(index)}
                                 isLoadingAdmins={isLoadingAdmins}
@@ -220,7 +220,6 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
                 description={t('form.remove_admin_confirm')}
                 confirmLabel={t('form.remove')}
                 cancelLabel={t('form.cancel')}
-                loading={isRemovingAdmin}
                 destructive
                 onConfirm={() => {
                     if (!confirmRemoveId) return

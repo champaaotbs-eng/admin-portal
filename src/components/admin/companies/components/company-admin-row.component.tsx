@@ -3,6 +3,7 @@ import { Controller } from 'react-hook-form'
 import { Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { IAdmin } from 'types/admin'
+import { BusCompanyAdminPosition } from 'types/company'
 
 interface PendingAdminRowProps {
     index: number
@@ -27,7 +28,7 @@ export const CompanyAdminRow = ({
     return (
         <div className="flex flex-col gap-3 md:flex-row">
             <Controller
-                name={`pendingAdmins.${index}.adminId`}
+                name={`companyAdmins.${index}.adminId`}
                 control={control}
                 render={({ field, fieldState }) => (
                     <div className="flex-1">
@@ -49,16 +50,18 @@ export const CompanyAdminRow = ({
             />
 
             <Controller
-                name={`pendingAdmins.${index}.position`}
+                name={`companyAdmins.${index}.position`}
                 control={control}
                 render={({ field, fieldState }) => (
                     <div className="flex-1">
-                        <input
+                        <select
                             {...field}
-                            type="text"
-                            placeholder={t('position_placeholder')}
-                            className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                        />
+                            className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        >
+                            <option value="">{t('select_position')}</option>
+                            <option value={BusCompanyAdminPosition.OWNER}>{t('position_owner')}</option>
+                            <option value={BusCompanyAdminPosition.STAFF}>{t('position_staff')}</option>
+                        </select>
                         {fieldState.error ? <p className="mt-1 text-xs text-rose-600">{fieldState.error.message}</p> : null}
                     </div>
                 )}

@@ -68,6 +68,7 @@
         "activate_action": "Kích hoạt",
         "deactivate_action": "Ngừng hoạt động",
         "place_not_parseable": "Không thể đọc thông tin trạm, vui lòng chọn lại",
+        "province_not_found": "Không tìm thấy thông tin tỉnh hoặc xã. Vui lòng kiểm tra và thử lại.",
         "validation": {
             "required": "Trường này là bắt buộc"
         }

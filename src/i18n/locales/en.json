@@ -68,6 +68,7 @@
         "activate_action": "Activate",
         "deactivate_action": "Deactivate",
         "place_not_parseable": "Unable to parse station details, please select again",
+        "province_not_found": "Province or ward information not found. Please check and try again.",
         "validation": {
             "required": "This field is required"
         }

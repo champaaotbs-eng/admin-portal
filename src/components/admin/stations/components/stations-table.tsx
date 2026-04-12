@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ConfirmationModal } from '@/components/shared/confirmation-modal'
-import { useToggleStationActive } from '../hooks/use-stations'
+import { useToggleStationActive } from '../hooks/use-toggle-station'
 import type { IStation } from 'types/station'
 
 interface IStationsTableProps {
@@ -114,12 +114,12 @@ export const StationsTable = ({
 
                         {!isLoading
                             ? stations.map((station) => (
-                                <tr key={station.locationId} className="border-t border-border hover:bg-muted/20">
-                                    <td className="px-4 py-3 font-medium">{station.name}</td>
+                                <tr key={station.stationId} className="border-t border-border hover:bg-muted/20">
+                                    <td className="px-4 py-3 font-medium">{station.label}</td>
                                     <td className="px-4 py-3 text-muted-foreground">{station.address}</td>
                                     <td className="px-4 py-3 text-muted-foreground">{station.provinceCode}</td>
                                     <td className="px-4 py-3 text-xs text-muted-foreground">
-                                        {station.latitude.toFixed(6)}, {station.longitude.toFixed(6)}
+                                        {station?.latitude}, {station?.longitude}
                                     </td>
                                     <td className="px-4 py-3">
                                         <Badge variant={station.isActive ? 'success' : 'secondary'}>

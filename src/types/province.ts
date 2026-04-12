@@ -3,6 +3,7 @@ export interface IProvince {
     name: string
     code: string
     divisionType: string
+    wards?: IWard[]
 }
 
 export interface IWard {

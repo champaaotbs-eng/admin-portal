@@ -1,4 +1,4 @@
-import type { RouteFormData } from 'components/admin/locations/validation-schema'
+import type { RouteFormData } from 'components/admin/stations/validation-schema'
 import type { IPagination, IRequestPagination } from 'types/pagination'
 import type { IRoute } from 'types/route'
 import { api } from 'utils/axios.instance'

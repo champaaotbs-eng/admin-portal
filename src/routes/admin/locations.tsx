@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { AdminLocationsPage } from '@/components/admin/locations/locations-page'
+import StationsPage from 'components/admin/stations/stations.page'
 import { ProtectedRoute } from 'components/shared/protected-guard'
 import { ADMIN_MODULES } from 'configs/constants'
 
-const LocationsRoutePage = () => (
+const StationsRoutePage = () => (
     <ProtectedRoute moduleName={ADMIN_MODULES.LOCATION}>
-        <AdminLocationsPage />
+        <StationsPage />
     </ProtectedRoute>
 )
 
-export const Route = createFileRoute('/admin/locations')({ component: LocationsRoutePage })
+export const Route = createFileRoute('/admin/locations')({ component: StationsRoutePage })

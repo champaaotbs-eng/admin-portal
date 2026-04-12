@@ -2,6 +2,7 @@ import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { I18nextProvider } from 'react-i18next'
+import { Toaster } from 'sonner'
 import { AppHeader } from 'components/shared/app-header'
 import { FileProvider } from '@/shared/contexts/files-context'
 import i18n from '#/i18n'
@@ -40,6 +41,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               <body suppressHydrationWarning className="min-h-screen bg-background text-foreground">
                 <AppHeader />
                 {children}
+                <Toaster position="top-right" richColors />
                 <TanStackDevtools
                   config={{ position: 'bottom-right' }}
                   plugins={[

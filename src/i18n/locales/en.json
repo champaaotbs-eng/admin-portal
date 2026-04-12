@@ -26,13 +26,59 @@
         "unauthorized_title": "Read-only access",
         "unauthorized_message": "You can view this page but cannot perform this action."
     },
+    "stations": {
+        "page_title": "Station management",
+        "add_button": "Add station",
+        "create_title": "Add new station",
+        "edit_title": "Edit station",
+        "create_success": "Station created successfully",
+        "update_success": "Station updated successfully",
+        "search_placeholder": "Search stations...",
+        "search_maps_placeholder": "Search on OpenStreetMap...",
+        "map_section_title": "Pick on the map",
+        "map_section_description": "Search a place or click and drag the marker on the OpenStreetMap view to fine-tune the station.",
+        "map_search_label": "Search station",
+        "map_search_placeholder": "Search an address or place on OpenStreetMap...",
+        "map_search_button": "Search",
+        "map_helper_text": "Click anywhere on the map or drag the marker to update the address and coordinates.",
+        "map_not_found": "No matching station was found. Try a different search term.",
+        "map_search_failed": "Unable to search the map right now. Please try again.",
+        "filter_status_all": "All",
+        "filter_status_active": "Active",
+        "filter_status_inactive": "Inactive",
+        "col_name": "Name",
+        "col_address": "Address",
+        "col_province": "Province/City",
+        "col_coordinates": "Coordinates",
+        "col_status": "Status",
+        "col_created_at": "Created at",
+        "col_actions": "Actions",
+        "status_active": "Active",
+        "status_inactive": "Inactive",
+        "empty_state": "No stations yet",
+        "field_label": "Station label",
+        "field_address": "Address",
+        "field_province": "Province/City",
+        "field_ward": "Ward",
+        "field_latitude": "Latitude",
+        "field_longitude": "Longitude",
+        "field_status": "Status",
+        "confirm_deactivate": "This station will not appear in new selections. Continue?",
+        "confirm_activate": "Activate this station again?",
+        "activate_action": "Activate",
+        "deactivate_action": "Deactivate",
+        "place_not_parseable": "Unable to parse station details, please select again",
+        "validation": {
+            "required": "This field is required"
+        }
+    },
     "nav": {
         "dashboard": "Dashboard",
         "companies": "Bus Companies",
         "admins": "Admins & Staff",
         "roles": "Roles & Permissions",
         "routes": "Routes",
-        "locations": "Locations & Routes",
+        "locations": "Stations",
         "bookings": "Bookings",
         "revenue": "Revenue",
         "reports": "Reports",
@@ -679,7 +725,6 @@
             "tab_provinces": "Provinces",
             "tab_locations": "Stations",
             "tab_routes": "Routes",
-            "search_province": "Search province/city...",
             "search_station": "Search station, address...",
             "search_route": "Search route...",
             "add_station": "Add station",
@@ -693,11 +738,13 @@
             "no_routes": "No routes found",
             "province_city": "City",
             "province_province": "Province",
+            "view_province_details": "View province details for {{province}}",
             "select_station": "Select station",
             "distance_km": "Distance (km)",
             "duration_minutes": "Duration (minutes)",
             "departure": "Departure",
             "destination": "Destination",
+            "loading": "Loading...",
             "stats": {
                 "provinces": "Provinces",
                 "stations": "Stations",
@@ -705,11 +752,13 @@
                 "active_routes": "Active routes"
             },
             "table_provinces": {
+                "search_province": "Search province...",
                 "index": "#",
                 "name": "Province/City",
                 "code": "Code",
                 "type": "Type",
-                "stations": "Stations"
+                "stations": "Stations",
+                "actions": "Actions"
             },
             "table_routes": {
                 "route": "Route",
@@ -717,6 +766,30 @@
                 "duration": "Est. duration",
                 "trips": "Trips",
                 "status": "Status"
+            },
+            "province_details": {
+                "title": "Province details",
+                "loading": "Loading province details...",
+                "not_found": "No province details found.",
+                "city": "City",
+                "province": "Province",
+                "fields": {
+                    "province_id": "Province ID",
+                    "code": "Code",
+                    "type": "Division type"
+                },
+                "wards": {
+                    "title": "Wards",
+                    "count": "{{count}} ward(s)",
+                    "empty": "No wards found in this province.",
+                    "table": {
+                        "index": "#",
+                        "name": "Ward",
+                        "code": "Code",
+                        "type": "Type"
+                    }
+                },
+                "close": "Close"
             },
             "form_station": {
                 "name": "Station name",

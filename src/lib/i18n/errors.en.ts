@@ -1,7 +1,7 @@
 export const errorsEn = {
     // Locations
     location_not_found: 'Location not found',
-    location_already_used_in_routes: 'Location is already used in routes and cannot be changed',
+    location_already_used_in_routes: 'Location is already used in routes and critical fields cannot be changed',
 
     // Routes
     route_not_found: 'Route not found',

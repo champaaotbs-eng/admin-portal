@@ -26,13 +26,59 @@
         "unauthorized_title": "Chế độ chỉ xem",
         "unauthorized_message": "Bạn có thể xem trang này nhưng không thể thực hiện thao tác này."
     },
+    "stations": {
+        "page_title": "Quản lý trạm",
+        "add_button": "Thêm trạm",
+        "create_title": "Thêm trạm mới",
+        "edit_title": "Chỉnh sửa trạm",
+        "create_success": "Thêm trạm thành công",
+        "update_success": "Cập nhật trạm thành công",
+        "search_placeholder": "Tìm kiếm trạm...",
+        "search_maps_placeholder": "Tìm kiếm trên OpenStreetMap...",
+        "map_section_title": "Chọn trên bản đồ",
+        "map_section_description": "Tìm một địa điểm hoặc bấm và kéo ghim trên bản đồ OpenStreetMap để tinh chỉnh trạm.",
+        "map_search_label": "Tìm trạm",
+        "map_search_placeholder": "Tìm địa chỉ hoặc địa điểm trên OpenStreetMap...",
+        "map_search_button": "Tìm kiếm",
+        "map_helper_text": "Bấm vào bất kỳ vị trí nào trên bản đồ hoặc kéo ghim để cập nhật địa chỉ và tọa độ.",
+        "map_not_found": "Không tìm thấy trạm phù hợp. Hãy thử từ khóa khác.",
+        "map_search_failed": "Hiện không thể tìm trên bản đồ. Vui lòng thử lại.",
+        "filter_status_all": "Tất cả",
+        "filter_status_active": "Hoạt động",
+        "filter_status_inactive": "Không hoạt động",
+        "col_name": "Tên",
+        "col_address": "Địa chỉ",
+        "col_province": "Tỉnh/Thành",
+        "col_coordinates": "Tọa độ",
+        "col_status": "Trạng thái",
+        "col_created_at": "Ngày tạo",
+        "col_actions": "Thao tác",
+        "status_active": "Hoạt động",
+        "status_inactive": "Không hoạt động",
+        "empty_state": "Chưa có trạm nào",
+        "field_label": "Nhãn trạm",
+        "field_address": "Địa chỉ",
+        "field_province": "Tỉnh/Thành phố",
+        "field_ward": "Xã/Phường",
+        "field_latitude": "Vĩ độ",
+        "field_longitude": "Kinh độ",
+        "field_status": "Trạng thái",
+        "confirm_deactivate": "Trạm này sẽ không xuất hiện trong các lựa chọn mới. Tiếp tục?",
+        "confirm_activate": "Kích hoạt lại trạm này?",
+        "activate_action": "Kích hoạt",
+        "deactivate_action": "Ngừng hoạt động",
+        "place_not_parseable": "Không thể đọc thông tin trạm, vui lòng chọn lại",
+        "validation": {
+            "required": "Trường này là bắt buộc"
+        }
+    },
     "nav": {
         "dashboard": "Bảng điều khiển",
         "companies": "Nhà xe",
         "admins": "Quản trị viên & Nhân viên",
         "roles": "Vai trò & Phân quyền",
         "routes": "Tuyến đường",
-        "locations": "Địa điểm & Tuyến đường",
+        "locations": "Điểm dừng tuyến",
         "bookings": "Đặt vé",
         "revenue": "Doanh thu",
         "reports": "Báo cáo",
@@ -679,7 +725,6 @@
             "tab_provinces": "Tỉnh thành",
             "tab_locations": "Bến xe",
             "tab_routes": "Tuyến đường",
-            "search_province": "Tìm tỉnh thành...",
             "search_station": "Tìm bến xe...",
             "search_route": "Tìm tuyến đường...",
             "add_station": "Thêm bến xe",
@@ -693,11 +738,13 @@
             "no_routes": "Không tìm thấy tuyến đường nào",
             "province_city": "Thành phố",
             "province_province": "Tỉnh",
+            "view_province_details": "Xem chi tiết tỉnh thành {{province}}",
             "select_station": "Chọn bến xe",
             "distance_km": "Khoảng cách (km)",
             "duration_minutes": "Thời gian dự kiến (phút)",
             "departure": "Điểm xuất phát",
             "destination": "Điểm đến",
+            "loading": "Đang tải...",
             "stats": {
                 "provinces": "Tỉnh thành",
                 "stations": "Bến xe",
@@ -705,11 +752,13 @@
                 "active_routes": "Tuyến đường hoạt động"
             },
             "table_provinces": {
+                "search_province": "Tìm tỉnh thành...",
                 "index": "#",
                 "name": "Tỉnh/Thành phố",
                 "code": "Mã",
                 "type": "Loại",
-                "stations": "Bến xe"
+                "stations": "Bến xe",
+                "actions": "Thao tác"
             },
             "table_routes": {
                 "route": "Tuyến đường",
@@ -717,6 +766,30 @@
                 "duration": "Thời gian dự kiến",
                 "trips": "Chuyến đi",
                 "status": "Trạng thái"
+            },
+            "province_details": {
+                "title": "Chi tiết tỉnh thành",
+                "loading": "Đang tải chi tiết tỉnh thành...",
+                "not_found": "Không tìm thấy chi tiết tỉnh thành.",
+                "city": "Thành phố",
+                "province": "Tỉnh",
+                "fields": {
+                    "province_id": "Mã định danh",
+                    "code": "Mã",
+                    "type": "Loại đơn vị"
+                },
+                "wards": {
+                    "title": "Phường/Xã",
+                    "count": "{{count}} phường/xã",
+                    "empty": "Không có phường/xã trong tỉnh thành này.",
+                    "table": {
+                        "index": "#",
+                        "name": "Tên",
+                        "code": "Mã",
+                        "type": "Loại"
+                    }
+                },
+                "close": "Đóng"
             },
             "form_station": {
                 "name": "Tên bến xe",

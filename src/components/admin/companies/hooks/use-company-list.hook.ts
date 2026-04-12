@@ -34,18 +34,7 @@ export const useCompanyList = () => {
     const { data, isLoading, isError } = useQuery({
         queryKey: COMPANY_QUERY_KEYS.list(currentPage, pageSize, filters),
         queryFn: () => getAllCompanies({ page: currentPage, limit: pageSize, filters }),
-        select: (response) => {
-            const payload = response.data as {
-                meta?: { page: number; limit: number; totalItems: number; totalPages: number }
-                results?: ICompany[]
-                result?: ICompany[]
-            }
-
-            return {
-                meta: payload.meta ?? { page: currentPage, limit: pageSize, totalItems: 0, totalPages: 1 },
-                results: payload.results ?? payload.result ?? [],
-            }
-        },
+        select: (response) => response.data,
         placeholderData: keepPreviousData,
     })
 
@@ -60,7 +49,7 @@ export const useCompanyList = () => {
     }
 
     return {
-        companies: data?.results ?? [],
+        companies: data?.result ?? [],
         meta: data?.meta ?? { page: currentPage, limit: pageSize, totalItems: 0, totalPages: 1 },
         isLoading,
         isError,

@@ -1,7 +1,7 @@
 export const errorsVi = {
     // Locations
-    location_not_found: 'Khong tim thay dia diem',
-    location_already_used_in_routes: 'Dia diem dang duoc su dung trong tuyen duong, khong the chinh sua',
+    location_not_found: 'Không tìm thấy địa điểm',
+    location_already_used_in_routes: 'Địa điểm đang được sử dụng trong tuyến đường, không thể chỉnh sửa thông tin quan trọng',
 
     // Routes
     route_not_found: 'Khong tim thay tuyen duong',

@@ -15,6 +15,11 @@ export const getAllRoles = async (query: IRequestPagination<IRole>) => {
     return response
 }
 
+export const getCompanyRoles = async () => {
+    const response = await api.get<IRole[]>(`/v1/roles/company`)
+    return response
+}
+
 export const getRoleById = async (roleId: string) => {
     const response = await api.get<IRole>(`/v1/roles/${roleId}`)
     return response

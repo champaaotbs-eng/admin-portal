@@ -1,6 +1,6 @@
 export type RouteStopType = 'pickup' | 'dropoff' | 'both' | string
 
-export interface RouteStop {
+export interface IRouteStop {
     id: string
     routeId: string
     locationId: string

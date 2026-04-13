@@ -1,8 +1,8 @@
 services:
-  client:
+  admin_portal:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: client
+    container_name: admin-portal
     ports:
     - "3003:3003"

@@ -1,11 +1,11 @@
 FROM node:22-alpine AS build
 
-WORKDIR /eng-center/client
+WORKDIR /booking-ticket/client
 
 COPY package*.json ./
 
 RUN npm ci
-COPY . /eng-center/client
+COPY . /booking-ticket/client
 
 RUN npm run build
 
@@ -14,13 +14,13 @@ ENV PORT=3003
 
 FROM nginx:alpine
 
-COPY --from=build /eng-center/client/.nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /booking-ticket/client/.nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
 WORKDIR /usr/share/nginx/html
 
 RUN rm -rf ./*
 
-COPY --from=build /eng-center/client/dist .
+COPY --from=build /booking-ticket/client/dist .
 
 EXPOSE 3003
 

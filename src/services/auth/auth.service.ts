@@ -16,7 +16,7 @@ export const login = async (payload: ILogin) => {
 }
 
 export const refresh = async () => {
-    const response = await api.get<IResponseAuth>('/v1/auth/refresh')
+    const response = await api.get<IResponseAuth>('/v1/auth/refresh', { withCredentials: true })
 
     if (response.statusCode && response.data) {
         const admin = response.data.admin || null

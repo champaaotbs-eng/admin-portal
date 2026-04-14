@@ -35,7 +35,7 @@ export const authStore = new Store<AuthState>({
     isLoading: true,
 })
 
-async function initializeAuthOnReload() {
+export async function initializeAuthAsync() {
     if (typeof window === 'undefined' || hasInitializedAuth) {
         return
     }
@@ -67,6 +67,10 @@ async function initializeAuthOnReload() {
             isLoading: false,
         }))
     }
+}
+
+async function initializeAuthOnReload() {
+    return initializeAuthAsync()
 }
 
 // ─── Actions ────────────────────────────────────────────────────────────────────

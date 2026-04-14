@@ -33,7 +33,7 @@ export const EditStationFormModal = ({ open, onClose, station }: IEditStationFor
     const isSubmitting = editMutation.isPending
 
     const schema = useMemo(() => stationSchema(t), [t])
-
+    console.log('EditStationFormModal render with station:', station) // Debug log to check station data
     const form = useForm<TEditStation>({
         resolver: zodResolver(schema),
         defaultValues: buildEditDefaultValues(station),
@@ -50,7 +50,13 @@ export const EditStationFormModal = ({ open, onClose, station }: IEditStationFor
     }, [form, station, open])
 
     const handleLocationSelect = (selectedLocation: IOpenStreetMapLocation) => {
-        form.setValue('label', selectedLocation.wardName ?? selectedLocation.provinceName ?? selectedLocation.address, { shouldDirty: true, shouldValidate: true })
+        // Extract first string before comma from address
+        const extractLabel = (address: string): string => {
+            const parts = address.split(',')
+            return parts[0]?.trim() || address
+        }
+
+        form.setValue('label', extractLabel(selectedLocation.address), { shouldDirty: true, shouldValidate: true })
         form.setValue('address', selectedLocation.address, { shouldDirty: true, shouldValidate: true })
         form.setValue('provinceName', selectedLocation.provinceName, { shouldDirty: true, shouldValidate: true })
         form.setValue('wardName', selectedLocation.wardName, { shouldDirty: true, shouldValidate: true })

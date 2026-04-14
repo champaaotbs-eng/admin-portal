@@ -20,7 +20,7 @@ export const APP_ROUTES = {
         REPORTS: '/admin/reports',
         BOOKINGS: '/admin/bookings',
         REVENUE: '/admin/revenue',
-        LOCATIONS: '/admin/locations',
+        STATIONS: '/admin/stations',
     },
 
     COMPANY: {

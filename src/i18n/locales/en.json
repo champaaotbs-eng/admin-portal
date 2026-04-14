@@ -79,7 +79,7 @@
         "admins": "Admins & Staff",
         "roles": "Roles & Permissions",
         "routes": "Routes",
-        "locations": "Stations",
+        "stations": "Stations",
         "bookings": "Bookings",
         "revenue": "Revenue",
         "reports": "Reports",
@@ -603,7 +603,7 @@
                 "role": "Role",
                 "company": "Company",
                 "route": "Route",
-                "location": "Location",
+                "station": "Station",
                 "booking": "Booking",
                 "report": "Report",
                 "revenue": "Revenue"
@@ -719,103 +719,6 @@
             "company_label": "Company",
             "date_from": "From date",
             "date_to": "To date"
-        },
-        "locations": {
-            "title": "Locations & Routes",
-            "description": "Provinces, stations and inter-city routes",
-            "tab_provinces": "Provinces",
-            "tab_locations": "Stations",
-            "tab_routes": "Routes",
-            "search_station": "Search station, address...",
-            "search_route": "Search route...",
-            "add_station": "Add station",
-            "add_station_title": "Add new pickup/dropoff point",
-            "add_route": "Add route",
-            "add_route_title": "Add new route",
-            "all_provinces": "All provinces",
-            "results_count": "{{count}} results",
-            "stations_count": "{{count}} station(s)",
-            "no_stations": "No stations found",
-            "no_routes": "No routes found",
-            "province_city": "City",
-            "province_province": "Province",
-            "view_province_details": "View province details for {{province}}",
-            "select_station": "Select station",
-            "distance_km": "Distance (km)",
-            "duration_minutes": "Duration (minutes)",
-            "departure": "Departure",
-            "destination": "Destination",
-            "loading": "Loading...",
-            "stats": {
-                "provinces": "Provinces",
-                "stations": "Stations",
-                "routes": "Routes",
-                "active_routes": "Active routes"
-            },
-            "table_provinces": {
-                "search_province": "Search province...",
-                "index": "#",
-                "name": "Province/City",
-                "code": "Code",
-                "type": "Type",
-                "stations": "Stations",
-                "actions": "Actions"
-            },
-            "table_routes": {
-                "route": "Route",
-                "distance": "Distance",
-                "duration": "Est. duration",
-                "trips": "Trips",
-                "status": "Status"
-            },
-            "province_details": {
-                "title": "Province details",
-                "loading": "Loading province details...",
-                "not_found": "No province details found.",
-                "city": "City",
-                "province": "Province",
-                "fields": {
-                    "province_id": "Province ID",
-                    "code": "Code",
-                    "type": "Division type"
-                },
-                "wards": {
-                    "title": "Wards",
-                    "count": "{{count}} ward(s)",
-                    "empty": "No wards found in this province.",
-                    "table": {
-                        "index": "#",
-                        "name": "Ward",
-                        "code": "Code",
-                        "type": "Type"
-                    }
-                },
-                "close": "Close"
-            },
-            "form_station": {
-                "name": "Station name",
-                "name_placeholder": "Mien Dong Bus Terminal",
-                "address": "Address",
-                "address_placeholder": "Street, district, city",
-                "province": "Province/City",
-                "lat": "Latitude",
-                "lng": "Longitude"
-            },
-            "form_route": {
-                "from": "From",
-                "to": "To",
-                "distance": "Distance (km)",
-                "duration": "Est. duration (min)"
-            },
-            "errors": {
-                "name_required": "Station name is required",
-                "address_required": "Address is required",
-                "province_required": "Province is required",
-                "from_required": "Departure location is required",
-                "to_required": "Destination is required",
-                "distance_required": "Distance is required",
-                "duration_required": "Duration is required"
-            }
         },
         "fleet": {
             "title": "Fleet Management",

@@ -4,7 +4,7 @@ export const ADMIN_MODULES = {
     ROLE: 'role',
     COMPANY: 'company',
     ROUTE: 'route',
-    LOCATION: 'location',
+    STATION: 'station',
     BOOKING: 'booking',
     REPORT: 'report',
     REVENUE: 'revenue',

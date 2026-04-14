@@ -4,9 +4,9 @@ import { ProtectedRoute } from 'components/shared/protected-guard'
 import { ADMIN_MODULES } from 'configs/constants'
 
 const StationsRoutePage = () => (
-    <ProtectedRoute moduleName={ADMIN_MODULES.LOCATION}>
+    <ProtectedRoute moduleName={ADMIN_MODULES.STATION}>
         <StationsPage />
     </ProtectedRoute>
 )
 
-export const Route = createFileRoute('/admin/locations')({ component: StationsRoutePage })
+export const Route = createFileRoute('/admin/stations')({ component: StationsRoutePage })

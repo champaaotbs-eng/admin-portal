@@ -4,8 +4,9 @@ import { toast } from 'sonner'
 import {
     updateStation,
 } from 'services/admins/stations.service'
-import { getProvincesCodeByName } from 'services/admins/provinces.service'
+import { getProvincesCodeByCodeName } from 'services/admins/provinces.service'
 import type { TEditStation } from '../validation-schema'
+import { splitBoundaryName, toSnakeCaseNoAccent } from 'utils/format'
 
 const QUERY_KEY = 'admin-stations'
 
@@ -29,9 +30,11 @@ export const useEditStation = () => {
             // If province name is being updated, get the codes
             if (payload.provinceName) {
                 try {
-                    const provinceResponse = await getProvincesCodeByName(
-                        payload.provinceName,
-                        payload.wardName ?? undefined
+                    const provinceCodeName = toSnakeCaseNoAccent(splitBoundaryName(payload.provinceName)?.name || payload.provinceName)
+                    const wardCodeName = payload.wardName ? toSnakeCaseNoAccent(payload.wardName) : undefined
+                    const provinceResponse = await getProvincesCodeByCodeName(
+                        provinceCodeName,
+                        wardCodeName
                     )
 
                     const provinceData = provinceResponse.data as { provinceCode?: string; wardCode?: string }

@@ -4,8 +4,9 @@ import { toast } from 'sonner'
 import {
     createStation,
 } from 'services/admins/stations.service'
-import { getProvincesCodeByName } from 'services/admins/provinces.service'
+import { getProvincesCodeByCodeName } from 'services/admins/provinces.service'
 import type { TAddStation } from '../validation-schema'
+import { splitBoundaryName, toSnakeCaseNoAccent } from 'utils/format'
 
 const QUERY_KEY = 'admin-stations'
 
@@ -17,9 +18,11 @@ export const useAddStation = () => {
         mutationFn: async (payload: TAddStation) => {
             // Get province and ward codes before creating
             try {
-                const provinceResponse = await getProvincesCodeByName(
-                    payload.provinceName,
-                    payload.wardName ?? undefined
+                const provinceCodeName = toSnakeCaseNoAccent(splitBoundaryName(payload.provinceName)?.name || payload.provinceName)
+                const wardCodeName = payload.wardName ? toSnakeCaseNoAccent(payload.wardName) : undefined
+                const provinceResponse = await getProvincesCodeByCodeName(
+                    provinceCodeName,
+                    wardCodeName
                 )
 
                 const provinceData = provinceResponse.data as { provinceCode?: string; wardCode?: string }

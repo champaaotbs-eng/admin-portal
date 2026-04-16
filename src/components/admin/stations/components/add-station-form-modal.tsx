@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { useAddStation } from '../hooks/use-add-station'
 import { StationMapPicker } from './stations-map-picker'
-import type { IOpenStreetMapLocation } from 'lib/openstreetmap'
+import type { IVietMapLocation } from 'lib/vietmap'
 import { stationSchema, type TAddStation } from '../validation-schema'
+import { splitBoundaryName } from 'utils/format'
 interface IAddStationFormModalProps {
     open: boolean
     onClose: () => void
@@ -51,7 +52,7 @@ export const AddStationFormModal = ({ open, onClose }: IAddStationFormModalProps
         form.reset(createDefaultValues())
     }, [form, open])
 
-    const handleLocationSelect = (selectedLocation: IOpenStreetMapLocation) => {
+    const handleLocationSelect = (selectedLocation: IVietMapLocation) => {
         // Extract first string before comma from address
         const extractLabel = (address: string): string => {
             const parts = address.split(',')
@@ -90,7 +91,8 @@ export const AddStationFormModal = ({ open, onClose }: IAddStationFormModalProps
     if (!open) {
         return null
     }
-
+    const splitProvince = splitBoundaryName(provinceName)
+    const splitWard = splitBoundaryName(wardName ?? '')
     return (
         <Dialog
             open={open}
@@ -140,13 +142,13 @@ export const AddStationFormModal = ({ open, onClose }: IAddStationFormModalProps
                         <div className="space-y-1">
                             <label className="text-sm font-medium">{t('stations.field_province')}</label>
                             <div className="h-10 rounded-md border border-input bg-muted/40 px-3 text-sm leading-10">
-                                {provinceName || '—'}
+                                {splitProvince.prefix && splitProvince.name ? `${splitProvince.prefix} ${splitProvince.name}` : '—'}
                             </div>
                         </div>
                         <div className="space-y-1">
                             <label className="text-sm font-medium">{t('stations.field_ward')}</label>
                             <div className="h-10 rounded-md border border-input bg-muted/40 px-3 text-sm leading-10">
-                                {wardName || '—'}
+                                {splitWard.prefix && splitWard.name ? `${splitWard.prefix} ${splitWard.name}` : '—'}
                             </div>
                         </div>
                     </div>

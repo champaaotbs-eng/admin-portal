@@ -70,3 +70,30 @@ export function slugify(text: string): string {
         .replace(/\s+/g, '-')
         .replace(/[^a-z0-9-]/g, '')
 }
+
+export const toSnakeCaseNoAccent = (str: string) => {
+    return str
+        // Normalize unicode (separate accents)
+        .normalize("NFD")
+        // Remove accents
+        .replace(/[\u0300-\u036f]/g, "")
+        // Convert đ → d
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+        // Lowercase
+        .toLowerCase()
+        // Replace non-alphanumeric with underscore
+        .replace(/[^a-z0-9]+/g, "_")
+        // Remove leading/trailing underscores
+        .replace(/^_+|_+$/g, "")
+        // Remove duplicate underscores
+        .replace(/_+/g, "_");
+}
+
+export const splitBoundaryName = (fullName: string) => {
+    const parts = fullName.split('-')
+    if (parts.length >= 2) {
+        return { prefix: parts[0], name: parts.slice(1).join('-') }
+    }
+    return { prefix: '', name: fullName }
+}

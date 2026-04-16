@@ -7,9 +7,10 @@ import { Dialog } from '@/components/ui/dialog'
 import { ToggleSwitch } from 'components/shared/toggle-switch'
 import { useEditStation } from '../hooks/use-edit-station'
 import { StationMapPicker } from './stations-map-picker'
-import type { IOpenStreetMapLocation } from 'lib/openstreetmap'
+import type { IVietMapLocation } from 'lib/vietmap'
 import type { IStation } from 'types/station'
 import { stationSchema, type TEditStation } from '../validation-schema'
+import { splitBoundaryName } from 'utils/format'
 
 interface IEditStationFormModalProps {
     open: boolean
@@ -33,7 +34,7 @@ export const EditStationFormModal = ({ open, onClose, station }: IEditStationFor
     const isSubmitting = editMutation.isPending
 
     const schema = useMemo(() => stationSchema(t), [t])
-    console.log('EditStationFormModal render with station:', station) // Debug log to check station data
+
     const form = useForm<TEditStation>({
         resolver: zodResolver(schema),
         defaultValues: buildEditDefaultValues(station),
@@ -49,7 +50,7 @@ export const EditStationFormModal = ({ open, onClose, station }: IEditStationFor
         }
     }, [form, station, open])
 
-    const handleLocationSelect = (selectedLocation: IOpenStreetMapLocation) => {
+    const handleLocationSelect = (selectedLocation: IVietMapLocation) => {
         // Extract first string before comma from address
         const extractLabel = (address: string): string => {
             const parts = address.split(',')
@@ -72,15 +73,15 @@ export const EditStationFormModal = ({ open, onClose, station }: IEditStationFor
         const originalValues = buildEditDefaultValues(station)
 
         // Only include fields that changed
-        const payload: Partial<TEditStation> = {}
-
-        if (values.label !== originalValues.label) payload.label = values.label
-        if (values.address !== originalValues.address) payload.address = values.address
-        if (values.provinceName !== originalValues.provinceName) payload.provinceName = values.provinceName
-        if (values.wardName !== originalValues.wardName) payload.wardName = values.wardName
-        if (values.latitude !== originalValues.latitude) payload.latitude = values.latitude
-        if (values.longitude !== originalValues.longitude) payload.longitude = values.longitude
-        if (values.isActive !== originalValues.isActive) payload.isActive = values.isActive
+        const payload: Partial<TEditStation> = {
+            address: values.address || undefined,
+            label: values.label || undefined,
+            provinceName: values.provinceName || undefined,
+            wardName: values.wardName || undefined,
+            latitude: values.latitude || undefined,
+            longitude: values.longitude || undefined,
+            isActive: values.isActive || undefined,
+        }
 
         // If no changes were made, just close the modal
         if (Object.keys(payload).length === 0) {
@@ -156,13 +157,13 @@ export const EditStationFormModal = ({ open, onClose, station }: IEditStationFor
                         <div className="space-y-1">
                             <label className="text-sm font-medium">{t('stations.field_province')}</label>
                             <div className="h-10 rounded-md border border-input bg-muted/40 px-3 text-sm leading-10">
-                                {provinceName || '—'}
+                                {splitBoundaryName(provinceName)?.name || '—'}
                             </div>
                         </div>
                         <div className="space-y-1">
                             <label className="text-sm font-medium">{t('stations.field_ward')}</label>
                             <div className="h-10 rounded-md border border-input bg-muted/40 px-3 text-sm leading-10">
-                                {wardName || '—'}
+                                {splitBoundaryName(wardName!)?.name || '—'}
                             </div>
                         </div>
                     </div>

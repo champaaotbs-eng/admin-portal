@@ -1,61 +1,113 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
-import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet'
-import { reverseOpenStreetMapLocation } from 'lib/openstreetmap'
-import type { IOpenStreetMapLocation } from 'lib/openstreetmap'
-import type { LatLngExpression, Marker as LeafletMarker } from 'leaflet'
+import { useCallback, useEffect, useRef } from 'react'
+import maplibregl, { type LngLatLike, type Map as MapLibreMap, type StyleSpecification } from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
+import { getVietMapStyleUrl, reverseVietMapLocation } from 'lib/vietmap'
+import type { IVietMapLocation } from 'lib/vietmap'
+import '@vietmap/vietmap-gl-js/dist/vietmap-gl.css'
 
 interface IStationMapCanvasProps {
     latitude: number
     longitude: number
-    onSelectLocation: (location: IOpenStreetMapLocation) => void
+    onSelectLocation: (location: IVietMapLocation) => void
 }
 
-const DEFAULT_CENTER: LatLngExpression = [16.047079, 108.20623]
+const DEFAULT_CENTER = {
+    latitude: 16.047079,
+    longitude: 108.20623,
+}
 
-const createMarkerIcon = () =>
-    L.divIcon({
-        className: '',
-        html: `
-            <div class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-                <svg viewBox="0 0 24 24" aria-hidden="true" class="h-4 w-4 fill-current">
-                    <path d="M12 2c-4.2 0-7.5 3.4-7.5 7.5 0 5.5 7.5 12.5 7.5 12.5s7.5-7 7.5-12.5C19.5 5.4 16.2 2 12 2zm0 10.1c-1.4 0-2.6-1.2-2.6-2.6S10.6 7 12 7s2.6 1.2 2.6 2.6-1.2 2.5-2.6 2.5z" />
-                </svg>
-            </div>
-        `,
-        iconAnchor: [18, 36],
-        iconSize: [36, 36],
-    })
+const DEFAULT_ZOOM = 6
+const SELECTED_ZOOM = 15
 
-function MapViewportController({ latitude, longitude }: { latitude: number; longitude: number }) {
-    const map = useMap()
+interface IStyleSource {
+    tiles?: string[]
+}
 
-    useEffect(() => {
-        map.invalidateSize()
-        map.setView(latitude !== 0 || longitude !== 0 ? [latitude, longitude] : DEFAULT_CENTER, latitude !== 0 || longitude !== 0 ? 15 : 6)
-    }, [latitude, longitude, map])
+interface IStylePayload {
+    sources?: Record<string, IStyleSource>
+}
+
+const FALLBACK_STYLE: StyleSpecification = {
+    version: 8,
+    sources: {
+        osm: {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '&copy; OpenStreetMap contributors',
+        },
+    },
+    layers: [
+        {
+            id: 'osm-tiles',
+            type: 'raster',
+            source: 'osm',
+        },
+    ],
+}
+
+const resolveProbeTileUrl = (payload: IStylePayload): string | null => {
+    if (!payload.sources) {
+        return null
+    }
+
+    for (const source of Object.values(payload.sources)) {
+        if (!source.tiles || source.tiles.length === 0) {
+            continue
+        }
+
+        const template = source.tiles[0]
+        return template
+            .replace('{z}', '0')
+            .replace('{x}', '0')
+            .replace('{y}', '0')
+    }
 
     return null
 }
 
-function MapInteractionLayer({
-    latitude,
-    longitude,
-    onSelectLocation,
-}: {
-    latitude: number
-    longitude: number
-    onSelectLocation: (location: IOpenStreetMapLocation) => void
-}) {
-    const markerRef = useRef<LeafletMarker | null>(null)
+const probeVietMapStyle = async (styleUrl: string): Promise<boolean> => {
+    try {
+        const styleResponse = await fetch(styleUrl, { cache: 'no-store' })
+
+        if (!styleResponse.ok) {
+            return false
+        }
+
+        const stylePayload = (await styleResponse.json()) as IStylePayload
+        const tileProbeUrl = resolveProbeTileUrl(stylePayload)
+
+        if (!tileProbeUrl) {
+            return false
+        }
+
+        const tileResponse = await fetch(tileProbeUrl, { cache: 'no-store' })
+        return tileResponse.ok
+    } catch {
+        return false
+    }
+}
+
+export const StationMapCanvas = ({ latitude, longitude, onSelectLocation }: IStationMapCanvasProps) => {
     const hasCoordinates = latitude !== 0 || longitude !== 0
-    const markerIcon = useMemo(() => createMarkerIcon(), [])
+    const containerRef = useRef<HTMLDivElement | null>(null)
+    const mapRef = useRef<MapLibreMap | null>(null)
+    const markerRef = useRef<maplibregl.Marker | null>(null)
+    const initialLatitudeRef = useRef(latitude)
+    const initialLongitudeRef = useRef(longitude)
+    const initialHasCoordinatesRef = useRef(hasCoordinates)
+    const onSelectLocationRef = useRef(onSelectLocation)
+    const syncMapWithSelectionRef = useRef<() => void>(() => { })
+    const didFallbackRef = useRef(false)
+
+    useEffect(() => {
+        onSelectLocationRef.current = onSelectLocation
+    }, [onSelectLocation])
 
     const pickCoordinates = useCallback(async (nextLatitude: number, nextLongitude: number) => {
-        const resolvedLocation = await reverseOpenStreetMapLocation(nextLatitude, nextLongitude)
+        const resolvedLocation = await reverseVietMapLocation(nextLatitude, nextLongitude)
 
-        onSelectLocation(
+        onSelectLocationRef.current(
             resolvedLocation ?? {
                 address: `${nextLatitude.toFixed(6)}, ${nextLongitude.toFixed(6)}`,
                 provinceName: '',
@@ -64,48 +116,164 @@ function MapInteractionLayer({
                 longitude: nextLongitude,
             },
         )
-    }, [onSelectLocation])
+    }, [])
 
-    useMapEvents({
-        click: (event) => {
-            void pickCoordinates(event.latlng.lat, event.latlng.lng)
-        },
-    })
+    const setMarkerPosition = useCallback((nextLatitude: number, nextLongitude: number) => {
+        const map = mapRef.current
 
-    return hasCoordinates ? (
-        <Marker
-            ref={markerRef}
-            draggable
-            icon={markerIcon}
-            position={[latitude, longitude]}
-            eventHandlers={{
-                dragend: () => {
-                    const marker = markerRef.current
+        if (!map) {
+            return
+        }
 
-                    if (!marker) {
-                        return
-                    }
+        if (!markerRef.current) {
+            const marker = new maplibregl.Marker({ draggable: true })
+                .setLngLat([nextLongitude, nextLatitude])
+                .addTo(map)
 
-                    const position = marker.getLatLng()
-                    void pickCoordinates(position.lat, position.lng)
-                },
-            }}
-        />
-    ) : null
-}
+            marker.on('dragend', () => {
+                const markerLngLat = marker.getLngLat()
+                void pickCoordinates(markerLngLat.lat, markerLngLat.lng)
+            })
 
-export const StationMapCanvas = ({ latitude, longitude, onSelectLocation }: IStationMapCanvasProps) => {
-    const hasCoordinates = latitude !== 0 || longitude !== 0
-    const center = useMemo<LatLngExpression>(() => (hasCoordinates ? [latitude, longitude] : DEFAULT_CENTER), [hasCoordinates, latitude, longitude])
+            markerRef.current = marker
+            return
+        }
 
-    return (
-        <MapContainer className="h-full w-full" center={center} zoom={hasCoordinates ? 15 : 6} scrollWheelZoom>
-            <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <MapViewportController latitude={latitude} longitude={longitude} />
-            <MapInteractionLayer latitude={latitude} longitude={longitude} onSelectLocation={onSelectLocation} />
-        </MapContainer>
-    )
+        markerRef.current.setLngLat([nextLongitude, nextLatitude])
+    }, [pickCoordinates])
+
+    const syncMapWithSelection = useCallback(() => {
+        const map = mapRef.current
+
+        if (!map) {
+            return
+        }
+
+        requestAnimationFrame(() => {
+            map.resize()
+        })
+
+        const center: LngLatLike = hasCoordinates
+            ? [longitude, latitude]
+            : [DEFAULT_CENTER.longitude, DEFAULT_CENTER.latitude]
+
+        map.easeTo({
+            center,
+            zoom: hasCoordinates ? SELECTED_ZOOM : DEFAULT_ZOOM,
+            duration: 250,
+        })
+
+        if (!hasCoordinates) {
+            if (markerRef.current) {
+                markerRef.current.remove()
+                markerRef.current = null
+            }
+
+            return
+        }
+
+        setMarkerPosition(latitude, longitude)
+    }, [hasCoordinates, latitude, longitude, setMarkerPosition])
+
+    syncMapWithSelectionRef.current = syncMapWithSelection
+
+    useEffect(() => {
+        if (!containerRef.current || mapRef.current) {
+            return
+        }
+
+        let isDisposed = false
+        let clickHandler: ((event: maplibregl.MapMouseEvent) => void) | null = null
+        let errorHandler: ((event: maplibregl.ErrorEvent) => void) | null = null
+
+        const initializeMap = async () => {
+            const center: LngLatLike = initialHasCoordinatesRef.current
+                ? [initialLongitudeRef.current, initialLatitudeRef.current]
+                : [DEFAULT_CENTER.longitude, DEFAULT_CENTER.latitude]
+
+            const vectorStyleUrl = getVietMapStyleUrl('default')
+
+            let style: string | StyleSpecification = FALLBACK_STYLE
+            didFallbackRef.current = true
+
+            if (vectorStyleUrl) {
+                const canUseVectorStyle = await probeVietMapStyle(vectorStyleUrl)
+
+                if (canUseVectorStyle) {
+                    style = vectorStyleUrl
+                    didFallbackRef.current = false
+                }
+            }
+
+            if (isDisposed || !containerRef.current) {
+                return
+            }
+
+            const map = new maplibregl.Map({
+                container: containerRef.current,
+                style,
+                center,
+                zoom: initialHasCoordinatesRef.current ? SELECTED_ZOOM : DEFAULT_ZOOM,
+            })
+
+            map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+
+            errorHandler = (event: maplibregl.ErrorEvent) => {
+                if (didFallbackRef.current) {
+                    return
+                }
+
+                const message = String(event?.error?.message ?? '')
+
+                // Some API keys can read style.json but are locked on vector tile endpoints (HTTP 423).
+                // If that happens, switch to raster fallback so station selection keeps working.
+                if (message.includes('423') || message.toLowerCase().includes('locked')) {
+                    didFallbackRef.current = true
+                    map.setStyle(FALLBACK_STYLE)
+                }
+            }
+
+            clickHandler = (event: maplibregl.MapMouseEvent) => {
+                setMarkerPosition(event.lngLat.lat, event.lngLat.lng)
+                void pickCoordinates(event.lngLat.lat, event.lngLat.lng)
+            }
+
+            map.on('click', clickHandler)
+            map.on('error', errorHandler)
+            mapRef.current = map
+            syncMapWithSelectionRef.current()
+        }
+
+        void initializeMap()
+
+        return () => {
+            isDisposed = true
+
+            const map = mapRef.current
+
+            if (map && clickHandler) {
+                map.off('click', clickHandler)
+            }
+
+            if (map && errorHandler) {
+                map.off('error', errorHandler)
+            }
+
+            if (markerRef.current) {
+                markerRef.current.remove()
+                markerRef.current = null
+            }
+
+            if (map) {
+                map.remove()
+                mapRef.current = null
+            }
+        }
+    }, [pickCoordinates, setMarkerPosition])
+
+    useEffect(() => {
+        syncMapWithSelection()
+    }, [syncMapWithSelection])
+
+    return <div ref={containerRef} className="h-full w-full" />
 }

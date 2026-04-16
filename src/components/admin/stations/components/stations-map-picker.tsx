@@ -1,6 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { searchOpenStreetMapLocations } from 'lib/openstreetmap'
-import type { IOpenStreetMapLocation } from 'lib/openstreetmap'
+import { searchVietMapLocations, type IVietMapLocation } from 'lib/vietmap'
 import { MapPin, Search } from 'lucide-react'
 import { useDebounce } from 'components/shared/hooks/use-debounce'
 
@@ -15,7 +14,7 @@ interface IStationMapPickerProps {
     helperText: string
     emptyStateText: string
     searchFailedText: string
-    onSelectLocation: (location: IOpenStreetMapLocation) => void
+    onSelectLocation: (location: IVietMapLocation) => void
 }
 
 const StationMapCanvas = lazy(async () => {
@@ -38,7 +37,7 @@ export const StationMapPicker = ({
 }: IStationMapPickerProps) => {
     const [searchQuery, setSearchQuery] = useState(address)
     const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false)
-    const [suggestions, setSuggestions] = useState<IOpenStreetMapLocation[]>([])
+    const [suggestions, setSuggestions] = useState<IVietMapLocation[]>([])
     const [showSuggestions, setShowSuggestions] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [isClient, setIsClient] = useState(false)
@@ -68,7 +67,7 @@ export const StationMapPicker = ({
         suggestionRequestRef.current = requestId
         setIsSuggestionsLoading(true)
 
-        void searchOpenStreetMapLocations(trimmedQuery, 6)
+        void searchVietMapLocations(trimmedQuery, 6)
             .then((results) => {
                 if (suggestionRequestRef.current !== requestId) {
                     return
@@ -92,7 +91,7 @@ export const StationMapPicker = ({
             })
     }, [debouncedSearchQuery])
 
-    const handleSelectLocation = useCallback((location: IOpenStreetMapLocation) => {
+    const handleSelectLocation = useCallback((location: IVietMapLocation) => {
         setErrorMessage(null)
         setSearchQuery(location.address)
         setSuggestions([])

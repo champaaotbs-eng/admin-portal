@@ -12,6 +12,9 @@ export const instance = axios.create({
     withCredentials: true,
 });
 
+let refreshPromise: Promise<unknown> | null = null
+let hasForcedLoginRedirect = false
+
 const resolveErrorKey = (error: any): string | null => {
     const message = error?.response?.data?.message
 
@@ -59,6 +62,8 @@ instance.interceptors.request.use(
 // Add a response interceptor
 instance.interceptors.response.use(
     function (response) {
+        hasForcedLoginRedirect = false
+
         if (response?.data) return response?.data
 
         return response;
@@ -69,17 +74,34 @@ instance.interceptors.response.use(
         const status = error?.response?.status
         const requestUrl = String(error?.config?.url ?? '')
         const isAuthEndpoint = requestUrl.includes('/v1/auth/admin/login') || requestUrl.includes('/v1/auth/refresh')
+        const originalRequest = error?.config as (typeof error.config & { _retryAfterRefresh?: boolean }) | undefined
 
         error.localizedMessage = resolveLocalizedMessage(error)
 
         if (status === 401 && !isAuthEndpoint) {
             try {
-                await refresh()
+                if (!refreshPromise) {
+                    refreshPromise = refresh().finally(() => {
+                        refreshPromise = null
+                    })
+                }
+
+                await refreshPromise
+
+                if (originalRequest && !originalRequest._retryAfterRefresh) {
+                    originalRequest._retryAfterRefresh = true
+                    return instance.request(originalRequest)
+                }
             } catch {
                 logout()
 
-                if (typeof window !== 'undefined' && window.location.pathname !== '/auth/login') {
-                    window.location.assign('/auth/login')
+                if (
+                    typeof window !== 'undefined'
+                    && window.location.pathname !== '/auth/login'
+                    && !hasForcedLoginRedirect
+                ) {
+                    hasForcedLoginRedirect = true
+                    window.location.replace('/auth/login')
                 }
             }
         }

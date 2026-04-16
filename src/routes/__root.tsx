@@ -1,6 +1,5 @@
 import { createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { I18nextProvider } from 'react-i18next'
 import { Toaster } from 'sonner'
 import { AppHeader } from 'components/shared/app-header'
@@ -25,15 +24,7 @@ function RootComponent() {
               <AppHeader />
               <RootOutlet />
               <Toaster position="top-right" richColors />
-              <TanStackDevtools
-                config={{ position: 'bottom-right' }}
-                plugins={[
-                  {
-                    name: 'Tanstack Router',
-                    render: <TanStackRouterDevtoolsPanel />,
-                  },
-                ]}
-              />
+              {import.meta.env.DEV ? <TanStackRouterDevtools position="bottom-right" /> : null}
             </div>
           </FileProvider>
         </ValidationProvider>

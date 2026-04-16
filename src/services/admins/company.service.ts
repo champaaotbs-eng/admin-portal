@@ -8,7 +8,10 @@ export const getAllCompanies = async (query: IRequestPagination<ICompany>) => {
 
     urlQuery.set('page', String(query.page))
     urlQuery.set('limit', String(query.limit))
-    urlQuery.set('filters', JSON.stringify(query.filters))
+
+    if (query.filters && Object.keys(query.filters).length > 0) {
+        urlQuery.set('filters', JSON.stringify(query.filters))
+    }
 
     const response = await api.get<IPagination<ICompany>>(`/v1/bus-companies?${urlQuery.toString()}`)
     return response

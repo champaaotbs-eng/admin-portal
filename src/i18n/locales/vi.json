@@ -764,6 +764,61 @@
                 "seats_min": "Phải có ít nhất 1 ghế"
             }
         },
+        "company_routes": {
+            "title": "Quản lý tuyến đường",
+            "description": "Quản lý tuyến đường và các điểm dừng của nhà xe",
+            "add_route": "Thêm tuyến",
+            "add_route_title": "Tạo tuyến mới",
+            "edit_route_title": "Chỉnh sửa tuyến",
+            "search_placeholder": "Tìm theo tên tuyến hoặc mã tuyến...",
+            "empty_state": "Không tìm thấy tuyến đường nào.",
+            "unknown_location": "Địa điểm chưa xác định",
+            "empty_value": "—",
+            "unit": {
+                "km": "km",
+                "minutes": "phút"
+            },
+            "table": {
+                "route": "Tuyến đường",
+                "distance": "Khoảng cách",
+                "duration": "Thời gian dự kiến",
+                "stops": "Điểm dừng",
+                "created_at": "Ngày tạo"
+            },
+            "form": {
+                "bus_company_id": "Mã nhà xe",
+                "bus_company_placeholder": "Chọn nhà xe",
+                "bus_company_search_placeholder": "Tìm nhà xe theo tên...",
+                "distance_km": "Khoảng cách (km)",
+                "estimate_duration_mins": "Thời gian dự kiến (phút)",
+                "route_stops": "Các điểm dừng",
+                "add_stop": "Thêm điểm dừng",
+                "remove_stop": "Xóa điểm dừng",
+                "no_stops": "Chưa có điểm dừng nào. Hãy thêm ít nhất một điểm dừng cho tuyến này.",
+                "arrangement_preview": "Thứ tự điểm dừng",
+                "arrangement_empty": "Chưa chọn điểm dừng",
+                "unselected_station": "Điểm dừng {{order}}",
+                "stop_order": "Điểm dừng #{{order}}",
+                "station": "Trạm",
+                "select_station": "Chọn trạm",
+                "station_search_placeholder": "Tìm trạm theo tên...",
+                "stop_type": "Loại điểm dừng",
+                "offset_mins": "Độ lệch thời gian (phút)",
+                "is_active": "Hoạt động"
+            },
+            "stop_type": {
+                "pickup": "Đón",
+                "dropoff": "Trả",
+                "both": "Đón và trả"
+            },
+            "messages": {
+                "create_success": "Tạo tuyến đường thành công",
+                "update_success": "Cập nhật tuyến đường thành công",
+                "delete_success": "Xóa tuyến đường thành công",
+                "confirm_delete": "Xóa tuyến đường \"{{route}}\"?",
+                "load_route_detail_failed": "Không thể tải chi tiết tuyến đường."
+            }
+        },
         "staff": {
             "title": "Quản lý nhân viên",
             "description": "Danh sách nhân viên và quản lý vai trò công ty",

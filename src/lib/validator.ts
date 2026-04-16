@@ -1,5 +1,35 @@
 import { z } from "zod"
-import mime from "mime-types"
+
+const MIME_EXTENSION_MAP: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+    'application/pdf': 'pdf',
+    'text/plain': 'txt',
+    'application/msword': 'doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+    'application/vnd.ms-excel': 'xls',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+}
+
+const getMimeExtension = (mimeType: string) => {
+    const normalized = mimeType.trim().toLowerCase()
+    if (!normalized) {
+        return ''
+    }
+
+    if (MIME_EXTENSION_MAP[normalized]) {
+        return MIME_EXTENSION_MAP[normalized]
+    }
+
+    const [, subtype] = normalized.split('/')
+    if (!subtype) {
+        return ''
+    }
+
+    return subtype.replace(/^x-/, '').split('+')[0]
+}
 
 interface ValidationRules {
     required?: boolean,
@@ -88,7 +118,11 @@ export function useValidator(translator: any, fieldSetting: FieldSetting) {
                 if (!Boolean(file)) return true
                 return accept.includes((file as unknown as File)?.type)
             },
-            { message: translator("invalid_file_type", { accept: [...new Set(accept.split(',').map((m) => mime.extension(m)).filter(Boolean))].join(', ') }) }
+            {
+                message: translator("invalid_file_type", {
+                    accept: [...new Set(accept.split(',').map((m) => getMimeExtension(m)).filter(Boolean))].join(', ')
+                })
+            }
         ))
         return constraints.reduce((acc, fn) => fn(acc as any), baseSchema)
     }

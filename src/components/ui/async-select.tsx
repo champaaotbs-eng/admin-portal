@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { useDebounce } from '@/components/shared/hooks/use-debounce'
 import { cn } from '@/lib/utils'
 
+const DEFAULT_LIMIT = 20
+const LOAD_MORE_THRESHOLD = 24
+
 export interface AsyncSelectOption {
     label: string
     value: string
@@ -13,12 +16,13 @@ export interface AsyncSelectOption {
 interface AsyncSelectProps {
     value?: string
     onChange: (value: string) => void
-    fetchOptions: (search: string) => Promise<AsyncSelectOption[]>
+    fetchOptions: (search: string, page: number, limit: number) => Promise<AsyncSelectOption[]>
     placeholder?: string
     searchPlaceholder?: string
     noOptionsMessage?: string
     className?: string
     disabled?: boolean
+    limit?: number
 }
 
 export function AsyncSelect({
@@ -30,49 +34,161 @@ export function AsyncSelect({
     noOptionsMessage = 'No options found.',
     className,
     disabled = false,
+    limit = DEFAULT_LIMIT,
 }: AsyncSelectProps) {
     const { t } = useTranslation()
     const [open, setOpen] = useState(false)
     const [search, setSearch] = useState('')
     const [options, setOptions] = useState<AsyncSelectOption[]>([])
     const [loading, setLoading] = useState(false)
+    const [loadingMore, setLoadingMore] = useState(false)
+    const [page, setPage] = useState(1)
+    const [hasMore, setHasMore] = useState(true)
     const debouncedSearch = useDebounce(search, 300)
     const containerRef = useRef<HTMLDivElement>(null)
+    const dropdownRef = useRef<HTMLDivElement>(null)
+    const optionsRef = useRef<AsyncSelectOption[]>([])
+    const fetchOptionsRef = useRef(fetchOptions)
+    const loadingRef = useRef(false)
+    const loadingMoreRef = useRef(false)
+    const pageRef = useRef(1)
+    const hasMoreRef = useRef(true)
 
     useEffect(() => {
-        let isMounted = true
+        fetchOptionsRef.current = fetchOptions
+    }, [fetchOptions])
 
-        const loadOptions = async () => {
+    const mergeUniqueOptions = (baseOptions: AsyncSelectOption[], incomingOptions: AsyncSelectOption[]) => {
+        if (baseOptions.length === 0) {
+            return incomingOptions
+        }
+
+        const existing = new Set(baseOptions.map((option) => option.value))
+        const next = [...baseOptions]
+
+        incomingOptions.forEach((option) => {
+            if (!existing.has(option.value)) {
+                existing.add(option.value)
+                next.push(option)
+            }
+        })
+
+        return next
+    }
+
+    const loadOptions = async ({
+        searchValue,
+        targetPage,
+        append,
+    }: {
+        searchValue: string
+        targetPage: number
+        append: boolean
+    }) => {
+        if (append) {
+            if (loadingRef.current || loadingMoreRef.current || !hasMoreRef.current) {
+                return
+            }
+            loadingMoreRef.current = true
+            setLoadingMore(true)
+        } else {
+            loadingRef.current = true
             setLoading(true)
-            try {
-                const results = await fetchOptions(debouncedSearch)
-                if (isMounted) {
-                    setOptions(results)
-                }
-            } catch (error) {
-                console.error('Failed to fetch options', error)
-                if (isMounted) setOptions([])
-            } finally {
-                if (isMounted) setLoading(false)
+        }
+
+        try {
+            const results = await fetchOptionsRef.current(searchValue, targetPage, limit)
+
+            if (append) {
+                const prevLength = optionsRef.current.length
+                const merged = mergeUniqueOptions(optionsRef.current, results)
+                optionsRef.current = merged
+                setOptions(merged)
+
+                const hasNewOptions = merged.length > prevLength
+                const canLoadMore = results.length >= limit && hasNewOptions
+                hasMoreRef.current = canLoadMore
+                setHasMore(canLoadMore)
+            } else {
+                optionsRef.current = results
+                setOptions(results)
+
+                const canLoadMore = results.length >= limit
+                hasMoreRef.current = canLoadMore
+                setHasMore(canLoadMore)
+            }
+
+            pageRef.current = targetPage
+            setPage(targetPage)
+        } catch (error) {
+            console.error('Failed to fetch options', error)
+            if (!append) {
+                optionsRef.current = []
+                setOptions([])
+            }
+            hasMoreRef.current = false
+            setHasMore(false)
+        } finally {
+            if (append) {
+                loadingMoreRef.current = false
+                setLoadingMore(false)
+            } else {
+                loadingRef.current = false
+                setLoading(false)
             }
         }
+    }
 
+    useEffect(() => {
         if (open) {
-            loadOptions()
+            if (dropdownRef.current) {
+                dropdownRef.current.scrollTop = 0
+            }
+            hasMoreRef.current = true
+            pageRef.current = 1
+            setHasMore(true)
+            setPage(1)
+            void loadOptions({
+                searchValue: debouncedSearch,
+                targetPage: 1,
+                append: false,
+            })
         }
-
-        return () => {
-            isMounted = false
-        }
-    }, [debouncedSearch, open, fetchOptions])
+    }, [debouncedSearch, open, limit])
 
     useEffect(() => {
         if (value && !open && options.length === 0) {
-            fetchOptions('').then(res => {
+            fetchOptionsRef.current('', 1, limit).then(res => {
+                optionsRef.current = res
                 setOptions(res)
             }).catch(() => { })
         }
-    }, [value, open, options.length, fetchOptions])
+    }, [value, open, options.length, limit])
+
+    const handleOptionsScroll = (event: React.UIEvent<HTMLDivElement>) => {
+        if (loadingRef.current || loadingMoreRef.current || !hasMoreRef.current) {
+            return
+        }
+
+        const { scrollTop, scrollHeight, clientHeight } = event.currentTarget
+
+        // Guard against auto-pagination when list isn't actually scrollable.
+        if (scrollHeight <= clientHeight) {
+            return
+        }
+
+        const isNearBottom = scrollHeight - (scrollTop + clientHeight) <= LOAD_MORE_THRESHOLD
+
+        if (!isNearBottom) {
+            return
+        }
+
+        void loadOptions({
+            searchValue: debouncedSearch,
+            targetPage: pageRef.current + 1,
+            append: true,
+        })
+    }
 
 
     useEffect(() => {
@@ -105,7 +221,11 @@ export function AsyncSelect({
             </button>
 
             {open && (
-                <div className="absolute top-full z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md outline-none">
+                <div
+                    ref={dropdownRef}
+                    className="absolute top-full z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md outline-none"
+                    onScroll={handleOptionsScroll}
+                >
                     <div className="flex items-center border-b px-3">
                         <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
                         <input
@@ -155,6 +275,12 @@ export function AsyncSelect({
                                 </div>
                             ))
                         )}
+                        {loadingMore ? (
+                            <div className="flex items-center justify-center p-2 text-xs text-muted-foreground">
+                                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                                {t('common.loading')}
+                            </div>
+                        ) : null}
                     </div>
                 </div>
             )}

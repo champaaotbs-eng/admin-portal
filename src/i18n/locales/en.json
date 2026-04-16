@@ -764,6 +764,61 @@
                 "seats_min": "Must have at least 1 seat"
             }
         },
+        "company_routes": {
+            "title": "Route Management",
+            "description": "Manage company routes and route stops",
+            "add_route": "Add route",
+            "add_route_title": "Create route",
+            "edit_route_title": "Edit route",
+            "search_placeholder": "Search by route name or id...",
+            "empty_state": "No routes found.",
+            "unknown_location": "Unknown location",
+            "empty_value": "—",
+            "unit": {
+                "km": "km",
+                "minutes": "mins"
+            },
+            "table": {
+                "route": "Route",
+                "distance": "Distance",
+                "duration": "Estimated duration",
+                "stops": "Stops",
+                "created_at": "Created at"
+            },
+            "form": {
+                "bus_company_id": "Bus company ID",
+                "bus_company_placeholder": "Select bus company",
+                "bus_company_search_placeholder": "Search bus company by name...",
+                "distance_km": "Distance (km)",
+                "estimate_duration_mins": "Estimated duration (mins)",
+                "route_stops": "Route stops",
+                "add_stop": "Add stop",
+                "remove_stop": "Remove stop",
+                "no_stops": "No route stop yet. Add one or more stops to complete this route.",
+                "arrangement_preview": "Stop arrangement",
+                "arrangement_empty": "No stop selected",
+                "unselected_station": "Station {{order}}",
+                "stop_order": "Stop #{{order}}",
+                "station": "Station",
+                "select_station": "Select station",
+                "station_search_placeholder": "Search station by name...",
+                "stop_type": "Stop type",
+                "offset_mins": "Offset (mins)",
+                "is_active": "Active"
+            },
+            "stop_type": {
+                "pickup": "Pickup",
+                "dropoff": "Dropoff",
+                "both": "Both"
+            },
+            "messages": {
+                "create_success": "Route created successfully",
+                "update_success": "Route updated successfully",
+                "delete_success": "Route deleted successfully",
+                "confirm_delete": "Delete route \"{{route}}\"?",
+                "load_route_detail_failed": "Unable to load route details."
+            }
+        },
         "staff": {
             "title": "Staff Management",
             "description": "Staff list and company role management",

@@ -4,11 +4,12 @@ export interface IRoute {
     routeId: string
     fromLocationId: string
     toLocationId: string
-    fromLocation: ILocation
-    toLocation: ILocation
+    fromLocationName: string
+    toLocationName: string
     distanceKm: number
     estimateDurationMins: number
     createdAt: string
+    stops?: IRouteStop[];
 }
 
 export interface IRouteStop {

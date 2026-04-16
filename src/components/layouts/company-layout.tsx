@@ -3,6 +3,7 @@ import {
     LayoutDashboard,
     Bus,
     MapPin,
+    Route,
     Ticket,
     DollarSign,
     Users,
@@ -16,6 +17,7 @@ export const CompanyLayout = () => {
     const navItems = [
         { label: t('nav.dashboard'), to: APP_ROUTES.COMPANY.ROOT, icon: LayoutDashboard },
         { label: t('nav.fleet'), to: APP_ROUTES.COMPANY.FLEET, icon: Bus },
+        { label: t('nav.routes'), to: APP_ROUTES.COMPANY.ROUTES, icon: Route },
         { label: t('nav.trips'), to: APP_ROUTES.COMPANY.TRIPS, icon: MapPin },
         { label: t('nav.bookings'), to: APP_ROUTES.COMPANY.BOOKINGS, icon: Ticket },
         { label: t('nav.revenue'), to: APP_ROUTES.COMPANY.REVENUE, icon: DollarSign },

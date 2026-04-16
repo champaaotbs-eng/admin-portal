@@ -1,4 +1,14 @@
 export const errorsVi = {
+    // Company routes form
+    bus_company_required: 'Nha xe la bat buoc',
+    distance_required: 'Khoang cach la bat buoc',
+    distance_positive: 'Khoang cach phai lon hon 0',
+    estimate_duration_required: 'Thoi gian du kien la bat buoc',
+    estimate_duration_positive: 'Thoi gian du kien phai lon hon 0',
+    location_required: 'Diem dung la bat buoc',
+    offset_required: 'Do lech thoi gian la bat buoc',
+    offset_non_negative: 'Do lech thoi gian phai lon hon hoac bang 0',
+
     // Locations
     location_not_found: 'Không tìm thấy địa điểm',
     location_already_used_in_routes: 'Địa điểm đang được sử dụng trong tuyến đường, không thể chỉnh sửa thông tin quan trọng',

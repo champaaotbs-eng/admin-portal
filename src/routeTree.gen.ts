@@ -17,6 +17,7 @@ import { Route as CompanyIndexRouteImport } from './routes/company/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as CompanyTripsRouteImport } from './routes/company/trips'
 import { Route as CompanyStaffRouteImport } from './routes/company/staff'
+import { Route as CompanyRoutesRouteImport } from './routes/company/routes'
 import { Route as CompanyRevenueRouteImport } from './routes/company/revenue'
 import { Route as CompanyFleetRouteImport } from './routes/company/fleet'
 import { Route as CompanyBookingsRouteImport } from './routes/company/bookings'
@@ -75,6 +76,11 @@ const CompanyTripsRoute = CompanyTripsRouteImport.update({
 const CompanyStaffRoute = CompanyStaffRouteImport.update({
   id: '/staff',
   path: '/staff',
+  getParentRoute: () => CompanyRouteRoute,
+} as any)
+const CompanyRoutesRoute = CompanyRoutesRouteImport.update({
+  id: '/routes',
+  path: '/routes',
   getParentRoute: () => CompanyRouteRoute,
 } as any)
 const CompanyRevenueRoute = CompanyRevenueRouteImport.update({
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/company/bookings': typeof CompanyBookingsRoute
   '/company/fleet': typeof CompanyFleetRoute
   '/company/revenue': typeof CompanyRevenueRoute
+  '/company/routes': typeof CompanyRoutesRoute
   '/company/staff': typeof CompanyStaffRoute
   '/company/trips': typeof CompanyTripsRoute
   '/admin/': typeof AdminIndexRoute
@@ -214,6 +221,7 @@ export interface FileRoutesByTo {
   '/company/bookings': typeof CompanyBookingsRoute
   '/company/fleet': typeof CompanyFleetRoute
   '/company/revenue': typeof CompanyRevenueRoute
+  '/company/routes': typeof CompanyRoutesRoute
   '/company/staff': typeof CompanyStaffRoute
   '/company/trips': typeof CompanyTripsRoute
   '/admin': typeof AdminIndexRoute
@@ -244,6 +252,7 @@ export interface FileRoutesById {
   '/company/bookings': typeof CompanyBookingsRoute
   '/company/fleet': typeof CompanyFleetRoute
   '/company/revenue': typeof CompanyRevenueRoute
+  '/company/routes': typeof CompanyRoutesRoute
   '/company/staff': typeof CompanyStaffRoute
   '/company/trips': typeof CompanyTripsRoute
   '/admin/': typeof AdminIndexRoute
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/company/bookings'
     | '/company/fleet'
     | '/company/revenue'
+    | '/company/routes'
     | '/company/staff'
     | '/company/trips'
     | '/admin/'
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
     | '/company/bookings'
     | '/company/fleet'
     | '/company/revenue'
+    | '/company/routes'
     | '/company/staff'
     | '/company/trips'
     | '/admin'
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/company/bookings'
     | '/company/fleet'
     | '/company/revenue'
+    | '/company/routes'
     | '/company/staff'
     | '/company/trips'
     | '/admin/'
@@ -409,6 +421,13 @@ declare module '@tanstack/react-router' {
       path: '/staff'
       fullPath: '/company/staff'
       preLoaderRoute: typeof CompanyStaffRouteImport
+      parentRoute: typeof CompanyRouteRoute
+    }
+    '/company/routes': {
+      id: '/company/routes'
+      path: '/routes'
+      fullPath: '/company/routes'
+      preLoaderRoute: typeof CompanyRoutesRouteImport
       parentRoute: typeof CompanyRouteRoute
     }
     '/company/revenue': {
@@ -603,6 +622,7 @@ interface CompanyRouteRouteChildren {
   CompanyBookingsRoute: typeof CompanyBookingsRoute
   CompanyFleetRoute: typeof CompanyFleetRoute
   CompanyRevenueRoute: typeof CompanyRevenueRoute
+  CompanyRoutesRoute: typeof CompanyRoutesRoute
   CompanyStaffRoute: typeof CompanyStaffRoute
   CompanyTripsRoute: typeof CompanyTripsRoute
   CompanyIndexRoute: typeof CompanyIndexRoute
@@ -612,6 +632,7 @@ const CompanyRouteRouteChildren: CompanyRouteRouteChildren = {
   CompanyBookingsRoute: CompanyBookingsRoute,
   CompanyFleetRoute: CompanyFleetRoute,
   CompanyRevenueRoute: CompanyRevenueRoute,
+  CompanyRoutesRoute: CompanyRoutesRoute,
   CompanyStaffRoute: CompanyStaffRoute,
   CompanyTripsRoute: CompanyTripsRoute,
   CompanyIndexRoute: CompanyIndexRoute,

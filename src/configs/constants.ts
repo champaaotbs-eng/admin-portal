@@ -23,3 +23,10 @@ export const ADMIN_TYPE = {
     SYSTEM_ADMIN: 'system_admin',
     COMPANY_ADMIN: 'company_admin'
 }
+
+
+export enum ERouteStopType {
+    PICKUP = 'PICKUP',
+    DROPOFF = 'DROPOFF',
+    BOTH = 'BOTH',
+}

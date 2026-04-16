@@ -1,4 +1,14 @@
 export const errorsEn = {
+    // Company routes form
+    bus_company_required: 'Bus company is required',
+    distance_required: 'Distance is required',
+    distance_positive: 'Distance must be greater than 0',
+    estimate_duration_required: 'Estimated duration is required',
+    estimate_duration_positive: 'Estimated duration must be greater than 0',
+    location_required: 'Station is required',
+    offset_required: 'Offset is required',
+    offset_non_negative: 'Offset must be greater than or equal to 0',
+
     // Locations
     location_not_found: 'Location not found',
     location_already_used_in_routes: 'Location is already used in routes and critical fields cannot be changed',

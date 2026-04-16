@@ -25,6 +25,7 @@ export const APP_ROUTES = {
 
     COMPANY: {
         ROOT: '/company',
+        ROUTES: '/company/routes',
         FLEET: '/company/fleet',
         TRIPS: '/company/trips',
         BOOKINGS: '/company/bookings',

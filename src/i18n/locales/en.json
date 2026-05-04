@@ -741,6 +741,11 @@
                 "SLEEPER": "Sleeper",
                 "LIMOUSINE": "Limousine"
             },
+            "seat_types": {
+                "STANDARD": "Standard",
+                "VIP": "VIP",
+                "BED": "Sleeper"
+            },
             "table": {
                 "code": "Bus code",
                 "name": "Bus name",
@@ -760,9 +765,15 @@
                 "name_placeholder": "45-seat Phuong Trang",
                 "type": "Bus type",
                 "seat_layout": "Seat layout",
-                "seat_layout_description": "Build the seat layout directly in the bus form",
+                "seat_layout_description": "Select an existing seat layout and review it before saving.",
                 "seat_layout_placeholder": "Select a seat layout",
                 "seat_layout_empty": "No seat layouts available",
+                "seat_layout_preview": "Seat layout preview",
+                "seat_layout_preview_empty": "Select a seat layout to preview it here.",
+                "seat_layout_preview_invalid": "This seat layout cannot be previewed.",
+                "seat_layout_preview_meta": "{{rows}} rows • {{columns}} columns • {{floors}} floors • {{seats}} seats",
+                "floor_tab": "Floor {{floor}}",
+                "driver_seat": "Driver Seat",
                 "description": "Description",
                 "description_placeholder": "Enter bus description"
             },
@@ -772,29 +783,21 @@
                 "delete_success": "Bus deleted successfully",
                 "confirm_delete": "Delete bus \"{{name}}\"?"
             },
+            "pagination": {
+                "previous": "Previous",
+                "next": "Next",
+                "page": "Page",
+                "showing": "Showing",
+                "no_items": "No buses found"
+            },
             "errors": {
                 "code_required": "Bus code is required",
                 "plate_required": "License plate is required",
                 "name_required": "Bus name is required",
                 "type_required": "Bus type is required",
                 "seat_layout_required": "Seat layout is required",
-                "seat_layout_name_required": "Seat layout name is required",
-                "seat_layout_name_max": "Seat layout name must be at most 120 characters",
-                "seat_layout_rows_required": "Rows are required",
-                "seat_layout_rows_min": "Rows must be at least 1",
-                "seat_layout_rows_max": "Rows must be at most 20",
-                "seat_layout_columns_required": "Columns are required",
-                "seat_layout_columns_min": "Columns must be at least 1",
-                "seat_layout_columns_max": "Columns must be at most 8",
-                "seat_layout_seats_required": "Add at least one seat",
-                "seat_code_required": "Seat code is required",
-                "seat_code_max": "Seat code must be at most 20 characters",
-                "seat_row_min": "Seat row must be at least 1",
-                "seat_column_min": "Seat column must be at least 1",
-                "seat_floor_min": "Seat floor must be at least 1",
-                "seat_type_required": "Seat type is required",
-                "seat_price_min": "Seat price must be greater than or equal to 0",
-                "description_max": "Description must be at most 500 characters"
+                "description_max": "Description must be at most 500 characters",
+                "bus_not_found": "Bus not found"
             }
         },
         "seat_layouts": {
@@ -827,7 +830,8 @@
                 "floors": "Floors",
                 "floor_tab": "Floor {{floor}}",
                 "floor_tab_aria": "Switch to floor {{floor}}",
-                "add_floor": "Add Floor"
+                "add_floor": "Add Floor",
+                "remove_floor": "Remove Floor"
             },
             "editor": {
                 "invalid_grid": "Invalid grid. Set rows and columns first.",
@@ -863,6 +867,13 @@
                 "delete_success": "Seat layout deleted successfully",
                 "confirm_delete": "Delete seat layout \"{{name}}\"?"
             },
+            "pagination": {
+                "previous": "Previous",
+                "next": "Next",
+                "page": "Page",
+                "showing": "Showing",
+                "no_items": "No seat layouts found"
+            },
             "errors": {
                 "name_required": "Layout name is required",
                 "name_max": "Layout name must be at most 120 characters",
@@ -882,6 +893,7 @@
                 "seat_type_required": "Seat type is required",
                 "seats_required": "Add at least one seat",
                 "seat_code_duplicate": "Seat code already exists",
+                "seat_position_occupied": "This seat position is already occupied on that floor",
                 "company_required": "Bus company is required",
                 "layout_name_required": "Layout name is required",
                 "invalid_layout_dimensions": "Invalid layout dimensions",

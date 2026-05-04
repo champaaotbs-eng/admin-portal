@@ -4,52 +4,24 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
+import { PaginatedTable, type PaginatedTableColumn } from '@/components/shared/pagination-table'
 import { formatDateTime } from '@/utils/format'
-import { useAuthStore } from '@/store/auth.store'
-import type { SeatLayoutSubmitPayload } from './hooks/use-seat-layouts-page'
+import type { SeatLayoutSubmitPayload, SeatLayoutRecord } from './hooks/use-seat-layouts-page'
 import { useSeatLayoutsPage } from './hooks/use-seat-layouts-page'
 import { SeatLayoutForm } from './components/seat-layout-form'
 
-const getCompanyIdFromAdmin = (admin: unknown): string => {
-    if (!admin || typeof admin !== 'object') {
-        return ''
-    }
-
-    const source = admin as {
-        busCompanyId?: string
-        companyId?: string
-        id?: string | number
-        company?: { busCompanyId?: string; companyId?: string }
-        busCompany?: { busCompanyId?: string; id?: string | number }
-    }
-
-    const rawId = source.busCompanyId
-        ?? source.companyId
-        ?? source.company?.busCompanyId
-        ?? source.company?.companyId
-        ?? source.busCompany?.busCompanyId
-        ?? source.busCompany?.id
-        ?? source.id
-
-    if (typeof rawId === 'number') {
-        return String(rawId)
-    }
-
-    return rawId ?? ''
-}
-
 export const CompanySeatLayoutsPage = () => {
-    const { admin } = useAuthStore()
     const { t } = useTranslation('translation', { keyPrefix: 'pages.seat_layouts' })
     const { t: tCommon } = useTranslation()
+    const [page, setPage] = useState(1)
     const [search, setSearch] = useState('')
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [editingLayoutId, setEditingLayoutId] = useState<string | null>(null)
-
-    const busCompanyId = useMemo(() => getCompanyIdFromAdmin(admin), [admin])
+    const pageSize = 10
 
     const {
         layouts,
+        meta,
         layoutDetail,
         isLoading,
         isDetailLoading,
@@ -58,9 +30,10 @@ export const CompanySeatLayoutsPage = () => {
         handleSaveLayout,
         handleDeleteLayout,
     } = useSeatLayoutsPage({
-        busCompanyId,
         editingLayoutId,
         isDetailEnabled: isDialogOpen,
+        page,
+        pageSize,
     })
 
     const filteredLayouts = useMemo(() => {
@@ -78,15 +51,13 @@ export const CompanySeatLayoutsPage = () => {
 
     const getSeatCount = (seatLayout: { seats?: Array<unknown> }) => seatLayout.seats?.length ?? 0
 
-    const stats = useMemo(() => {
-        return {
-            totalLayouts: layouts.length,
-            totalSeats: layouts.reduce((accumulator, layout) => accumulator + getSeatCount(layout), 0),
-            averageSeats: layouts.length > 0
-                ? Math.round(layouts.reduce((accumulator, layout) => accumulator + getSeatCount(layout), 0) / layouts.length)
-                : 0,
-        }
-    }, [layouts])
+    const stats = useMemo(() => ({
+        totalLayouts: meta.totalItems,
+        totalSeats: layouts.reduce((acc, layout) => acc + getSeatCount(layout), 0),
+        averageSeats: layouts.length > 0
+            ? Math.round(layouts.reduce((acc, layout) => acc + getSeatCount(layout), 0) / layouts.length)
+            : 0,
+    }), [layouts, meta.totalItems])
 
     const activeLayout = useMemo(() => {
         if (!editingLayoutId) {
@@ -96,25 +67,80 @@ export const CompanySeatLayoutsPage = () => {
         return layoutDetail ?? layouts.find((layout) => layout.seatLayoutId === editingLayoutId) ?? null
     }, [editingLayoutId, layoutDetail, layouts])
 
-    const closeDialog = () => {
-        setIsDialogOpen(false)
-        setEditingLayoutId(null)
-    }
-
-    const openCreateDialog = () => {
-        setEditingLayoutId(null)
-        setIsDialogOpen(true)
-    }
-
-    const openEditDialog = (seatLayoutId: string) => {
-        setEditingLayoutId(seatLayoutId)
-        setIsDialogOpen(true)
-    }
+    const columns = useMemo<PaginatedTableColumn<SeatLayoutRecord>[]>(() => [
+        {
+            id: 'name',
+            header: t('table.name'),
+            renderCell: (layout) => <span className="font-medium">{layout.name || layout.seatLayoutId}</span>,
+        },
+        {
+            id: 'grid',
+            header: t('table.grid'),
+            renderCell: (layout) => (
+                <span className="text-muted-foreground">
+                    {t('table.grid_value', {
+                        rows: layout.numberRows,
+                        columns: layout.numberCols,
+                        floors: layout.numberFloors,
+                    })}
+                </span>
+            ),
+        },
+        {
+            id: 'seats',
+            header: t('table.seats'),
+            renderCell: (layout) => getSeatCount(layout),
+        },
+        {
+            id: 'createdAt',
+            header: t('table.created_at'),
+            renderCell: (layout) => (
+                <span className="text-xs text-muted-foreground">
+                    {layout.createdAt ? formatDateTime(layout.createdAt) : t('empty_value')}
+                </span>
+            ),
+        },
+        {
+            id: 'actions',
+            header: tCommon('common.actions'),
+            headerClassName: 'text-right',
+            cellClassName: 'text-right',
+            renderCell: (layout) => (
+                <div className="flex items-center justify-end gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                            setEditingLayoutId(layout.seatLayoutId)
+                            setIsDialogOpen(true)
+                        }}
+                    >
+                        <Pencil className="h-3.5 w-3.5" />
+                        {tCommon('common.edit')}
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        loading={isDeleting}
+                        onClick={() => {
+                            void handleDeleteLayout(layout)
+                        }}
+                    >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        {tCommon('common.delete')}
+                    </Button>
+                </div>
+            ),
+        },
+    ], [handleDeleteLayout, isDeleting, t, tCommon])
 
     const handleSubmitLayout = async (payload: SeatLayoutSubmitPayload) => {
         try {
             await handleSaveLayout(payload, editingLayoutId)
-            closeDialog()
+            setIsDialogOpen(false)
+            setEditingLayoutId(null)
         } catch {
             // Error toast is handled in the query hook.
         }
@@ -130,7 +156,10 @@ export const CompanySeatLayoutsPage = () => {
                     <p className="text-sm text-muted-foreground">{t('description')}</p>
                 </div>
 
-                <Button onClick={openCreateDialog}>
+                <Button onClick={() => {
+                    setEditingLayoutId(null)
+                    setIsDialogOpen(true)
+                }}>
                     <Plus className="h-4 w-4" />
                     {t('add_layout')}
                 </Button>
@@ -181,81 +210,34 @@ export const CompanySeatLayoutsPage = () => {
                 </div>
             </div>
 
-            {isLoading ? (
-                <p className="text-sm text-muted-foreground">{tCommon('common.loading')}</p>
-            ) : (
-                <div className="overflow-x-auto rounded-lg border border-border">
-                    <table className="w-full text-sm">
-                        <thead className="bg-muted/50">
-                            <tr>
-                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.name')}</th>
-                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.grid')}</th>
-                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.seats')}</th>
-                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.created_at')}</th>
-                                <th className="px-4 py-3 text-right font-medium text-muted-foreground">{tCommon('common.actions')}</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {filteredLayouts.map((layout) => (
-                                <tr key={layout.seatLayoutId} className="border-t border-border hover:bg-muted/30">
-                                    <td className="px-4 py-3 font-medium">
-                                        {layout.name || layout.seatLayoutId}
-                                    </td>
-                                    <td className="px-4 py-3 text-muted-foreground">
-                                        {t('table.grid_value', {
-                                            rows: layout.numberRows,
-                                            columns: layout.numberCols,
-                                            floors: layout.numberFloors,
-                                        })}
-                                    </td>
-                                    <td className="px-4 py-3">{getSeatCount(layout)}</td>
-                                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                                        {layout.createdAt ? formatDateTime(layout.createdAt) : t('empty_value')}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => openEditDialog(layout.seatLayoutId)}
-                                            >
-                                                <Pencil className="h-3.5 w-3.5" />
-                                                {tCommon('common.edit')}
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant="destructive"
-                                                size="sm"
-                                                loading={isDeleting}
-                                                onClick={() => {
-                                                    void handleDeleteLayout(layout)
-                                                }}
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5" />
-                                                {tCommon('common.delete')}
-                                            </Button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-
-                            {filteredLayouts.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
-                                        {t('empty_state')}
-                                    </td>
-                                </tr>
-                            ) : null}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+            <PaginatedTable
+                columns={columns}
+                data={filteredLayouts}
+                rowKey={(layout) => layout.seatLayoutId}
+                isLoading={isLoading}
+                emptyMessage={t('empty_state')}
+                pagination={{
+                    currentPage: meta.page,
+                    totalPages: meta.totalPages,
+                    totalItems: meta.totalItems,
+                    pageSize: meta.limit,
+                    onPageChange: setPage,
+                    labels: {
+                        previous: t('pagination.previous'),
+                        next: t('pagination.next'),
+                        page: t('pagination.page'),
+                        showing: t('pagination.showing'),
+                        noItems: t('pagination.no_items'),
+                    },
+                }}
+            />
 
             <Dialog
                 open={isDialogOpen}
-                onClose={closeDialog}
+                onClose={() => {
+                    setIsDialogOpen(false)
+                    setEditingLayoutId(null)
+                }}
                 title={editingLayoutId ? t('edit_layout_title') : t('add_layout_title')}
                 className="max-w-6xl"
             >
@@ -265,7 +247,10 @@ export const CompanySeatLayoutsPage = () => {
                         isSubmitting={isSubmitting}
                         isDetailLoading={isDetailLoading}
                         onSubmit={handleSubmitLayout}
-                        onCancel={closeDialog}
+                        onCancel={() => {
+                            setIsDialogOpen(false)
+                            setEditingLayoutId(null)
+                        }}
                     />
                 </div>
             </Dialog>

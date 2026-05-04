@@ -6,10 +6,8 @@ import { ESeatType } from 'types/seat-layout'
 import type { SeatDraft } from '../hooks/use-seat-layouts-page'
 import { Icon } from "lucide-react";
 import { steeringWheel } from "@lucide/lab";
+import { SeatTypeIcon } from './seat-type-icon'
 
-export default function App() {
-    return <Icon iconNode={steeringWheel} />;
-}
 interface ISeatLayoutEditorProps {
     rows: number
     columns: number
@@ -125,17 +123,21 @@ export const SeatLayoutEditor = ({
     const effectiveRows = Math.max(rows, maxSeatRow)
 
     const bodyCells = useMemo(() => {
-        if (effectiveRows < 2 || columns < 1) {
+        // On floor 1, row 1 is the driver strip so passenger seats start at row 2.
+        // On all other floors there is no driver row, so start at row 1.
+        const startRow = activeFloorNum === 1 ? 2 : 1
+        const visualRows = activeFloorNum === 1 ? effectiveRows - 1 : effectiveRows
+
+        if (visualRows < 1 || columns < 1) {
             return []
         }
 
-        const visualRows = effectiveRows - 1 // visual rows shown below the driver row
         return Array.from({ length: visualRows * columns }, (_, index) => {
-            const row = Math.floor(index / columns) + 2 // start from real row 2
+            const row = Math.floor(index / columns) + startRow
             const col = (index % columns) + 1
             return { row, col }
         })
-    }, [effectiveRows, columns])
+    }, [effectiveRows, columns, activeFloorNum])
 
     const handleCellDrop = (event: React.DragEvent, row: number, col: number) => {
         if (isDisabled) {
@@ -222,6 +224,7 @@ export const SeatLayoutEditor = ({
                             )}
                         >
                             <GripVertical className="h-3.5 w-3.5" />
+                            <SeatTypeIcon seatType={seatType} className="h-3.5 w-3.5" />
                             {t(`seat_types.${seatType}`)}
                         </button>
                     ))}
@@ -252,7 +255,12 @@ export const SeatLayoutEditor = ({
                                     event.preventDefault()
                                 }
                             }}
-                            className={cn('min-h-12 rounded-md border border-dashed border-border p-1 transition-colors bg-gray-100/50')}
+                            className={cn(
+                                'min-h-12 rounded-md border border-dashed p-1 transition-colors',
+                                cell.col === 1
+                                    ? 'border-amber-300 bg-amber-50/50'
+                                    : 'border-border/30 bg-muted/20 opacity-50 cursor-not-allowed',
+                            )}
                             aria-label={t('editor.grid_cell_aria', { row: cell.row, col: cell.col })}
                         >
                             {seat ? (
@@ -287,7 +295,7 @@ export const SeatLayoutEditor = ({
                                 </div>
                             ) : (
                                 <div className="flex h-full min-h-12 items-center justify-center rounded-md text-xs text-muted-foreground">
-                                    {cell.col === 1 && canHaveDriverSeat ? (
+                                    {cell.col === 1 ? (
                                         <Icon iconNode={steeringWheel} className='h-4 w-4' />
                                     ) : (
                                         <span className="text-[10px]">{ }</span>
@@ -325,7 +333,7 @@ export const SeatLayoutEditor = ({
                                     onDragStart={(event) => handleSeatDragStart(event, seat.localId)}
                                     onClick={() => onSelectSeat(seat.localId)}
                                     className={cn(
-                                        'relative flex h-full min-h-16 flex-col justify-end rounded-md border px-2 pb-2 pt-5 text-left',
+                                        'relative flex h-full min-h-16 flex-col rounded-md border px-2 pb-2 pt-5 text-left',
                                         cn('cursor-pointer', seatTypeColors[seat.seatType], isDisabled ? 'cursor-not-allowed opacity-70' : 'cursor-grab active:cursor-grabbing'),
                                         selectedSeatLocalId === seat.localId ? 'ring-2 ring-primary' : null,
                                     )}
@@ -333,6 +341,10 @@ export const SeatLayoutEditor = ({
                                     <div className="absolute left-1.5 top-1.5 flex items-center gap-1 text-[10px] font-medium opacity-80">
                                         <GripVertical className="h-3 w-3" />
                                         <span>{t(`seat_types.${seat.seatType}`)}</span>
+                                    </div>
+
+                                    <div className="flex flex-1 items-center justify-center pt-2">
+                                        <SeatTypeIcon seatType={seat.seatType} className="h-7 w-7" />
                                     </div>
 
                                     <button
@@ -348,7 +360,7 @@ export const SeatLayoutEditor = ({
                                         <Trash2 className="h-3 w-3" />
                                     </button>
 
-                                    <span className="text-xs font-semibold">{seat.seatCode}</span>
+                                    <span className="text-center text-xs font-semibold">{seat.seatCode}</span>
                                 </div>
                             ) : (
                                 <button

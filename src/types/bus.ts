@@ -1,4 +1,16 @@
-import type { ISeatLayoutUpsertPayload } from './seat-layout'
+import type { ISeatLayout } from './seat-layout'
+
+export interface ICreateBus {
+    companyId?: string
+    busType: EBusType
+    busCode: string
+    busName: string
+    seatLayoutId?: string
+    description: string
+    licensePlate: string
+}
+
+export interface IUpdateBus extends Partial<ICreateBus> { }
 
 export interface IBus {
     busId: string
@@ -7,7 +19,7 @@ export interface IBus {
     busCode: string
     busName: string
     seatLayoutId?: string
-    seatLayout?: ISeatLayoutUpsertPayload
+    seatLayout?: ISeatLayout
     description: string
     licensePlate: string
     createdAt: string

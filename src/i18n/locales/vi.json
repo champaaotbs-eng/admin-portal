@@ -741,6 +741,11 @@
                 "SLEEPER": "Giường nằm",
                 "LIMOUSINE": "Limousine"
             },
+            "seat_types": {
+                "STANDARD": "Ghế ngồi",
+                "VIP": "VIP",
+                "BED": "Giường nằm"
+            },
             "table": {
                 "code": "Mã xe",
                 "name": "Tên xe",
@@ -760,9 +765,15 @@
                 "name_placeholder": "Xe 45 chỗ Phương Trang",
                 "type": "Loại xe",
                 "seat_layout": "Sơ đồ ghế",
-                "seat_layout_description": "Thiết kế sơ đồ ghế ngay trong form xe",
+                "seat_layout_description": "Chọn một sơ đồ ghế có sẵn và xem trước trước khi lưu.",
                 "seat_layout_placeholder": "Chọn sơ đồ ghế",
                 "seat_layout_empty": "Không có sơ đồ ghế nào",
+                "seat_layout_preview": "Xem trước sơ đồ ghế",
+                "seat_layout_preview_empty": "Chọn sơ đồ ghế để xem trước tại đây.",
+                "seat_layout_preview_invalid": "Không thể xem trước sơ đồ ghế này.",
+                "seat_layout_preview_meta": "{{rows}} hàng • {{columns}} cột • {{floors}} tầng • {{seats}} ghế",
+                "floor_tab": "Tầng {{floor}}",
+                "driver_seat": "Ghế Tài Xế",
                 "description": "Mô tả",
                 "description_placeholder": "Nhập mô tả xe"
             },
@@ -772,29 +783,21 @@
                 "delete_success": "Xóa xe thành công",
                 "confirm_delete": "Xóa xe \"{{name}}\"?"
             },
+            "pagination": {
+                "previous": "Trước",
+                "next": "Sau",
+                "page": "Trang",
+                "showing": "Hiển thị",
+                "no_items": "Không tìm thấy xe"
+            },
             "errors": {
                 "code_required": "Mã xe là bắt buộc",
                 "plate_required": "Biển số xe là bắt buộc",
                 "name_required": "Tên xe là bắt buộc",
                 "type_required": "Loại xe là bắt buộc",
                 "seat_layout_required": "Sơ đồ ghế là bắt buộc",
-                "seat_layout_name_required": "Tên sơ đồ ghế là bắt buộc",
-                "seat_layout_name_max": "Tên sơ đồ ghế tối đa 120 ký tự",
-                "seat_layout_rows_required": "Số hàng là bắt buộc",
-                "seat_layout_rows_min": "Số hàng phải lớn hơn hoặc bằng 1",
-                "seat_layout_rows_max": "Số hàng tối đa là 20",
-                "seat_layout_columns_required": "Số cột là bắt buộc",
-                "seat_layout_columns_min": "Số cột phải lớn hơn hoặc bằng 1",
-                "seat_layout_columns_max": "Số cột tối đa là 8",
-                "seat_layout_seats_required": "Vui lòng thêm ít nhất một ghế",
-                "seat_code_required": "Mã ghế là bắt buộc",
-                "seat_code_max": "Mã ghế tối đa 20 ký tự",
-                "seat_row_min": "Hàng ghế phải lớn hơn hoặc bằng 1",
-                "seat_column_min": "Cột ghế phải lớn hơn hoặc bằng 1",
-                "seat_floor_min": "Tầng ghế phải lớn hơn hoặc bằng 1",
-                "seat_type_required": "Loại ghế là bắt buộc",
-                "seat_price_min": "Giá ghế phải lớn hơn hoặc bằng 0",
-                "description_max": "Mô tả tối đa 500 ký tự"
+                "description_max": "Mô tả tối đa 500 ký tự",
+                "bus_not_found": "Không tìm thấy xe"
             }
         },
         "seat_layouts": {
@@ -827,7 +830,8 @@
                 "floors": "Số tầng",
                 "floor_tab": "Tầng {{floor}}",
                 "floor_tab_aria": "Chuyển sang tầng {{floor}}",
-                "add_floor": "Thêm tầng"
+                "add_floor": "Thêm tầng",
+                "remove_floor": "Xóa tầng"
             },
             "editor": {
                 "invalid_grid": "Sơ đồ không hợp lệ. Vui lòng đặt số hàng và cột.",
@@ -863,6 +867,13 @@
                 "delete_success": "Xóa sơ đồ ghế thành công",
                 "confirm_delete": "Xóa sơ đồ ghế \"{{name}}\"?"
             },
+            "pagination": {
+                "previous": "Trước",
+                "next": "Sau",
+                "page": "Trang",
+                "showing": "Hiển thị",
+                "no_items": "Không tìm thấy sơ đồ ghế"
+            },
             "errors": {
                 "name_required": "Tên sơ đồ là bắt buộc",
                 "name_max": "Tên sơ đồ tối đa 120 ký tự",
@@ -882,6 +893,7 @@
                 "seat_type_required": "Loại ghế là bắt buộc",
                 "seats_required": "Vui lòng thêm ít nhất một ghế",
                 "seat_code_duplicate": "Mã ghế đã tồn tại",
+                "seat_position_occupied": "Vị trí ghế này đã được sử dụng ở tầng đó",
                 "company_required": "Nhà xe là bắt buộc",
                 "layout_name_required": "Tên sơ đồ là bắt buộc",
                 "invalid_layout_dimensions": "Kích thước sơ đồ không hợp lệ",

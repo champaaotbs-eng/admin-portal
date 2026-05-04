@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { cn } from '@/utils/cn'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Trash2, Plus } from 'lucide-react'
+import { Trash2, Plus, Minus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -75,6 +75,16 @@ const defaultSeatConfig: TSeatConfigFormData = {
     floor: '1',
     seatType: ESeatType.STANDARD,
 }
+
+const findSeatAtPosition = (seats: SeatDraft[], row: number, col: number, floor: number, excludedLocalId?: string) => (
+    seats.find((seat) => {
+        if (excludedLocalId && seat.localId === excludedLocalId) {
+            return false
+        }
+
+        return seat.row === row && seat.col === col && seat.floor === floor
+    })
+)
 
 export const SeatLayoutForm = ({
     initialLayout,
@@ -209,7 +219,7 @@ export const SeatLayoutForm = ({
 
     const handleCreateSeat = (row: number, col: number, seatType: ESeatType) => {
         setSeats((previousSeats) => {
-            const occupiedSeat = previousSeats.find((seat) => seat.row === row && seat.col === col)
+            const occupiedSeat = findSeatAtPosition(previousSeats, row, col, activeFloor)
 
             if (occupiedSeat) {
                 setSelectedSeatLocalId(occupiedSeat.localId)
@@ -242,7 +252,7 @@ export const SeatLayoutForm = ({
                 return previousSeats
             }
 
-            const targetSeat = previousSeats.find((seat) => seat.row === row && seat.col === col)
+            const targetSeat = findSeatAtPosition(previousSeats, row, col, sourceSeat.floor, localId)
 
             if (!targetSeat) {
                 return previousSeats.map((seat) => {
@@ -317,6 +327,20 @@ export const SeatLayoutForm = ({
             return
         }
 
+        const occupiedSeat = findSeatAtPosition(
+            seats,
+            selectedSeat.row,
+            selectedSeat.col,
+            floorValue,
+            selectedSeat.localId,
+        )
+
+        if (occupiedSeat) {
+            setSelectedSeatLocalId(occupiedSeat.localId)
+            seatConfigForm.setError('floor', { message: t('errors.seat_position_occupied') })
+            return
+        }
+
         setSeats((previousSeats) => previousSeats.map((seat) => {
             if (seat.localId !== selectedSeat.localId) {
                 return seat
@@ -336,7 +360,6 @@ export const SeatLayoutForm = ({
             toast.error(t('errors.company_required'))
             return
         }
-        console.log('Submitting layout with values:', values)
         if (seats.length === 0) {
             toast.error(t('errors.seats_required'))
             return
@@ -366,20 +389,22 @@ export const SeatLayoutForm = ({
     })
 
     return (
-        <form onSubmit={handleSubmitLayout} className="space-y-4 overflow-y-auto">
+        <form onSubmit={handleSubmitLayout} className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-4">
-                <Controller
-                    name="name"
-                    control={layoutForm.control}
-                    render={({ field }) => (
-                        <Input
-                            {...field}
-                            label={t('form.name')}
-                            placeholder={t('form.name_placeholder')}
-                            error={layoutForm.formState.errors.name?.message}
-                        />
-                    )}
-                />
+                <div className="sm:col-span-2">
+                    <Controller
+                        name="name"
+                        control={layoutForm.control}
+                        render={({ field }) => (
+                            <Input
+                                {...field}
+                                label={t('form.name')}
+                                placeholder={t('form.name_placeholder')}
+                                error={layoutForm.formState.errors.name?.message}
+                            />
+                        )}
+                    />
+                </div>
 
                 <Controller
                     name="numberRows"
@@ -424,19 +449,30 @@ export const SeatLayoutForm = ({
                         <div className="flex items-center gap-1">
                             {Array.from({ length: Math.max(watchedFloors, 1) }, (_, i) => {
                                 const floor = i + 1
+                                const floorSeatCount = seats.filter((s) => s.floor === floor).length
                                 return (
                                     <button
                                         key={`floor-tab-${floor}`}
                                         type="button"
                                         onClick={() => setActiveFloor(floor)}
                                         className={cn(
-                                            'px-2 py-1 rounded-md text-sm',
+                                            'flex items-center gap-1.5 px-2 py-1 rounded-md text-sm',
                                             activeFloor === floor ? 'bg-primary text-white' : 'bg-card text-foreground',
                                         )}
                                         aria-pressed={activeFloor === floor}
                                         aria-label={t('form.floor_tab_aria', { floor })}
                                     >
                                         {t('form.floor_tab', { floor })}
+                                        {floorSeatCount > 0 && (
+                                            <span className={cn(
+                                                'rounded-full px-1.5 text-[10px] font-semibold',
+                                                activeFloor === floor
+                                                    ? 'bg-white/25 text-white'
+                                                    : 'bg-primary/15 text-primary',
+                                            )}>
+                                                {floorSeatCount}
+                                            </span>
+                                        )}
                                     </button>
                                 )
                             })}
@@ -461,14 +497,16 @@ export const SeatLayoutForm = ({
                                 type="button"
                                 variant="outline"
                                 size="sm"
+                                disabled={watchedFloors <= 1}
                                 onClick={() => {
-                                    if (watchedFloors <= 1) return
                                     const next = Math.max(1, watchedFloors) - 1
                                     layoutForm.setValue('numberFloors', String(next), { shouldDirty: true, shouldValidate: true })
                                 }}
                                 className="rounded-full px-3 py-1.5"
+                                aria-label={t('form.remove_floor')}
                             >
-                                -
+                                <Minus className="h-4 w-4 mr-2" />
+                                {t('form.remove_floor')}
                             </Button>
                         </div>
                     </div>
@@ -541,7 +579,6 @@ export const SeatLayoutForm = ({
 
                             <Button
                                 type="button"
-                                variant="outline"
                                 className="w-full"
                                 onClick={handleApplySeatConfig}
                                 disabled={isSubmitting || isDetailLoading}

@@ -5,43 +5,10 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { deleteBus, getAllBuses } from 'services/company/bus.service'
 import { EBusType } from 'types/bus'
-import type { IBus } from 'types/bus'
 import type { BusType, FleetItem } from '../data'
+import { normalizeBusList } from '../utils/normalize-bus'
 
 const BUSES_QUERY_KEY = ['company-buses']
-const readRows = (payload: unknown): IBus[] => {
-    if (Array.isArray(payload)) {
-        return payload
-    }
-
-    if (!payload || typeof payload !== 'object') {
-        return []
-    }
-
-    const source = payload as Record<string, unknown>
-
-    if (Array.isArray(source.result)) {
-        return source.result as IBus[]
-    }
-
-    if (Array.isArray(source.data)) {
-        return source.data as IBus[]
-    }
-
-    if (source.data && typeof source.data === 'object') {
-        const nested = source.data as Record<string, unknown>
-
-        if (Array.isArray(nested.result)) {
-            return nested.result as IBus[]
-        }
-
-        if (Array.isArray(nested.data)) {
-            return nested.data as IBus[]
-        }
-    }
-
-    return []
-}
 
 const resolveErrorMessage = (error: unknown, t: (key: string) => string): string => {
     const source = error as {
@@ -61,6 +28,8 @@ interface UseFleetPageProps {
     setSearch: Dispatch<SetStateAction<string>>
     typeFilter: BusType | 'all'
     setTypeFilter: Dispatch<SetStateAction<BusType | 'all'>>
+    page: number
+    pageSize: number
 }
 
 export const useFleetPage = ({
@@ -68,15 +37,20 @@ export const useFleetPage = ({
     setSearch,
     typeFilter,
     setTypeFilter,
+    page,
+    pageSize,
 }: UseFleetPageProps) => {
     const queryClient = useQueryClient()
     const { t } = useTranslation('translation', { keyPrefix: 'pages.buses' })
     const { t: tRoot } = useTranslation()
 
     const busesQuery = useQuery({
-        queryKey: BUSES_QUERY_KEY,
-        queryFn: () => getAllBuses({ page: 1, limit: 500 }),
-        select: (response) => readRows(response),
+        queryKey: [...BUSES_QUERY_KEY, page, pageSize],
+        queryFn: () => getAllBuses({ page, limit: pageSize }),
+        select: (response) => ({
+            items: normalizeBusList(response),
+            meta: response.meta ?? { page, limit: pageSize, totalItems: 0, totalPages: 1 },
+        }),
     })
 
     const deleteMutation = useMutation({
@@ -90,7 +64,8 @@ export const useFleetPage = ({
         },
     })
 
-    const buses = busesQuery.data ?? []
+    const buses = busesQuery.data?.items ?? []
+    const meta = busesQuery.data?.meta ?? { page, limit: pageSize, totalItems: 0, totalPages: 1 }
 
     const filtered = useMemo(() => {
         let list = buses
@@ -134,6 +109,7 @@ export const useFleetPage = ({
     return {
         filtered,
         stats,
+        meta,
         isLoading: busesQuery.isLoading,
         isDeleting: deleteMutation.isPending,
         clearFilters, hasFilter,

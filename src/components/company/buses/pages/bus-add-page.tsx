@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { VehicleForm } from '../components/VehicleForm'
-import { defaultSeatLayoutValue } from '../validation-schema'
+
 import { useBusForm } from '../hooks/use-bus-form'
 
 export const BusAddPage = () => {
@@ -32,7 +32,7 @@ export const BusAddPage = () => {
                         code: '',
                         plate: '',
                         name: '',
-                        seatLayout: defaultSeatLayoutValue,
+
                         description: '',
                     }}
                     onSubmit={handleSubmit}

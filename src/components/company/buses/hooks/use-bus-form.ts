@@ -1,11 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { createBus, updateBus } from 'services/company/bus.service'
-import type { IBus, EBusType } from 'types/bus'
+import { useAuthStore } from '@/store/auth.store'
+import type { EBusType, ICreateBus, IUpdateBus } from 'types/bus'
 import type { VehicleFormData } from '../validation-schema'
-import type { ISeatLayoutUpsertPayload } from 'types/seat-layout'
 
 const BUSES_QUERY_KEY = ['company-buses']
 
@@ -24,43 +23,21 @@ const resolveErrorMessage = (error: unknown, t: (key: string) => string): string
 
 interface UseBusFormProps {
     busId?: string
+    onSuccess?: () => void
 }
 
-export const useBusForm = ({ busId }: UseBusFormProps) => {
+export const useBusForm = ({ busId, onSuccess }: UseBusFormProps) => {
     const queryClient = useQueryClient()
-    const navigate = useNavigate()
+    const { admin } = useAuthStore()
     const { t } = useTranslation('translation', { keyPrefix: 'pages.buses' })
     const { t: tRoot } = useTranslation()
 
-    const toSeatLayoutPayload = (seatLayout: VehicleFormData['seatLayout']): ISeatLayoutUpsertPayload => ({
-        name: seatLayout.name.trim(),
-        rows: Number(seatLayout.rows),
-        columns: Number(seatLayout.columns),
-        seats: seatLayout.seats
-            .map((seat) => ({
-                seatId: seat.seatId,
-                seatCode: seat.seatCode.trim(),
-                row: seat.row,
-                col: seat.col,
-                floor: seat.floor,
-                seatType: seat.seatType,
-                price: seat.price,
-            }))
-            .toSorted((left, right) => {
-                if (left.row !== right.row) {
-                    return left.row - right.row
-                }
-
-                return left.col - right.col
-            }),
-    })
-
     const createMutation = useMutation({
-        mutationFn: (payload: Partial<Omit<IBus, 'id'>>) => createBus(payload as Omit<IBus, 'id'>),
+        mutationFn: (payload: ICreateBus) => createBus(payload),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: BUSES_QUERY_KEY })
             toast.success(t('messages.create_success'))
-            navigate({ to: '/company/fleet' })
+            onSuccess?.()
         },
         onError: (error) => {
             toast.error(resolveErrorMessage(error, tRoot))
@@ -68,12 +45,12 @@ export const useBusForm = ({ busId }: UseBusFormProps) => {
     })
 
     const updateMutation = useMutation({
-        mutationFn: ({ payload }: { payload: Partial<Omit<IBus, 'id'>> }) =>
+        mutationFn: ({ payload }: { payload: IUpdateBus }) =>
             updateBus(busId!, payload),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: BUSES_QUERY_KEY })
             toast.success(t('messages.update_success'))
-            navigate({ to: '/company/fleet' })
+            onSuccess?.()
         },
         onError: (error) => {
             toast.error(resolveErrorMessage(error, tRoot))
@@ -82,12 +59,18 @@ export const useBusForm = ({ busId }: UseBusFormProps) => {
 
     const handleSubmit = async (data: VehicleFormData) => {
         const payload = {
+            companyId: admin?.busCompanyId || undefined,
             busCode: data.code.trim(),
             busName: data.name.trim(),
             licensePlate: data.plate.trim(),
             busType: data.type as EBusType,
-            seatLayout: toSeatLayoutPayload(data.seatLayout),
+            seatLayoutId: data.seatLayoutId.trim(),
             description: (data.description ?? '').trim(),
+        } satisfies ICreateBus
+
+        if (!busId && !payload.companyId) {
+            toast.error(tRoot('errors.internal_server_error'))
+            return
         }
 
         if (busId) {

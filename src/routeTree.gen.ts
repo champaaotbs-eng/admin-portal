@@ -19,7 +19,6 @@ import { Route as CompanyTripsRouteImport } from './routes/company/trips'
 import { Route as CompanyStaffRouteImport } from './routes/company/staff'
 import { Route as CompanyRoutesRouteImport } from './routes/company/routes'
 import { Route as CompanyRevenueRouteImport } from './routes/company/revenue'
-import { Route as CompanyFleetRouteImport } from './routes/company/fleet'
 import { Route as CompanyBookingsRouteImport } from './routes/company/bookings'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AdminStationsRouteImport } from './routes/admin/stations'
@@ -28,15 +27,19 @@ import { Route as AdminRevenueRouteImport } from './routes/admin/revenue'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminCompaniesRouteImport } from './routes/admin/companies'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
+import { Route as CompanySeatLayoutsIndexRouteImport } from './routes/company/seat-layouts/index'
+import { Route as CompanyFleetIndexRouteImport } from './routes/company/fleet/index'
 import { Route as AdminRolesIndexRouteImport } from './routes/admin/roles/index'
 import { Route as AdminCompaniesIndexRouteImport } from './routes/admin/companies/index'
 import { Route as AdminAdminsIndexRouteImport } from './routes/admin/admins/index'
+import { Route as CompanyFleetAddRouteImport } from './routes/company/fleet/add'
 import { Route as AdminRolesNewRouteImport } from './routes/admin/roles/new'
 import { Route as AdminRolesIdRouteImport } from './routes/admin/roles/$id'
 import { Route as AdminCompaniesNewRouteImport } from './routes/admin/companies/new'
 import { Route as AdminCompaniesIdRouteImport } from './routes/admin/companies/$id'
 import { Route as AdminAdminsNewRouteImport } from './routes/admin/admins/new'
 import { Route as AdminAdminsIdRouteImport } from './routes/admin/admins/$id'
+import { Route as CompanyFleetEditBusIdRouteImport } from './routes/company/fleet/edit.$busId'
 
 const R403Route = R403RouteImport.update({
   id: '/403',
@@ -88,11 +91,6 @@ const CompanyRevenueRoute = CompanyRevenueRouteImport.update({
   path: '/revenue',
   getParentRoute: () => CompanyRouteRoute,
 } as any)
-const CompanyFleetRoute = CompanyFleetRouteImport.update({
-  id: '/fleet',
-  path: '/fleet',
-  getParentRoute: () => CompanyRouteRoute,
-} as any)
 const CompanyBookingsRoute = CompanyBookingsRouteImport.update({
   id: '/bookings',
   path: '/bookings',
@@ -133,6 +131,16 @@ const AdminBookingsRoute = AdminBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const CompanySeatLayoutsIndexRoute = CompanySeatLayoutsIndexRouteImport.update({
+  id: '/seat-layouts/',
+  path: '/seat-layouts/',
+  getParentRoute: () => CompanyRouteRoute,
+} as any)
+const CompanyFleetIndexRoute = CompanyFleetIndexRouteImport.update({
+  id: '/fleet/',
+  path: '/fleet/',
+  getParentRoute: () => CompanyRouteRoute,
+} as any)
 const AdminRolesIndexRoute = AdminRolesIndexRouteImport.update({
   id: '/roles/',
   path: '/roles/',
@@ -147,6 +155,11 @@ const AdminAdminsIndexRoute = AdminAdminsIndexRouteImport.update({
   id: '/admins/',
   path: '/admins/',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const CompanyFleetAddRoute = CompanyFleetAddRouteImport.update({
+  id: '/fleet/add',
+  path: '/fleet/add',
+  getParentRoute: () => CompanyRouteRoute,
 } as any)
 const AdminRolesNewRoute = AdminRolesNewRouteImport.update({
   id: '/roles/new',
@@ -178,6 +191,11 @@ const AdminAdminsIdRoute = AdminAdminsIdRouteImport.update({
   path: '/admins/$id',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const CompanyFleetEditBusIdRoute = CompanyFleetEditBusIdRouteImport.update({
+  id: '/fleet/edit/$busId',
+  path: '/fleet/edit/$busId',
+  getParentRoute: () => CompanyRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -192,7 +210,6 @@ export interface FileRoutesByFullPath {
   '/admin/stations': typeof AdminStationsRoute
   '/auth/login': typeof AuthLoginRoute
   '/company/bookings': typeof CompanyBookingsRoute
-  '/company/fleet': typeof CompanyFleetRoute
   '/company/revenue': typeof CompanyRevenueRoute
   '/company/routes': typeof CompanyRoutesRoute
   '/company/staff': typeof CompanyStaffRoute
@@ -205,9 +222,13 @@ export interface FileRoutesByFullPath {
   '/admin/companies/new': typeof AdminCompaniesNewRoute
   '/admin/roles/$id': typeof AdminRolesIdRoute
   '/admin/roles/new': typeof AdminRolesNewRoute
+  '/company/fleet/add': typeof CompanyFleetAddRoute
   '/admin/admins/': typeof AdminAdminsIndexRoute
   '/admin/companies/': typeof AdminCompaniesIndexRoute
   '/admin/roles/': typeof AdminRolesIndexRoute
+  '/company/fleet/': typeof CompanyFleetIndexRoute
+  '/company/seat-layouts/': typeof CompanySeatLayoutsIndexRoute
+  '/company/fleet/edit/$busId': typeof CompanyFleetEditBusIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -219,7 +240,6 @@ export interface FileRoutesByTo {
   '/admin/stations': typeof AdminStationsRoute
   '/auth/login': typeof AuthLoginRoute
   '/company/bookings': typeof CompanyBookingsRoute
-  '/company/fleet': typeof CompanyFleetRoute
   '/company/revenue': typeof CompanyRevenueRoute
   '/company/routes': typeof CompanyRoutesRoute
   '/company/staff': typeof CompanyStaffRoute
@@ -232,9 +252,13 @@ export interface FileRoutesByTo {
   '/admin/companies/new': typeof AdminCompaniesNewRoute
   '/admin/roles/$id': typeof AdminRolesIdRoute
   '/admin/roles/new': typeof AdminRolesNewRoute
+  '/company/fleet/add': typeof CompanyFleetAddRoute
   '/admin/admins': typeof AdminAdminsIndexRoute
   '/admin/companies': typeof AdminCompaniesIndexRoute
   '/admin/roles': typeof AdminRolesIndexRoute
+  '/company/fleet': typeof CompanyFleetIndexRoute
+  '/company/seat-layouts': typeof CompanySeatLayoutsIndexRoute
+  '/company/fleet/edit/$busId': typeof CompanyFleetEditBusIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -250,7 +274,6 @@ export interface FileRoutesById {
   '/admin/stations': typeof AdminStationsRoute
   '/auth/login': typeof AuthLoginRoute
   '/company/bookings': typeof CompanyBookingsRoute
-  '/company/fleet': typeof CompanyFleetRoute
   '/company/revenue': typeof CompanyRevenueRoute
   '/company/routes': typeof CompanyRoutesRoute
   '/company/staff': typeof CompanyStaffRoute
@@ -263,9 +286,13 @@ export interface FileRoutesById {
   '/admin/companies/new': typeof AdminCompaniesNewRoute
   '/admin/roles/$id': typeof AdminRolesIdRoute
   '/admin/roles/new': typeof AdminRolesNewRoute
+  '/company/fleet/add': typeof CompanyFleetAddRoute
   '/admin/admins/': typeof AdminAdminsIndexRoute
   '/admin/companies/': typeof AdminCompaniesIndexRoute
   '/admin/roles/': typeof AdminRolesIndexRoute
+  '/company/fleet/': typeof CompanyFleetIndexRoute
+  '/company/seat-layouts/': typeof CompanySeatLayoutsIndexRoute
+  '/company/fleet/edit/$busId': typeof CompanyFleetEditBusIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -282,7 +309,6 @@ export interface FileRouteTypes {
     | '/admin/stations'
     | '/auth/login'
     | '/company/bookings'
-    | '/company/fleet'
     | '/company/revenue'
     | '/company/routes'
     | '/company/staff'
@@ -295,9 +321,13 @@ export interface FileRouteTypes {
     | '/admin/companies/new'
     | '/admin/roles/$id'
     | '/admin/roles/new'
+    | '/company/fleet/add'
     | '/admin/admins/'
     | '/admin/companies/'
     | '/admin/roles/'
+    | '/company/fleet/'
+    | '/company/seat-layouts/'
+    | '/company/fleet/edit/$busId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -309,7 +339,6 @@ export interface FileRouteTypes {
     | '/admin/stations'
     | '/auth/login'
     | '/company/bookings'
-    | '/company/fleet'
     | '/company/revenue'
     | '/company/routes'
     | '/company/staff'
@@ -322,9 +351,13 @@ export interface FileRouteTypes {
     | '/admin/companies/new'
     | '/admin/roles/$id'
     | '/admin/roles/new'
+    | '/company/fleet/add'
     | '/admin/admins'
     | '/admin/companies'
     | '/admin/roles'
+    | '/company/fleet'
+    | '/company/seat-layouts'
+    | '/company/fleet/edit/$busId'
   id:
     | '__root__'
     | '/'
@@ -339,7 +372,6 @@ export interface FileRouteTypes {
     | '/admin/stations'
     | '/auth/login'
     | '/company/bookings'
-    | '/company/fleet'
     | '/company/revenue'
     | '/company/routes'
     | '/company/staff'
@@ -352,9 +384,13 @@ export interface FileRouteTypes {
     | '/admin/companies/new'
     | '/admin/roles/$id'
     | '/admin/roles/new'
+    | '/company/fleet/add'
     | '/admin/admins/'
     | '/admin/companies/'
     | '/admin/roles/'
+    | '/company/fleet/'
+    | '/company/seat-layouts/'
+    | '/company/fleet/edit/$busId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -437,13 +473,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanyRevenueRouteImport
       parentRoute: typeof CompanyRouteRoute
     }
-    '/company/fleet': {
-      id: '/company/fleet'
-      path: '/fleet'
-      fullPath: '/company/fleet'
-      preLoaderRoute: typeof CompanyFleetRouteImport
-      parentRoute: typeof CompanyRouteRoute
-    }
     '/company/bookings': {
       id: '/company/bookings'
       path: '/bookings'
@@ -500,6 +529,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/company/seat-layouts/': {
+      id: '/company/seat-layouts/'
+      path: '/seat-layouts'
+      fullPath: '/company/seat-layouts/'
+      preLoaderRoute: typeof CompanySeatLayoutsIndexRouteImport
+      parentRoute: typeof CompanyRouteRoute
+    }
+    '/company/fleet/': {
+      id: '/company/fleet/'
+      path: '/fleet'
+      fullPath: '/company/fleet/'
+      preLoaderRoute: typeof CompanyFleetIndexRouteImport
+      parentRoute: typeof CompanyRouteRoute
+    }
     '/admin/roles/': {
       id: '/admin/roles/'
       path: '/roles'
@@ -520,6 +563,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/admins/'
       preLoaderRoute: typeof AdminAdminsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/company/fleet/add': {
+      id: '/company/fleet/add'
+      path: '/fleet/add'
+      fullPath: '/company/fleet/add'
+      preLoaderRoute: typeof CompanyFleetAddRouteImport
+      parentRoute: typeof CompanyRouteRoute
     }
     '/admin/roles/new': {
       id: '/admin/roles/new'
@@ -562,6 +612,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/admins/$id'
       preLoaderRoute: typeof AdminAdminsIdRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/company/fleet/edit/$busId': {
+      id: '/company/fleet/edit/$busId'
+      path: '/fleet/edit/$busId'
+      fullPath: '/company/fleet/edit/$busId'
+      preLoaderRoute: typeof CompanyFleetEditBusIdRouteImport
+      parentRoute: typeof CompanyRouteRoute
     }
   }
 }
@@ -620,22 +677,28 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 
 interface CompanyRouteRouteChildren {
   CompanyBookingsRoute: typeof CompanyBookingsRoute
-  CompanyFleetRoute: typeof CompanyFleetRoute
   CompanyRevenueRoute: typeof CompanyRevenueRoute
   CompanyRoutesRoute: typeof CompanyRoutesRoute
   CompanyStaffRoute: typeof CompanyStaffRoute
   CompanyTripsRoute: typeof CompanyTripsRoute
   CompanyIndexRoute: typeof CompanyIndexRoute
+  CompanyFleetAddRoute: typeof CompanyFleetAddRoute
+  CompanyFleetIndexRoute: typeof CompanyFleetIndexRoute
+  CompanySeatLayoutsIndexRoute: typeof CompanySeatLayoutsIndexRoute
+  CompanyFleetEditBusIdRoute: typeof CompanyFleetEditBusIdRoute
 }
 
 const CompanyRouteRouteChildren: CompanyRouteRouteChildren = {
   CompanyBookingsRoute: CompanyBookingsRoute,
-  CompanyFleetRoute: CompanyFleetRoute,
   CompanyRevenueRoute: CompanyRevenueRoute,
   CompanyRoutesRoute: CompanyRoutesRoute,
   CompanyStaffRoute: CompanyStaffRoute,
   CompanyTripsRoute: CompanyTripsRoute,
   CompanyIndexRoute: CompanyIndexRoute,
+  CompanyFleetAddRoute: CompanyFleetAddRoute,
+  CompanyFleetIndexRoute: CompanyFleetIndexRoute,
+  CompanySeatLayoutsIndexRoute: CompanySeatLayoutsIndexRoute,
+  CompanyFleetEditBusIdRoute: CompanyFleetEditBusIdRoute,
 }
 
 const CompanyRouteRouteWithChildren = CompanyRouteRoute._addFileChildren(

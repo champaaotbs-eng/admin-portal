@@ -1,40 +1,39 @@
-import type { ISeat, ISeatLayout } from 'types/seat-layout'
+import type { IPagination, IRequestPagination } from 'types'
+import type {
+    ISeatLayout,
+    ICreateSeatLayout,
+    IUpdateSeatLayout,
+} from 'types/seat-layout'
 import { api } from 'utils/axios.instance'
 
-export interface ICreateSeatLayoutPayload {
-    name: string
-    rows: number
-    columns: number
-}
-
-export type IUpdateSeatLayoutPayload = Partial<ICreateSeatLayoutPayload>
-
-export const getCompanySeatLayouts = async () => {
-    const response = await api.get<ISeatLayout[]>('/company/seat-layouts')
+export const getAllSeatLayouts = async (query: IRequestPagination<ISeatLayout>) => {
+    const response = await api.get<IPagination<ISeatLayout>>('/v1/seat-layouts', {
+        params: query
+    })
     return response
 }
 
-export const getCompanySeatLayoutById = async (seatLayoutId: string) => {
-    const response = await api.get<ISeatLayout>(`/company/seat-layouts/${seatLayoutId}`)
+export const getSeatLayoutById = async (id: string) => {
+    const response = await api.get<ISeatLayout>(`/v1/seat-layouts/${id}`)
     return response
 }
 
-export const createCompanySeatLayout = async (payload: ICreateSeatLayoutPayload) => {
-    const response = await api.post<ISeatLayout>('/company/seat-layouts', payload)
+export const createSeatLayout = async (payload: ICreateSeatLayout) => {
+    const response = await api.post<ISeatLayout>('/v1/seat-layouts', payload)
     return response
 }
 
-export const updateCompanySeatLayout = async (seatLayoutId: string, payload: IUpdateSeatLayoutPayload) => {
-    const response = await api.patch<ISeatLayout>(`/company/seat-layouts/${seatLayoutId}`, payload)
+export const updateSeatLayout = async (seatLayoutId: string, payload: IUpdateSeatLayout) => {
+    const response = await api.patch<ISeatLayout>(`/v1/seat-layouts/${seatLayoutId}`, payload)
     return response
 }
 
-export const deleteCompanySeatLayout = async (seatLayoutId: string) => {
-    const response = await api.delete(`/company/seat-layouts/${seatLayoutId}`)
+export const deleteSeatLayout = async (seatLayoutId: string) => {
+    const response = await api.delete(`/v1/seat-layouts/${seatLayoutId}`)
     return response
 }
 
-export const updateCompanySeatLayoutSeats = async (seatLayoutId: string, seats: ISeat[]) => {
-    const response = await api.put<ISeat[]>(`/company/seat-layouts/${seatLayoutId}/seats`, { seats })
+export const checkEligibilityForSeatLayout = async (seatLayoutId: string) => {
+    const response = await api.get<{ isEligible: boolean }>(`/v1/seat-layouts/${seatLayoutId}/check-eligibility`)
     return response
 }

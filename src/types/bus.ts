@@ -1,9 +1,13 @@
+import type { ISeatLayoutUpsertPayload } from './seat-layout'
+
 export interface IBus {
     busId: string
     companyId: string
     busType: EBusType
     busCode: string
     busName: string
+    seatLayoutId?: string
+    seatLayout?: ISeatLayoutUpsertPayload
     description: string
     licensePlate: string
     createdAt: string

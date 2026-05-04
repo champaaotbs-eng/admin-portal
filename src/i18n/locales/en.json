@@ -83,6 +83,8 @@
         "bookings": "Bookings",
         "revenue": "Revenue",
         "reports": "Reports",
+        "buses": "Buses",
+        "seat_layouts": "Seat layouts",
         "fleet": "Fleet",
         "staff": "Staff",
         "trips": "Trips",
@@ -122,7 +124,6 @@
         "switch": "Language"
     },
     "app": {
-        "title": "Admin Portal",
         "description": "Admin Portal",
         "brand": "VéXe.vn"
     },
@@ -720,48 +721,172 @@
             "date_from": "From date",
             "date_to": "To date"
         },
-        "fleet": {
-            "title": "Fleet Management",
-            "description": "Company vehicles",
-            "search_placeholder": "Search plate, vehicle name...",
-            "add_vehicle": "Add vehicle",
-            "add_vehicle_title": "Add new vehicle",
-            "edit_vehicle_title": "Edit vehicle",
+        "buses": {
+            "title": "Buses Management",
+            "description": "Manage company buses",
+            "search_placeholder": "Search by code, name, plate...",
+            "add_bus": "Add bus",
+            "add_bus_title": "Add new bus",
+            "edit_bus_title": "Edit bus",
+            "empty_state": "No buses found.",
+            "empty_value": "—",
             "stats": {
-                "total": "Total vehicles",
-                "active": "Active",
-                "maintenance": "Maintenance",
-                "inactive": "Inactive"
-            },
-            "bus_types": {
-                "all": "All",
+                "total": "Total buses",
                 "seat": "Seater",
                 "sleeper": "Sleeper",
-                "vip": "VIP/Limousine"
+                "limousine": "Limousine"
+            },
+            "bus_types": {
+                "SEAT": "Seater",
+                "SLEEPER": "Sleeper",
+                "LIMOUSINE": "Limousine"
             },
             "table": {
-                "plate": "Plate No.",
-                "name": "Vehicle name",
+                "code": "Bus code",
+                "name": "Bus name",
+                "plate": "License plate",
                 "type": "Type",
-                "seats": "Seats",
-                "routes": "Routes",
-                "trips": "Trips",
+                "description": "Description",
+                "created_at": "Created at",
                 "status": "Status"
             },
             "form": {
+                "bus_information": "Bus Information",
+                "code": "Bus code",
+                "code_placeholder": "BUS-001",
                 "plate": "License plate",
                 "plate_placeholder": "51B-12345",
-                "name": "Vehicle name",
+                "name": "Bus name",
                 "name_placeholder": "45-seat Phuong Trang",
-                "type": "Type",
-                "seats": "Total seats"
+                "type": "Bus type",
+                "seat_layout": "Seat layout",
+                "seat_layout_description": "Build the seat layout directly in the bus form",
+                "seat_layout_placeholder": "Select a seat layout",
+                "seat_layout_empty": "No seat layouts available",
+                "description": "Description",
+                "description_placeholder": "Enter bus description"
+            },
+            "messages": {
+                "create_success": "Bus created successfully",
+                "update_success": "Bus updated successfully",
+                "delete_success": "Bus deleted successfully",
+                "confirm_delete": "Delete bus \"{{name}}\"?"
             },
             "errors": {
+                "code_required": "Bus code is required",
                 "plate_required": "License plate is required",
-                "name_required": "Vehicle name is required",
-                "type_required": "Vehicle type is required",
-                "seats_required": "Number of seats is required",
-                "seats_min": "Must have at least 1 seat"
+                "name_required": "Bus name is required",
+                "type_required": "Bus type is required",
+                "seat_layout_required": "Seat layout is required",
+                "seat_layout_name_required": "Seat layout name is required",
+                "seat_layout_name_max": "Seat layout name must be at most 120 characters",
+                "seat_layout_rows_required": "Rows are required",
+                "seat_layout_rows_min": "Rows must be at least 1",
+                "seat_layout_rows_max": "Rows must be at most 20",
+                "seat_layout_columns_required": "Columns are required",
+                "seat_layout_columns_min": "Columns must be at least 1",
+                "seat_layout_columns_max": "Columns must be at most 8",
+                "seat_layout_seats_required": "Add at least one seat",
+                "seat_code_required": "Seat code is required",
+                "seat_code_max": "Seat code must be at most 20 characters",
+                "seat_row_min": "Seat row must be at least 1",
+                "seat_column_min": "Seat column must be at least 1",
+                "seat_floor_min": "Seat floor must be at least 1",
+                "seat_type_required": "Seat type is required",
+                "seat_price_min": "Seat price must be greater than or equal to 0",
+                "description_max": "Description must be at most 500 characters"
+            }
+        },
+        "seat_layouts": {
+            "title": "Seat layouts",
+            "description": "Design and manage your bus seat layouts.",
+            "add_layout": "Add layout",
+            "add_layout_title": "Create seat layout",
+            "edit_layout_title": "Edit seat layout",
+            "search_placeholder": "Search by layout name or id...",
+            "clear_search_aria": "Clear search",
+            "empty_state": "No seat layouts yet.",
+            "empty_value": "—",
+            "stats": {
+                "total_layouts": "Total layouts",
+                "total_seats": "Total seats",
+                "avg_seats": "Avg seats/layout"
+            },
+            "table": {
+                "name": "Layout",
+                "grid": "Grid",
+                "seats": "Seats",
+                "created_at": "Created at",
+                "grid_value": "{{rows}} x {{columns}} x {{floors}}"
+            },
+            "form": {
+                "name": "Layout name",
+                "name_placeholder": "Enter a name for this layout",
+                "rows": "Rows",
+                "columns": "Columns",
+                "floors": "Floors",
+                "floor_tab": "Floor {{floor}}",
+                "floor_tab_aria": "Switch to floor {{floor}}",
+                "add_floor": "Add Floor"
+            },
+            "editor": {
+                "invalid_grid": "Invalid grid. Set rows and columns first.",
+                "palette_title": "Seat palette",
+                "drag_hint": "Drag a seat type onto the grid to add it.",
+                "driver_seat_hint": "Row 1, Column 1 is reserved for the driver seat (cannot be edited or deleted).",
+                "row_1_reserved_hint": "Row 1 is reserved for the driver. No passenger seats can be added here.",
+                "driver_seat_only_hint": "Row 1 can only have a driver seat at Column 1",
+                "row_reserved_hint": "Row 1 is reserved and cannot have seats",
+                "driver_seat": "Driver Seat",
+                "grid_cell_aria": "Cell row {{row}} column {{col}}",
+                "click_to_add": "Click to add",
+                "remove_seat_aria": "Remove seat {{code}}",
+                "summary": "Seats: {{count}}"
+            },
+            "seat_config": {
+                "title": "Seat configuration",
+                "empty": "Select a seat to edit its settings",
+                "seat_code": "Seat code",
+                "seat_type": "Seat type",
+                "floor": "Floor",
+                "apply": "Apply",
+                "remove": "Remove seat"
+            },
+            "seat_types": {
+                "STANDARD": "Standard",
+                "VIP": "VIP",
+                "BED": "Sleeper"
+            },
+            "messages": {
+                "create_success": "Seat layout created successfully",
+                "update_success": "Seat layout updated successfully",
+                "delete_success": "Seat layout deleted successfully",
+                "confirm_delete": "Delete seat layout \"{{name}}\"?"
+            },
+            "errors": {
+                "name_required": "Layout name is required",
+                "name_max": "Layout name must be at most 120 characters",
+                "rows_required": "Rows are required",
+                "rows_min": "Rows must be at least 1",
+                "rows_max": "Rows must be at most 20",
+                "columns_required": "Columns are required",
+                "columns_min": "Columns must be at least 1",
+                "columns_max": "Columns must be at most 8",
+                "floors_required": "Floors are required",
+                "floors_min": "Floors must be at least 1",
+                "seat_code_required": "Seat code is required",
+                "seat_code_max": "Seat code must be at most 20 characters",
+                "floor_required": "Floor is required",
+                "floor_min": "Floor must be at least 1",
+                "floor_max": "Floor must be between 1 and {{max}}",
+                "seat_type_required": "Seat type is required",
+                "seats_required": "Add at least one seat",
+                "seat_code_duplicate": "Seat code already exists",
+                "company_required": "Bus company is required",
+                "layout_name_required": "Layout name is required",
+                "invalid_layout_dimensions": "Invalid layout dimensions",
+                "row_1_must_be_empty_multi_floor": "Row 1 must be empty for multi-floor buses (reserved for driver)",
+                "row_1_only_driver_seat": "Row 1 can only have a driver seat at column 1"
             }
         },
         "company_routes": {

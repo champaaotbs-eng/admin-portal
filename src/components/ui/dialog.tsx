@@ -34,7 +34,8 @@ export const Dialog = ({ open, onClose, title, children, className }: DialogProp
             />
             <div
                 className={cn(
-                    'relative z-10 w-full max-w-lg rounded-lg border border-border bg-card shadow-xl',
+                    'relative z-10 flex w-full max-w-lg flex-col overflow-hidden rounded-lg border border-border bg-card shadow-xl',
+                    'max-h-[90vh]',
                     className,
                 )}
             >
@@ -49,7 +50,7 @@ export const Dialog = ({ open, onClose, title, children, className }: DialogProp
                         <X className="h-4 w-4" />
                     </button>
                 </div>
-                <div className="p-6">{children}</div>
+                <div className="flex-1 overflow-y-auto p-6">{children}</div>
             </div>
         </div>
     )

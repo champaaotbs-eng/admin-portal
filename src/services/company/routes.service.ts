@@ -4,7 +4,9 @@ import type { IRoute } from "types/route"
 import { api } from "utils/axios.instance"
 
 export const getAllRoutes = async (query: IRequestPagination<IRoute>) => {
-    const response = await api.get<IPagination<IRoute>>('/v1/routes')
+    const response = await api.get<IPagination<IRoute>>('/v1/routes', {
+        params: query
+    })
     return response;
 }
 

@@ -27,6 +27,7 @@ export const APP_ROUTES = {
         ROOT: '/company',
         ROUTES: '/company/routes',
         FLEET: '/company/fleet',
+        SEAT_LAYOUTS: '/company/seat-layouts',
         TRIPS: '/company/trips',
         BOOKINGS: '/company/bookings',
         REVENUE: '/company/revenue',

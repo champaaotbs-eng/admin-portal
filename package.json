@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@lucide/lab": "^0.1.2",
     "@radix-ui/react-slot": "^1.2.4",
     "@react-google-maps/api": "^2.20.8",
     "@tailwindcss/vite": "^4.1.18",
@@ -42,7 +43,7 @@
     "react-i18next": "^16.5.4",
     "react-leaflet": "^5.0.0",
     "sonner": "^2.0.7",
-    "streamdown": "^1.6.5",
+    "streamdown": "^2.4.0",
     "tailwind-merge": "^3.0.2",
     "tailwindcss": "^4.1.18",
     "tailwindcss-animate": "^1.0.7",

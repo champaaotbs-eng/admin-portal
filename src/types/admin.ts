@@ -15,6 +15,7 @@ export interface IAdmin {
     modules?: string[];
     avatarUrl?: string;
     publicId?: string;
+    busCompanyId?: string;
     createdAt: string;
     updatedAt: string;
 }

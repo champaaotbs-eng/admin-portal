@@ -39,7 +39,7 @@ const STATUS_COLORS: Record<string, string> = {
 export const CompanyDashboardPage = () => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.dashboard' })
     const { t: tTrips } = useTranslation('translation', { keyPrefix: 'pages.trips' })
-    const { t: tFleet } = useTranslation('translation', { keyPrefix: 'pages.fleet' })
+    const { t: tFleet } = useTranslation('translation', { keyPrefix: 'pages.buses' })
     const { t: tCommon } = useTranslation()
     const { weekRevenue, monthRevenue, confirmedToday, donutData } = useCompanyDashboard()
 

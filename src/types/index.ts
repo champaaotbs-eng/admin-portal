@@ -1,3 +1,5 @@
+import type { ISeatLayoutUpsertPayload } from './seat-layout'
+
 export interface IPagination<T> {
     meta: {
         page: number;
@@ -48,6 +50,8 @@ export interface Bus {
     name: string
     busCode?: string
     description?: string
+    seatLayoutId?: string
+    seatLayout?: ISeatLayoutUpsertPayload
     totalSeats: number
     type: BusType
     isActive: boolean

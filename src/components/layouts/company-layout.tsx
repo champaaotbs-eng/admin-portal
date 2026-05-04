@@ -7,6 +7,7 @@ import {
     Ticket,
     DollarSign,
     Users,
+    Grid3x3,
 } from 'lucide-react'
 import { Sidebar } from 'components/shared/side-bar'
 import { APP_ROUTES } from '@/constants/app-routes'
@@ -16,7 +17,8 @@ export const CompanyLayout = () => {
     const { t } = useTranslation()
     const navItems = [
         { label: t('nav.dashboard'), to: APP_ROUTES.COMPANY.ROOT, icon: LayoutDashboard },
-        { label: t('nav.fleet'), to: APP_ROUTES.COMPANY.FLEET, icon: Bus },
+        { label: t('nav.buses'), to: APP_ROUTES.COMPANY.FLEET, icon: Bus },
+        { label: t('nav.seat_layouts'), to: APP_ROUTES.COMPANY.SEAT_LAYOUTS, icon: Grid3x3 },
         { label: t('nav.routes'), to: APP_ROUTES.COMPANY.ROUTES, icon: Route },
         { label: t('nav.trips'), to: APP_ROUTES.COMPANY.TRIPS, icon: MapPin },
         { label: t('nav.bookings'), to: APP_ROUTES.COMPANY.BOOKINGS, icon: Ticket },

@@ -83,6 +83,8 @@
         "bookings": "Đặt vé",
         "revenue": "Doanh thu",
         "reports": "Báo cáo",
+        "buses": "Xe",
+        "seat_layouts": "Sơ đồ ghế",
         "fleet": "Quản lý xe",
         "staff": "Nhân viên",
         "trips": "Chuyến xe",
@@ -122,7 +124,6 @@
         "switch": "Ngôn ngữ"
     },
     "app": {
-        "title": "Cổng Quản Trị",
         "description": "Cổng Quản Trị",
         "brand": "VéXe.vn"
     },
@@ -720,48 +721,172 @@
             "date_from": "Từ ngày",
             "date_to": "Đến ngày"
         },
-        "fleet": {
+        "buses": {
             "title": "Quản lý xe",
-            "description": "Danh sách phương tiện của công ty",
-            "search_placeholder": "Tìm biển số, tên xe...",
-            "add_vehicle": "Thêm xe",
-            "add_vehicle_title": "Thêm xe mới",
-            "edit_vehicle_title": "Chỉnh sửa xe",
+            "description": "Quản lý danh sách xe của công ty",
+            "search_placeholder": "Tìm theo mã xe, tên xe, biển số...",
+            "add_bus": "Thêm xe",
+            "add_bus_title": "Thêm xe mới",
+            "edit_bus_title": "Chỉnh sửa xe",
+            "empty_state": "Không tìm thấy xe nào.",
+            "empty_value": "—",
             "stats": {
                 "total": "Tổng xe",
-                "active": "Hoạt động",
-                "maintenance": "Bảo dưỡng",
-                "inactive": "Tạm dừng"
-            },
-            "bus_types": {
-                "all": "Tất cả",
                 "seat": "Ghế ngồi",
                 "sleeper": "Giường nằm",
-                "vip": "VIP/Limousine"
+                "limousine": "Limousine"
+            },
+            "bus_types": {
+                "SEAT": "Ghế ngồi",
+                "SLEEPER": "Giường nằm",
+                "LIMOUSINE": "Limousine"
             },
             "table": {
-                "plate": "Biển số",
+                "code": "Mã xe",
                 "name": "Tên xe",
-                "type": "Loại",
-                "seats": "Số ghế",
-                "routes": "Tuyến",
-                "trips": "Chuyến",
+                "plate": "Biển số",
+                "type": "Loại xe",
+                "description": "Mô tả",
+                "created_at": "Ngày tạo",
                 "status": "Trạng thái"
             },
             "form": {
+                "bus_information": "Thông Tin Xe",
+                "code": "Mã xe",
+                "code_placeholder": "BUS-001",
                 "plate": "Biển số xe",
                 "plate_placeholder": "51B-12345",
                 "name": "Tên xe",
                 "name_placeholder": "Xe 45 chỗ Phương Trang",
                 "type": "Loại xe",
-                "seats": "Số ghế"
+                "seat_layout": "Sơ đồ ghế",
+                "seat_layout_description": "Thiết kế sơ đồ ghế ngay trong form xe",
+                "seat_layout_placeholder": "Chọn sơ đồ ghế",
+                "seat_layout_empty": "Không có sơ đồ ghế nào",
+                "description": "Mô tả",
+                "description_placeholder": "Nhập mô tả xe"
+            },
+            "messages": {
+                "create_success": "Thêm xe thành công",
+                "update_success": "Cập nhật xe thành công",
+                "delete_success": "Xóa xe thành công",
+                "confirm_delete": "Xóa xe \"{{name}}\"?"
             },
             "errors": {
+                "code_required": "Mã xe là bắt buộc",
                 "plate_required": "Biển số xe là bắt buộc",
                 "name_required": "Tên xe là bắt buộc",
                 "type_required": "Loại xe là bắt buộc",
-                "seats_required": "Số ghế là bắt buộc",
-                "seats_min": "Phải có ít nhất 1 ghế"
+                "seat_layout_required": "Sơ đồ ghế là bắt buộc",
+                "seat_layout_name_required": "Tên sơ đồ ghế là bắt buộc",
+                "seat_layout_name_max": "Tên sơ đồ ghế tối đa 120 ký tự",
+                "seat_layout_rows_required": "Số hàng là bắt buộc",
+                "seat_layout_rows_min": "Số hàng phải lớn hơn hoặc bằng 1",
+                "seat_layout_rows_max": "Số hàng tối đa là 20",
+                "seat_layout_columns_required": "Số cột là bắt buộc",
+                "seat_layout_columns_min": "Số cột phải lớn hơn hoặc bằng 1",
+                "seat_layout_columns_max": "Số cột tối đa là 8",
+                "seat_layout_seats_required": "Vui lòng thêm ít nhất một ghế",
+                "seat_code_required": "Mã ghế là bắt buộc",
+                "seat_code_max": "Mã ghế tối đa 20 ký tự",
+                "seat_row_min": "Hàng ghế phải lớn hơn hoặc bằng 1",
+                "seat_column_min": "Cột ghế phải lớn hơn hoặc bằng 1",
+                "seat_floor_min": "Tầng ghế phải lớn hơn hoặc bằng 1",
+                "seat_type_required": "Loại ghế là bắt buộc",
+                "seat_price_min": "Giá ghế phải lớn hơn hoặc bằng 0",
+                "description_max": "Mô tả tối đa 500 ký tự"
+            }
+        },
+        "seat_layouts": {
+            "title": "Sơ đồ ghế",
+            "description": "Thiết kế và quản lý sơ đồ ghế của nhà xe.",
+            "add_layout": "Thêm sơ đồ",
+            "add_layout_title": "Tạo sơ đồ ghế",
+            "edit_layout_title": "Chỉnh sửa sơ đồ ghế",
+            "search_placeholder": "Tìm theo tên hoặc mã sơ đồ...",
+            "clear_search_aria": "Xóa tìm kiếm",
+            "empty_state": "Chưa có sơ đồ ghế nào.",
+            "empty_value": "—",
+            "stats": {
+                "total_layouts": "Tổng sơ đồ",
+                "total_seats": "Tổng ghế",
+                "avg_seats": "Trung bình ghế/sơ đồ"
+            },
+            "table": {
+                "name": "Sơ đồ",
+                "grid": "Lưới",
+                "seats": "Ghế",
+                "created_at": "Ngày tạo",
+                "grid_value": "{{rows}} x {{columns}} x {{floors}}"
+            },
+            "form": {
+                "name": "Tên sơ đồ",
+                "name_placeholder": "Nhập tên sơ đồ",
+                "rows": "Số hàng",
+                "columns": "Số cột",
+                "floors": "Số tầng",
+                "floor_tab": "Tầng {{floor}}",
+                "floor_tab_aria": "Chuyển sang tầng {{floor}}",
+                "add_floor": "Thêm tầng"
+            },
+            "editor": {
+                "invalid_grid": "Sơ đồ không hợp lệ. Vui lòng đặt số hàng và cột.",
+                "palette_title": "Loại ghế",
+                "drag_hint": "Kéo một loại ghế vào lưới để thêm.",
+                "driver_seat_hint": "Hàng 1, Cột 1 được dành cho ghế tài xế (không thể chỉnh sửa hoặc xóa).",
+                "row_1_reserved_hint": "Hàng 1 được dành cho tài xế. Không thể thêm ghế khách hàng ở đây.",
+                "driver_seat_only_hint": "Hàng 1 chỉ có thể có ghế tài xế ở Cột 1",
+                "row_reserved_hint": "Hàng 1 được dành riêng và không thể có ghế",
+                "driver_seat": "Ghế Tài Xế",
+                "grid_cell_aria": "Ô hàng {{row}} cột {{col}}",
+                "click_to_add": "Nhấn để thêm",
+                "remove_seat_aria": "Xóa ghế {{code}}",
+                "summary": "Số ghế: {{count}}"
+            },
+            "seat_config": {
+                "title": "Cấu hình ghế",
+                "empty": "Chọn ghế để chỉnh sửa",
+                "seat_code": "Mã ghế",
+                "seat_type": "Loại ghế",
+                "floor": "Tầng",
+                "apply": "Áp dụng",
+                "remove": "Xóa ghế"
+            },
+            "seat_types": {
+                "STANDARD": "Ghế ngồi",
+                "VIP": "VIP",
+                "BED": "Giường nằm"
+            },
+            "messages": {
+                "create_success": "Tạo sơ đồ ghế thành công",
+                "update_success": "Cập nhật sơ đồ ghế thành công",
+                "delete_success": "Xóa sơ đồ ghế thành công",
+                "confirm_delete": "Xóa sơ đồ ghế \"{{name}}\"?"
+            },
+            "errors": {
+                "name_required": "Tên sơ đồ là bắt buộc",
+                "name_max": "Tên sơ đồ tối đa 120 ký tự",
+                "rows_required": "Số hàng là bắt buộc",
+                "rows_min": "Số hàng phải lớn hơn hoặc bằng 1",
+                "rows_max": "Số hàng tối đa là 20",
+                "columns_required": "Số cột là bắt buộc",
+                "columns_min": "Số cột phải lớn hơn hoặc bằng 1",
+                "columns_max": "Số cột tối đa là 8",
+                "floors_required": "Số tầng là bắt buộc",
+                "floors_min": "Số tầng phải lớn hơn hoặc bằng 1",
+                "seat_code_required": "Mã ghế là bắt buộc",
+                "seat_code_max": "Mã ghế tối đa 20 ký tự",
+                "floor_required": "Tầng là bắt buộc",
+                "floor_min": "Tầng phải lớn hơn hoặc bằng 1",
+                "floor_max": "Tầng phải nằm trong khoảng 1 đến {{max}}",
+                "seat_type_required": "Loại ghế là bắt buộc",
+                "seats_required": "Vui lòng thêm ít nhất một ghế",
+                "seat_code_duplicate": "Mã ghế đã tồn tại",
+                "company_required": "Nhà xe là bắt buộc",
+                "layout_name_required": "Tên sơ đồ là bắt buộc",
+                "invalid_layout_dimensions": "Kích thước sơ đồ không hợp lệ",
+                "row_1_must_be_empty_multi_floor": "Hàng 1 phải trống cho các xe có nhiều tầng (dành cho tài xế)",
+                "row_1_only_driver_seat": "Hàng 1 chỉ có thể có ghế tài xế ở cột 1"
             }
         },
         "company_routes": {

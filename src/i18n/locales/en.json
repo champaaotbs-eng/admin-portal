@@ -1005,10 +1005,23 @@
         "trips": {
             "title": "Trip Management",
             "description": "Company trip schedule",
-            "search_placeholder": "Search route, vehicle, driver...",
+            "admin_description": "All trips on the platform",
+            "search_placeholder": "Search route, vehicle...",
             "add_trip": "Add trip",
             "add_trip_title": "Schedule new trip",
             "edit_trip_title": "Edit trip",
+            "cancel_trip": "Cancel trip",
+            "cancel_trip_title": "Cancel Trip",
+            "cancel_trip_confirm": "Are you sure you want to cancel this trip? This action cannot be undone.",
+            "cancel_reason_label": "Cancellation reason",
+            "cancel_reason_placeholder": "Enter the reason for cancellation...",
+            "cancel_confirm_btn": "Confirm Cancellation",
+            "bus_assigned": "Assigned",
+            "all_companies": "All companies",
+            "company_label": "Company",
+            "create_success": "Trip created successfully",
+            "update_success": "Trip updated successfully",
+            "cancel_success": "Trip cancelled successfully",
             "stats": {
                 "total": "Total trips",
                 "scheduled": "Scheduled",
@@ -1023,7 +1036,8 @@
                 "driver": "Driver",
                 "seats_sold": "Seats sold",
                 "price": "Price",
-                "status": "Status"
+                "status": "Status",
+                "company": "Company"
             },
             "form": {
                 "route": "Route",
@@ -1032,7 +1046,8 @@
                 "bus": "Vehicle",
                 "driver": "Driver",
                 "price": "Price per seat (VND)",
-                "seats": "Total seats"
+                "seats": "Total seats",
+                "is_published": "Published (visible to customers)"
             },
             "errors": {
                 "route_required": "Route is required",
@@ -1053,6 +1068,152 @@
         "forbidden": {
             "description": "You do not have permission to access this page.",
             "back_to_dashboard": "Back to dashboard"
+        },
+        "customer": {
+            "login": {
+                "title": "Sign in",
+                "subtitle": "Book your bus ticket",
+                "email_label": "Email",
+                "email_placeholder": "your@email.com",
+                "password_label": "Password",
+                "password_placeholder": "••••••••",
+                "login_btn": "Sign in",
+                "no_account": "Don't have an account?",
+                "register_link": "Register",
+                "back_to_search": "Back to search",
+                "errors": {
+                    "email_required": "Email is required",
+                    "email_invalid": "Invalid email address",
+                    "password_required": "Password is required",
+                    "password_min": "Password must be at least 6 characters",
+                    "invalid_credentials": "Incorrect email or password"
+                }
+            },
+            "register": {
+                "title": "Create account",
+                "subtitle": "Register to book tickets",
+                "full_name_label": "Full name",
+                "full_name_placeholder": "Enter your full name",
+                "email_label": "Email",
+                "email_placeholder": "your@email.com",
+                "phone_label": "Phone number",
+                "phone_placeholder": "Enter phone number",
+                "password_label": "Password",
+                "password_placeholder": "••••••••",
+                "register_btn": "Create account",
+                "have_account": "Already have an account?",
+                "login_link": "Sign in",
+                "success": "Account created! You are now logged in.",
+                "errors": {
+                    "full_name_required": "Full name is required",
+                    "email_required": "Email is required",
+                    "email_invalid": "Invalid email address",
+                    "phone_required": "Phone number is required",
+                    "password_required": "Password is required",
+                    "password_min": "Password must be at least 6 characters"
+                }
+            },
+            "search": {
+                "hero_title": "Book your bus ticket",
+                "hero_subtitle": "Comfortable, safe, and on time",
+                "date_label": "Departure date",
+                "search_btn": "Search trips",
+                "all_trips": "Available trips",
+                "no_trips": "No trips found for the selected criteria.",
+                "results_count": "{{count}} trip(s) found",
+                "from_placeholder": "From city...",
+                "to_placeholder": "To city...",
+                "clear": "Clear"
+            },
+            "trip_card": {
+                "seats_left": "{{count}} seats available",
+                "book_now": "Select seats",
+                "duration": "{{h}}h {{m}}m",
+                "from": "From",
+                "base_price": "From {{price}}"
+            },
+            "trip_detail": {
+                "back": "Back to search",
+                "trip_info": "Trip information",
+                "departure": "Departure",
+                "arrival": "Arrival",
+                "company": "Operator",
+                "select_seats": "Select your seats",
+                "seat_available": "Available",
+                "seat_booked": "Booked",
+                "seat_selected": "Selected",
+                "floor_tab": "Floor {{floor}}",
+                "seat_types": {
+                    "STANDARD": "Standard",
+                    "VIP": "VIP",
+                    "BED": "Sleeper"
+                },
+                "booking_form": "Booking details",
+                "selected_seats": "Selected seats",
+                "no_seats_selected": "No seats selected",
+                "pickup_stop": "Pickup point",
+                "dropoff_stop": "Drop-off point",
+                "select_stop": "Select a stop...",
+                "payment_method": "Payment method",
+                "payment_online": "Pay online",
+                "payment_online_desc": "VNPAY / MOMO",
+                "payment_onboard": "Pay on board",
+                "payment_onboard_desc": "Pay the driver in cash",
+                "total": "Total",
+                "confirm_btn": "Confirm booking",
+                "login_to_book": "You must be logged in to book.",
+                "go_to_login": "Sign in",
+                "errors": {
+                    "select_seats": "Please select at least one seat.",
+                    "select_pickup": "Please select a pickup point.",
+                    "select_dropoff": "Please select a drop-off point.",
+                    "same_stop": "Pickup and drop-off must be different stops.",
+                    "booking_failed": "Booking failed. Please try again."
+                }
+            },
+            "booking_success": {
+                "title": "Booking confirmed!",
+                "code_label": "Your booking code",
+                "status_label": "Status",
+                "amount_label": "Total",
+                "expires_label": "Payment expires",
+                "pay_now": "Pay now (VNPAY)",
+                "pay_momo": "Pay with MOMO",
+                "view_bookings": "View my bookings",
+                "onboard_note": "Please show this code to the driver.",
+                "payment_initiated": "Redirecting to payment gateway..."
+            },
+            "my_bookings": {
+                "title": "My bookings",
+                "empty": "You have no bookings yet.",
+                "search_trips": "Search trips",
+                "booking_code": "Booking code",
+                "route": "Route",
+                "date": "Departure",
+                "seats": "Seats",
+                "amount": "Amount",
+                "status": "Status",
+                "view": "View"
+            },
+            "booking_detail": {
+                "back": "Back to my bookings",
+                "title": "Booking #{{code}}",
+                "trip_section": "Trip",
+                "seats_section": "Seats",
+                "payment_section": "Payment",
+                "cancel_btn": "Cancel booking",
+                "cancel_confirm": "Cancel this booking? This action cannot be undone.",
+                "cancel_reason_label": "Reason for cancellation",
+                "cancel_reason_placeholder": "Enter reason (at least 5 characters)",
+                "cancel_submit": "Confirm cancellation",
+                "cancelled_msg": "Booking cancelled.",
+                "pay_now": "Pay now (VNPAY)",
+                "pay_momo": "Pay with MOMO",
+                "errors": {
+                    "cancel_reason_min": "Reason must be at least 5 characters",
+                    "cancel_failed": "Could not cancel booking. Please try again."
+                }
+            }
         }
     }
 }

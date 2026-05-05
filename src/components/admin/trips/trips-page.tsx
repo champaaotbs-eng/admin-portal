@@ -1,16 +1,35 @@
-import { useState } from 'react'
-import { Plus, Search, Calendar, Clock, MapPin, Bus, X, Users, Pencil, Ban } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Plus, Search, Calendar, Clock, X, MapPin, Pencil, Ban, Building2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
-import { STATUS_VARIANTS } from './data'
-import { useTripsPage } from './hooks/use-trips-page'
-import { TripForm } from './components/TripForm'
+import { getAdminTrips, createAdminTrip, updateAdminTrip, cancelAdminTrip } from 'services/admins/trip.service'
+import { getAllCompanies } from 'services/admins/company.service'
 import type { ITrip } from 'types/trip'
-import type { TripFormData } from './validation-schema'
+import type { ICompany } from 'types/company'
+import type { TripFormData } from '../../company/trips/validation-schema'
+import { TripForm } from '../../company/trips/components/TripForm'
+import { STATUS_VARIANTS } from '../../company/trips/data'
 import { formatVnd, formatDate, formatTime } from '@/utils/format'
+import { useAuthStore } from '@/store/auth.store'
+
+const TRIPS_QUERY_KEY = ['admin-trips']
+
+const readRows = <T,>(payload: unknown): T[] => {
+    if (!payload || typeof payload !== 'object') return []
+    const p = payload as Record<string, unknown>
+    if (Array.isArray(p.result)) return p.result as T[]
+    if (Array.isArray(p.data)) return p.data as T[]
+    if (p.data && typeof p.data === 'object') {
+        const nested = p.data as Record<string, unknown>
+        if (Array.isArray(nested.result)) return nested.result as T[]
+    }
+    return []
+}
 
 const toDateTimeLocal = (iso: string) => {
     if (!iso) return ''
@@ -28,52 +47,136 @@ const tripToFormDefaults = (trip: ITrip): Partial<TripFormData> => ({
     isPublished: trip.isPublished,
 })
 
-export const CompanyTripsPage = () => {
+export const AdminTripsPage = () => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.trips' })
     const { t: tCommon } = useTranslation()
+    const queryClient = useQueryClient()
+    const { admin } = useAuthStore()
+
     const [search, setSearch] = useState('')
-    const [statusFilter, setStatusFilter] = useState('all')
-    const [dialogOpen, setDialogOpen] = useState(false)
+    const [statusFilter, setStatusFilter] = useState<string>('all')
+    const [companyFilter, setCompanyFilter] = useState<string>('all')
+    const [dateFrom, setDateFrom] = useState('')
+    const [createOpen, setCreateOpen] = useState(false)
     const [editTrip, setEditTrip] = useState<ITrip | null>(null)
     const [cancelTrip, setCancelTrip] = useState<ITrip | null>(null)
     const [cancelReason, setCancelReason] = useState('')
+    const [selectedCompanyId, setSelectedCompanyId] = useState(admin?.busCompanyId ?? '')
 
-    const {
-        filtered, stats,
-        openDialog, closeDialog,
-        clearFilters, hasFilter,
-        isLoading, isError,
-        createMutation, updateMutation, cancelMutation,
-    } = useTripsPage({ search, setSearch, statusFilter, setStatusFilter, setDialogOpen })
+    const tripsQuery = useQuery({
+        queryKey: [...TRIPS_QUERY_KEY],
+        queryFn: () => getAdminTrips({ limit: 300 }),
+        select: (res) => readRows<ITrip>(res.data),
+        staleTime: 30_000,
+    })
 
-    const handleCreate = (data: TripFormData) => {
-        createMutation.mutate(data)
-    }
+    const companiesQuery = useQuery({
+        queryKey: ['admin-companies-select'],
+        queryFn: () => getAllCompanies({ page: 1, limit: 200 }),
+        select: (res) => readRows<ICompany>(res.data),
+        staleTime: 60_000,
+    })
 
-    const handleEdit = (data: TripFormData) => {
-        if (!editTrip) return
-        updateMutation.mutate(
-            { tripId: editTrip.tripId, data },
-            { onSuccess: () => setEditTrip(null) }
-        )
-    }
+    const trips = tripsQuery.data ?? []
+    const companies = companiesQuery.data ?? []
 
-    const handleCancel = () => {
-        if (!cancelTrip || !cancelReason.trim()) return
-        cancelMutation.mutate(
-            { tripId: cancelTrip.tripId, cancelReason: cancelReason.trim() },
-            { onSuccess: () => { setCancelTrip(null); setCancelReason('') } }
-        )
-    }
+    const filtered = useMemo(() => {
+        let list = trips
+        if (search) {
+            const q = search.toLowerCase()
+            list = list.filter(trip =>
+                trip.fromLocationName?.toLowerCase().includes(q) ||
+                trip.toLocationName?.toLowerCase().includes(q) ||
+                trip.route?.fromLocationName?.toLowerCase().includes(q) ||
+                trip.route?.toLocationName?.toLowerCase().includes(q) ||
+                trip.busCompany?.name?.toLowerCase().includes(q) ||
+                trip.tripId.toLowerCase().includes(q)
+            )
+        }
+        if (statusFilter !== 'all') {
+            list = list.filter(trip => trip.status.toLowerCase() === statusFilter.toLowerCase())
+        }
+        if (companyFilter !== 'all') {
+            list = list.filter(trip => trip.busCompanyId === companyFilter)
+        }
+        if (dateFrom) {
+            list = list.filter(trip => trip.departureTime.slice(0, 10) >= dateFrom)
+        }
+        return list
+    }, [trips, search, statusFilter, companyFilter, dateFrom])
+
+    const stats = useMemo(() => ({
+        total: trips.length,
+        scheduled: trips.filter(t => t.status.toUpperCase() === 'SCHEDULED').length,
+        completed: trips.filter(t => t.status.toUpperCase() === 'COMPLETED').length,
+        cancelled: trips.filter(t => t.status.toUpperCase() === 'CANCELLED').length,
+    }), [trips])
+
+    const hasFilter = search || statusFilter !== 'all' || companyFilter !== 'all' || dateFrom
+    const clearFilters = () => { setSearch(''); setStatusFilter('all'); setCompanyFilter('all'); setDateFrom('') }
+
+    const createMutation = useMutation({
+        mutationFn: (data: TripFormData) => createAdminTrip({
+            routeId: data.routeId,
+            busVersionId: data.busVersionId || undefined,
+            busCompanyId: selectedCompanyId,
+            departureTime: new Date(data.departureTime).toISOString(),
+            arrivalTime: new Date(data.arrivalTime).toISOString(),
+            basePrice: Number(data.basePrice),
+            isPublished: data.isPublished ?? true,
+        }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: TRIPS_QUERY_KEY })
+            toast.success(t('create_success', 'Trip created successfully'))
+            setCreateOpen(false)
+        },
+        onError: (err: unknown) => {
+            toast.error((err as { localizedMessage?: string })?.localizedMessage ?? tCommon('common.error'))
+        },
+    })
+
+    const updateMutation = useMutation({
+        mutationFn: ({ tripId, data }: { tripId: string; data: TripFormData }) =>
+            updateAdminTrip(tripId, {
+                routeId: data.routeId,
+                busVersionId: data.busVersionId || undefined,
+                departureTime: new Date(data.departureTime).toISOString(),
+                arrivalTime: new Date(data.arrivalTime).toISOString(),
+                basePrice: Number(data.basePrice),
+                isPublished: data.isPublished ?? true,
+            }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: TRIPS_QUERY_KEY })
+            toast.success(t('update_success', 'Trip updated successfully'))
+            setEditTrip(null)
+        },
+        onError: (err: unknown) => {
+            toast.error((err as { localizedMessage?: string })?.localizedMessage ?? tCommon('common.error'))
+        },
+    })
+
+    const cancelMutation = useMutation({
+        mutationFn: ({ tripId, reason }: { tripId: string; reason: string }) =>
+            cancelAdminTrip(tripId, reason),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: TRIPS_QUERY_KEY })
+            toast.success(t('cancel_success', 'Trip cancelled successfully'))
+            setCancelTrip(null)
+            setCancelReason('')
+        },
+        onError: (err: unknown) => {
+            toast.error((err as { localizedMessage?: string })?.localizedMessage ?? tCommon('common.error'))
+        },
+    })
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold">{t('title')}</h1>
-                    <p className="text-sm text-muted-foreground">{t('description')}</p>
+                    <p className="text-sm text-muted-foreground">{t('admin_description')}</p>
                 </div>
-                <Button onClick={openDialog}>
+                <Button onClick={() => setCreateOpen(true)}>
                     <Plus className="h-4 w-4" /> {t('add_trip')}
                 </Button>
             </div>
@@ -115,15 +218,34 @@ export const CompanyTripsPage = () => {
                     <option value="completed">{tCommon('status.completed')}</option>
                     <option value="cancelled">{tCommon('status.cancelled')}</option>
                 </select>
+                <select
+                    value={companyFilter}
+                    onChange={e => setCompanyFilter(e.target.value)}
+                    className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none"
+                >
+                    <option value="all">{t('all_companies')}</option>
+                    {companies.map(c => (
+                        <option key={c.busCompanyId} value={c.busCompanyId}>{c.name}</option>
+                    ))}
+                </select>
+                <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <input
+                        type="date"
+                        value={dateFrom}
+                        onChange={e => setDateFrom(e.target.value)}
+                        className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none"
+                    />
+                </div>
                 {hasFilter && (
                     <Button variant="outline" size="sm" onClick={clearFilters}>
-                        <X className="h-3.5 w-3.5" />
+                        <X className="h-3.5 w-3.5" /> {tCommon('common.clear_filters')}
                     </Button>
                 )}
             </div>
 
-            {isLoading && <p className="text-sm text-muted-foreground">{tCommon('common.loading')}</p>}
-            {isError && <p className="text-sm text-destructive">{tCommon('common.error')}</p>}
+            {tripsQuery.isLoading && <p className="text-sm text-muted-foreground">{tCommon('common.loading')}</p>}
+            {tripsQuery.isError && <p className="text-sm text-destructive">{tCommon('common.error')}</p>}
 
             <div className="overflow-x-auto rounded-lg border border-border">
                 <table className="w-full text-sm">
@@ -131,8 +253,7 @@ export const CompanyTripsPage = () => {
                         <tr>
                             <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.route')}</th>
                             <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.departure')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.bus')}</th>
-                            <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('table.seats_sold')}</th>
+                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.company')}</th>
                             <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.price')}</th>
                             <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.status')}</th>
                             <th className="px-4 py-3" />
@@ -164,14 +285,8 @@ export const CompanyTripsPage = () => {
                                     </td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-1 text-xs">
-                                            <Bus className="h-3.5 w-3.5 text-muted-foreground" />
-                                            <span>{trip.busVersionId ? t('bus_assigned') : '—'}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                                            <span className="text-xs">—</span>
+                                            <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                            <span className="truncate max-w-32">{trip.busCompany?.name ?? trip.busCompanyId}</span>
                                         </div>
                                     </td>
                                     <td className="px-4 py-3 text-right font-medium">
@@ -205,9 +320,9 @@ export const CompanyTripsPage = () => {
                                 </tr>
                             )
                         })}
-                        {!isLoading && filtered.length === 0 && (
+                        {!tripsQuery.isLoading && filtered.length === 0 && (
                             <tr>
-                                <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">
+                                <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
                                     {tCommon('common.no_results')}
                                 </td>
                             </tr>
@@ -217,24 +332,33 @@ export const CompanyTripsPage = () => {
             </div>
 
             {/* Create dialog */}
-            <Dialog open={dialogOpen} onClose={closeDialog} title={t('add_trip_title')}>
+            <Dialog open={createOpen} onClose={() => setCreateOpen(false)} title={t('add_trip_title')} className="max-w-2xl">
+                <div className="mb-4">
+                    <label className="text-sm font-medium mb-1 block">{t('company_label')}</label>
+                    <select
+                        value={selectedCompanyId}
+                        onChange={e => setSelectedCompanyId(e.target.value)}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                        <option value="">{tCommon('common.select_option')}</option>
+                        {companies.map(c => (
+                            <option key={c.busCompanyId} value={c.busCompanyId}>{c.name}</option>
+                        ))}
+                    </select>
+                </div>
                 <TripForm
-                    onSubmit={handleCreate}
-                    onCancel={closeDialog}
+                    onSubmit={(data) => createMutation.mutate(data)}
+                    onCancel={() => setCreateOpen(false)}
                     isSubmitting={createMutation.isPending}
                 />
             </Dialog>
 
             {/* Edit dialog */}
-            <Dialog
-                open={!!editTrip}
-                onClose={() => setEditTrip(null)}
-                title={t('edit_trip_title')}
-            >
+            <Dialog open={!!editTrip} onClose={() => setEditTrip(null)} title={t('edit_trip_title')} className="max-w-2xl">
                 {editTrip && (
                     <TripForm
                         defaultValues={tripToFormDefaults(editTrip)}
-                        onSubmit={handleEdit}
+                        onSubmit={(data) => updateMutation.mutate({ tripId: editTrip.tripId, data })}
                         onCancel={() => setEditTrip(null)}
                         isSubmitting={updateMutation.isPending}
                     />
@@ -242,11 +366,7 @@ export const CompanyTripsPage = () => {
             </Dialog>
 
             {/* Cancel dialog */}
-            <Dialog
-                open={!!cancelTrip}
-                onClose={() => setCancelTrip(null)}
-                title={t('cancel_trip_title')}
-            >
+            <Dialog open={!!cancelTrip} onClose={() => setCancelTrip(null)} title={t('cancel_trip_title')}>
                 <div className="grid gap-4">
                     <p className="text-sm text-muted-foreground">{t('cancel_trip_confirm')}</p>
                     <div>
@@ -262,7 +382,7 @@ export const CompanyTripsPage = () => {
                     <div className="flex gap-2">
                         <Button
                             variant="destructive"
-                            onClick={handleCancel}
+                            onClick={() => cancelTrip && cancelMutation.mutate({ tripId: cancelTrip.tripId, reason: cancelReason })}
                             disabled={!cancelReason.trim() || cancelMutation.isPending}
                         >
                             {cancelMutation.isPending ? tCommon('common.loading') : t('cancel_confirm_btn')}

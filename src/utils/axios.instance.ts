@@ -2,6 +2,7 @@ import axios from "axios";
 import i18n from '@/i18n'
 import { refresh } from "services/auth/auth.service";
 import { authStore, logout } from "store/auth.store";
+import { customerAuthStore, logoutCustomer } from "store/customer-auth.store";
 
 const rawBaseUrl = String(import.meta.env.VITE_BASE_API_URL ?? '').replace(/\/+$/, '')
 export const BASE_API_URL = rawBaseUrl.endsWith('/api') ? rawBaseUrl : `${rawBaseUrl}/api`
@@ -44,14 +45,15 @@ const resolveLocalizedMessage = (error: any) => {
 
 instance.interceptors.request.use(
     function (config) {
-        const { accessToken } = authStore.state
-        if (accessToken) {
-            config.headers['Authorization'] = `Bearer ${accessToken}`
+        const adminToken = authStore.state.accessToken
+        const customerToken = customerAuthStore.state.accessToken
+        const token = adminToken ?? customerToken
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`
         }
         return config;
     },
     function (error) {
-        // Do something with the request error
         return Promise.reject(error);
     },
 );
@@ -73,13 +75,20 @@ instance.interceptors.response.use(
         error.localizedMessage = resolveLocalizedMessage(error)
 
         if (status === 401 && !isAuthEndpoint) {
+            const isCustomerRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/customer')
             try {
                 await refresh()
             } catch {
-                logout()
-
-                if (typeof window !== 'undefined' && window.location.pathname !== '/auth/login') {
-                    window.location.assign('/auth/login')
+                if (isCustomerRoute) {
+                    logoutCustomer()
+                    if (typeof window !== 'undefined' && window.location.pathname !== '/customer/login') {
+                        window.location.assign('/customer/login')
+                    }
+                } else {
+                    logout()
+                    if (typeof window !== 'undefined' && window.location.pathname !== '/auth/login') {
+                        window.location.assign('/auth/login')
+                    }
                 }
             }
         }

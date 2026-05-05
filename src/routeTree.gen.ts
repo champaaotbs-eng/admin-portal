@@ -10,28 +10,36 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as R403RouteImport } from './routes/403'
+import { Route as CustomerRouteRouteImport } from './routes/customer/route'
 import { Route as CompanyRouteRouteImport } from './routes/company/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CustomerIndexRouteImport } from './routes/customer/index'
 import { Route as CompanyIndexRouteImport } from './routes/company/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as CustomerRegisterRouteImport } from './routes/customer/register'
+import { Route as CustomerLoginRouteImport } from './routes/customer/login'
 import { Route as CompanyTripsRouteImport } from './routes/company/trips'
 import { Route as CompanyStaffRouteImport } from './routes/company/staff'
 import { Route as CompanyRoutesRouteImport } from './routes/company/routes'
 import { Route as CompanyRevenueRouteImport } from './routes/company/revenue'
 import { Route as CompanyBookingsRouteImport } from './routes/company/bookings'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as AdminTripsRouteImport } from './routes/admin/trips'
 import { Route as AdminStationsRouteImport } from './routes/admin/stations'
 import { Route as AdminRoutesRouteImport } from './routes/admin/routes'
 import { Route as AdminRevenueRouteImport } from './routes/admin/revenue'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminCompaniesRouteImport } from './routes/admin/companies'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
+import { Route as CustomerMyBookingsIndexRouteImport } from './routes/customer/my-bookings/index'
 import { Route as CompanySeatLayoutsIndexRouteImport } from './routes/company/seat-layouts/index'
 import { Route as CompanyFleetIndexRouteImport } from './routes/company/fleet/index'
 import { Route as AdminRolesIndexRouteImport } from './routes/admin/roles/index'
 import { Route as AdminCompaniesIndexRouteImport } from './routes/admin/companies/index'
 import { Route as AdminAdminsIndexRouteImport } from './routes/admin/admins/index'
+import { Route as CustomerTripsTripIdRouteImport } from './routes/customer/trips.$tripId'
+import { Route as CustomerMyBookingsCodeRouteImport } from './routes/customer/my-bookings/$code'
 import { Route as CompanyFleetAddRouteImport } from './routes/company/fleet/add'
 import { Route as AdminRolesNewRouteImport } from './routes/admin/roles/new'
 import { Route as AdminRolesIdRouteImport } from './routes/admin/roles/$id'
@@ -44,6 +52,11 @@ import { Route as CompanyFleetEditBusIdRouteImport } from './routes/company/flee
 const R403Route = R403RouteImport.update({
   id: '/403',
   path: '/403',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomerRouteRoute = CustomerRouteRouteImport.update({
+  id: '/customer',
+  path: '/customer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompanyRouteRoute = CompanyRouteRouteImport.update({
@@ -61,6 +74,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CustomerIndexRoute = CustomerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CustomerRouteRoute,
+} as any)
 const CompanyIndexRoute = CompanyIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -70,6 +88,16 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const CustomerRegisterRoute = CustomerRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => CustomerRouteRoute,
+} as any)
+const CustomerLoginRoute = CustomerLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => CustomerRouteRoute,
 } as any)
 const CompanyTripsRoute = CompanyTripsRouteImport.update({
   id: '/trips',
@@ -101,6 +129,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTripsRoute = AdminTripsRouteImport.update({
+  id: '/trips',
+  path: '/trips',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminStationsRoute = AdminStationsRouteImport.update({
   id: '/stations',
   path: '/stations',
@@ -131,6 +164,11 @@ const AdminBookingsRoute = AdminBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const CustomerMyBookingsIndexRoute = CustomerMyBookingsIndexRouteImport.update({
+  id: '/my-bookings/',
+  path: '/my-bookings/',
+  getParentRoute: () => CustomerRouteRoute,
+} as any)
 const CompanySeatLayoutsIndexRoute = CompanySeatLayoutsIndexRouteImport.update({
   id: '/seat-layouts/',
   path: '/seat-layouts/',
@@ -155,6 +193,16 @@ const AdminAdminsIndexRoute = AdminAdminsIndexRouteImport.update({
   id: '/admins/',
   path: '/admins/',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const CustomerTripsTripIdRoute = CustomerTripsTripIdRouteImport.update({
+  id: '/trips/$tripId',
+  path: '/trips/$tripId',
+  getParentRoute: () => CustomerRouteRoute,
+} as any)
+const CustomerMyBookingsCodeRoute = CustomerMyBookingsCodeRouteImport.update({
+  id: '/my-bookings/$code',
+  path: '/my-bookings/$code',
+  getParentRoute: () => CustomerRouteRoute,
 } as any)
 const CompanyFleetAddRoute = CompanyFleetAddRouteImport.update({
   id: '/fleet/add',
@@ -201,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/company': typeof CompanyRouteRouteWithChildren
+  '/customer': typeof CustomerRouteRouteWithChildren
   '/403': typeof R403Route
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/companies': typeof AdminCompaniesRouteWithChildren
@@ -208,14 +257,18 @@ export interface FileRoutesByFullPath {
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/routes': typeof AdminRoutesRoute
   '/admin/stations': typeof AdminStationsRoute
+  '/admin/trips': typeof AdminTripsRoute
   '/auth/login': typeof AuthLoginRoute
   '/company/bookings': typeof CompanyBookingsRoute
   '/company/revenue': typeof CompanyRevenueRoute
   '/company/routes': typeof CompanyRoutesRoute
   '/company/staff': typeof CompanyStaffRoute
   '/company/trips': typeof CompanyTripsRoute
+  '/customer/login': typeof CustomerLoginRoute
+  '/customer/register': typeof CustomerRegisterRoute
   '/admin/': typeof AdminIndexRoute
   '/company/': typeof CompanyIndexRoute
+  '/customer/': typeof CustomerIndexRoute
   '/admin/admins/$id': typeof AdminAdminsIdRoute
   '/admin/admins/new': typeof AdminAdminsNewRoute
   '/admin/companies/$id': typeof AdminCompaniesIdRoute
@@ -223,11 +276,14 @@ export interface FileRoutesByFullPath {
   '/admin/roles/$id': typeof AdminRolesIdRoute
   '/admin/roles/new': typeof AdminRolesNewRoute
   '/company/fleet/add': typeof CompanyFleetAddRoute
+  '/customer/my-bookings/$code': typeof CustomerMyBookingsCodeRoute
+  '/customer/trips/$tripId': typeof CustomerTripsTripIdRoute
   '/admin/admins/': typeof AdminAdminsIndexRoute
   '/admin/companies/': typeof AdminCompaniesIndexRoute
   '/admin/roles/': typeof AdminRolesIndexRoute
   '/company/fleet/': typeof CompanyFleetIndexRoute
   '/company/seat-layouts/': typeof CompanySeatLayoutsIndexRoute
+  '/customer/my-bookings/': typeof CustomerMyBookingsIndexRoute
   '/company/fleet/edit/$busId': typeof CompanyFleetEditBusIdRoute
 }
 export interface FileRoutesByTo {
@@ -238,14 +294,18 @@ export interface FileRoutesByTo {
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/routes': typeof AdminRoutesRoute
   '/admin/stations': typeof AdminStationsRoute
+  '/admin/trips': typeof AdminTripsRoute
   '/auth/login': typeof AuthLoginRoute
   '/company/bookings': typeof CompanyBookingsRoute
   '/company/revenue': typeof CompanyRevenueRoute
   '/company/routes': typeof CompanyRoutesRoute
   '/company/staff': typeof CompanyStaffRoute
   '/company/trips': typeof CompanyTripsRoute
+  '/customer/login': typeof CustomerLoginRoute
+  '/customer/register': typeof CustomerRegisterRoute
   '/admin': typeof AdminIndexRoute
   '/company': typeof CompanyIndexRoute
+  '/customer': typeof CustomerIndexRoute
   '/admin/admins/$id': typeof AdminAdminsIdRoute
   '/admin/admins/new': typeof AdminAdminsNewRoute
   '/admin/companies/$id': typeof AdminCompaniesIdRoute
@@ -253,11 +313,14 @@ export interface FileRoutesByTo {
   '/admin/roles/$id': typeof AdminRolesIdRoute
   '/admin/roles/new': typeof AdminRolesNewRoute
   '/company/fleet/add': typeof CompanyFleetAddRoute
+  '/customer/my-bookings/$code': typeof CustomerMyBookingsCodeRoute
+  '/customer/trips/$tripId': typeof CustomerTripsTripIdRoute
   '/admin/admins': typeof AdminAdminsIndexRoute
   '/admin/companies': typeof AdminCompaniesIndexRoute
   '/admin/roles': typeof AdminRolesIndexRoute
   '/company/fleet': typeof CompanyFleetIndexRoute
   '/company/seat-layouts': typeof CompanySeatLayoutsIndexRoute
+  '/customer/my-bookings': typeof CustomerMyBookingsIndexRoute
   '/company/fleet/edit/$busId': typeof CompanyFleetEditBusIdRoute
 }
 export interface FileRoutesById {
@@ -265,6 +328,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/company': typeof CompanyRouteRouteWithChildren
+  '/customer': typeof CustomerRouteRouteWithChildren
   '/403': typeof R403Route
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/companies': typeof AdminCompaniesRouteWithChildren
@@ -272,14 +336,18 @@ export interface FileRoutesById {
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/routes': typeof AdminRoutesRoute
   '/admin/stations': typeof AdminStationsRoute
+  '/admin/trips': typeof AdminTripsRoute
   '/auth/login': typeof AuthLoginRoute
   '/company/bookings': typeof CompanyBookingsRoute
   '/company/revenue': typeof CompanyRevenueRoute
   '/company/routes': typeof CompanyRoutesRoute
   '/company/staff': typeof CompanyStaffRoute
   '/company/trips': typeof CompanyTripsRoute
+  '/customer/login': typeof CustomerLoginRoute
+  '/customer/register': typeof CustomerRegisterRoute
   '/admin/': typeof AdminIndexRoute
   '/company/': typeof CompanyIndexRoute
+  '/customer/': typeof CustomerIndexRoute
   '/admin/admins/$id': typeof AdminAdminsIdRoute
   '/admin/admins/new': typeof AdminAdminsNewRoute
   '/admin/companies/$id': typeof AdminCompaniesIdRoute
@@ -287,11 +355,14 @@ export interface FileRoutesById {
   '/admin/roles/$id': typeof AdminRolesIdRoute
   '/admin/roles/new': typeof AdminRolesNewRoute
   '/company/fleet/add': typeof CompanyFleetAddRoute
+  '/customer/my-bookings/$code': typeof CustomerMyBookingsCodeRoute
+  '/customer/trips/$tripId': typeof CustomerTripsTripIdRoute
   '/admin/admins/': typeof AdminAdminsIndexRoute
   '/admin/companies/': typeof AdminCompaniesIndexRoute
   '/admin/roles/': typeof AdminRolesIndexRoute
   '/company/fleet/': typeof CompanyFleetIndexRoute
   '/company/seat-layouts/': typeof CompanySeatLayoutsIndexRoute
+  '/customer/my-bookings/': typeof CustomerMyBookingsIndexRoute
   '/company/fleet/edit/$busId': typeof CompanyFleetEditBusIdRoute
 }
 export interface FileRouteTypes {
@@ -300,6 +371,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/company'
+    | '/customer'
     | '/403'
     | '/admin/bookings'
     | '/admin/companies'
@@ -307,14 +379,18 @@ export interface FileRouteTypes {
     | '/admin/revenue'
     | '/admin/routes'
     | '/admin/stations'
+    | '/admin/trips'
     | '/auth/login'
     | '/company/bookings'
     | '/company/revenue'
     | '/company/routes'
     | '/company/staff'
     | '/company/trips'
+    | '/customer/login'
+    | '/customer/register'
     | '/admin/'
     | '/company/'
+    | '/customer/'
     | '/admin/admins/$id'
     | '/admin/admins/new'
     | '/admin/companies/$id'
@@ -322,11 +398,14 @@ export interface FileRouteTypes {
     | '/admin/roles/$id'
     | '/admin/roles/new'
     | '/company/fleet/add'
+    | '/customer/my-bookings/$code'
+    | '/customer/trips/$tripId'
     | '/admin/admins/'
     | '/admin/companies/'
     | '/admin/roles/'
     | '/company/fleet/'
     | '/company/seat-layouts/'
+    | '/customer/my-bookings/'
     | '/company/fleet/edit/$busId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -337,14 +416,18 @@ export interface FileRouteTypes {
     | '/admin/revenue'
     | '/admin/routes'
     | '/admin/stations'
+    | '/admin/trips'
     | '/auth/login'
     | '/company/bookings'
     | '/company/revenue'
     | '/company/routes'
     | '/company/staff'
     | '/company/trips'
+    | '/customer/login'
+    | '/customer/register'
     | '/admin'
     | '/company'
+    | '/customer'
     | '/admin/admins/$id'
     | '/admin/admins/new'
     | '/admin/companies/$id'
@@ -352,17 +435,21 @@ export interface FileRouteTypes {
     | '/admin/roles/$id'
     | '/admin/roles/new'
     | '/company/fleet/add'
+    | '/customer/my-bookings/$code'
+    | '/customer/trips/$tripId'
     | '/admin/admins'
     | '/admin/companies'
     | '/admin/roles'
     | '/company/fleet'
     | '/company/seat-layouts'
+    | '/customer/my-bookings'
     | '/company/fleet/edit/$busId'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/company'
+    | '/customer'
     | '/403'
     | '/admin/bookings'
     | '/admin/companies'
@@ -370,14 +457,18 @@ export interface FileRouteTypes {
     | '/admin/revenue'
     | '/admin/routes'
     | '/admin/stations'
+    | '/admin/trips'
     | '/auth/login'
     | '/company/bookings'
     | '/company/revenue'
     | '/company/routes'
     | '/company/staff'
     | '/company/trips'
+    | '/customer/login'
+    | '/customer/register'
     | '/admin/'
     | '/company/'
+    | '/customer/'
     | '/admin/admins/$id'
     | '/admin/admins/new'
     | '/admin/companies/$id'
@@ -385,11 +476,14 @@ export interface FileRouteTypes {
     | '/admin/roles/$id'
     | '/admin/roles/new'
     | '/company/fleet/add'
+    | '/customer/my-bookings/$code'
+    | '/customer/trips/$tripId'
     | '/admin/admins/'
     | '/admin/companies/'
     | '/admin/roles/'
     | '/company/fleet/'
     | '/company/seat-layouts/'
+    | '/customer/my-bookings/'
     | '/company/fleet/edit/$busId'
   fileRoutesById: FileRoutesById
 }
@@ -397,6 +491,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   CompanyRouteRoute: typeof CompanyRouteRouteWithChildren
+  CustomerRouteRoute: typeof CustomerRouteRouteWithChildren
   R403Route: typeof R403Route
   AuthLoginRoute: typeof AuthLoginRoute
 }
@@ -408,6 +503,13 @@ declare module '@tanstack/react-router' {
       path: '/403'
       fullPath: '/403'
       preLoaderRoute: typeof R403RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customer': {
+      id: '/customer'
+      path: '/customer'
+      fullPath: '/customer'
+      preLoaderRoute: typeof CustomerRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/company': {
@@ -431,6 +533,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/customer/': {
+      id: '/customer/'
+      path: '/'
+      fullPath: '/customer/'
+      preLoaderRoute: typeof CustomerIndexRouteImport
+      parentRoute: typeof CustomerRouteRoute
+    }
     '/company/': {
       id: '/company/'
       path: '/'
@@ -444,6 +553,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/customer/register': {
+      id: '/customer/register'
+      path: '/register'
+      fullPath: '/customer/register'
+      preLoaderRoute: typeof CustomerRegisterRouteImport
+      parentRoute: typeof CustomerRouteRoute
+    }
+    '/customer/login': {
+      id: '/customer/login'
+      path: '/login'
+      fullPath: '/customer/login'
+      preLoaderRoute: typeof CustomerLoginRouteImport
+      parentRoute: typeof CustomerRouteRoute
     }
     '/company/trips': {
       id: '/company/trips'
@@ -487,6 +610,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/trips': {
+      id: '/admin/trips'
+      path: '/trips'
+      fullPath: '/admin/trips'
+      preLoaderRoute: typeof AdminTripsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/stations': {
       id: '/admin/stations'
       path: '/stations'
@@ -529,6 +659,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/customer/my-bookings/': {
+      id: '/customer/my-bookings/'
+      path: '/my-bookings'
+      fullPath: '/customer/my-bookings/'
+      preLoaderRoute: typeof CustomerMyBookingsIndexRouteImport
+      parentRoute: typeof CustomerRouteRoute
+    }
     '/company/seat-layouts/': {
       id: '/company/seat-layouts/'
       path: '/seat-layouts'
@@ -563,6 +700,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/admins/'
       preLoaderRoute: typeof AdminAdminsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/customer/trips/$tripId': {
+      id: '/customer/trips/$tripId'
+      path: '/trips/$tripId'
+      fullPath: '/customer/trips/$tripId'
+      preLoaderRoute: typeof CustomerTripsTripIdRouteImport
+      parentRoute: typeof CustomerRouteRoute
+    }
+    '/customer/my-bookings/$code': {
+      id: '/customer/my-bookings/$code'
+      path: '/my-bookings/$code'
+      fullPath: '/customer/my-bookings/$code'
+      preLoaderRoute: typeof CustomerMyBookingsCodeRouteImport
+      parentRoute: typeof CustomerRouteRoute
     }
     '/company/fleet/add': {
       id: '/company/fleet/add'
@@ -646,6 +797,7 @@ interface AdminRouteRouteChildren {
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminRoutesRoute: typeof AdminRoutesRoute
   AdminStationsRoute: typeof AdminStationsRoute
+  AdminTripsRoute: typeof AdminTripsRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminAdminsIdRoute: typeof AdminAdminsIdRoute
   AdminAdminsNewRoute: typeof AdminAdminsNewRoute
@@ -662,6 +814,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminRevenueRoute: AdminRevenueRoute,
   AdminRoutesRoute: AdminRoutesRoute,
   AdminStationsRoute: AdminStationsRoute,
+  AdminTripsRoute: AdminTripsRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminAdminsIdRoute: AdminAdminsIdRoute,
   AdminAdminsNewRoute: AdminAdminsNewRoute,
@@ -705,10 +858,33 @@ const CompanyRouteRouteWithChildren = CompanyRouteRoute._addFileChildren(
   CompanyRouteRouteChildren,
 )
 
+interface CustomerRouteRouteChildren {
+  CustomerLoginRoute: typeof CustomerLoginRoute
+  CustomerRegisterRoute: typeof CustomerRegisterRoute
+  CustomerIndexRoute: typeof CustomerIndexRoute
+  CustomerMyBookingsCodeRoute: typeof CustomerMyBookingsCodeRoute
+  CustomerTripsTripIdRoute: typeof CustomerTripsTripIdRoute
+  CustomerMyBookingsIndexRoute: typeof CustomerMyBookingsIndexRoute
+}
+
+const CustomerRouteRouteChildren: CustomerRouteRouteChildren = {
+  CustomerLoginRoute: CustomerLoginRoute,
+  CustomerRegisterRoute: CustomerRegisterRoute,
+  CustomerIndexRoute: CustomerIndexRoute,
+  CustomerMyBookingsCodeRoute: CustomerMyBookingsCodeRoute,
+  CustomerTripsTripIdRoute: CustomerTripsTripIdRoute,
+  CustomerMyBookingsIndexRoute: CustomerMyBookingsIndexRoute,
+}
+
+const CustomerRouteRouteWithChildren = CustomerRouteRoute._addFileChildren(
+  CustomerRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   CompanyRouteRoute: CompanyRouteRouteWithChildren,
+  CustomerRouteRoute: CustomerRouteRouteWithChildren,
   R403Route: R403Route,
   AuthLoginRoute: AuthLoginRoute,
 }

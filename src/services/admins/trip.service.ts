@@ -1,29 +1,63 @@
-import type { IPagination, IRequestPagination } from '@/types/pagination'
+import type { IPagination } from '@/types'
 import type { ETripStatus, ITrip } from '@/types/trip'
 import { api } from 'utils/axios.instance'
 
-export interface IGetAdminTripsQuery extends IRequestPagination {
+export interface IGetAdminTripsQuery {
+    page?: number
+    limit?: number
     companyId?: string
     status?: ETripStatus
-    dateFrom?: string
-    dateTo?: string
+    departureDate?: string
 }
 
+export interface ICreateAdminTripPayload {
+    routeId: string
+    busVersionId?: string
+    busCompanyId: string
+    departureTime: string
+    arrivalTime: string
+    basePrice: number
+    isPublished?: boolean
+}
+
+export type IUpdateAdminTripPayload = Partial<ICreateAdminTripPayload>
+
 const buildQuery = (query: IGetAdminTripsQuery = {}) => {
-    const urlQuery = new URLSearchParams()
+    const params = new URLSearchParams()
+    if (query.page) params.set('page', String(query.page))
+    if (query.limit) params.set('limit', String(query.limit))
 
-    if (query.page) urlQuery.set('page', String(query.page))
-    if (query.limit) urlQuery.set('limit', String(query.limit))
-    if (query.companyId) urlQuery.set('company_id', query.companyId)
-    if (query.status) urlQuery.set('status', query.status)
-    if (query.dateFrom) urlQuery.set('date_from', query.dateFrom)
-    if (query.dateTo) urlQuery.set('date_to', query.dateTo)
+    const filters: Record<string, unknown> = {}
+    if (query.companyId) filters.busCompanyId = query.companyId
+    if (query.status) filters.status = query.status
+    if (query.departureDate) filters.departureDate = query.departureDate
+    if (Object.keys(filters).length > 0) {
+        params.set('filters', JSON.stringify(filters))
+    }
 
-    const search = urlQuery.toString()
-    return search.length > 0 ? `?${search}` : ''
+    const search = params.toString()
+    return search ? `?${search}` : ''
 }
 
 export const getAdminTrips = async (query: IGetAdminTripsQuery = {}) => {
-    const response = await api.get<IPagination<ITrip>>(`/admin/trips${buildQuery(query)}`)
-    return response
+    return api.get<IPagination<ITrip>>(`/v1/trips${buildQuery(query)}`)
+}
+
+export const getAdminTripById = async (tripId: string) => {
+    return api.get<ITrip>(`/v1/trips/${tripId}`)
+}
+
+export const createAdminTrip = async (payload: ICreateAdminTripPayload) => {
+    return api.post<ITrip>('/v1/trips', payload)
+}
+
+export const updateAdminTrip = async (tripId: string, payload: IUpdateAdminTripPayload) => {
+    return api.patch<ITrip>(`/v1/trips/${tripId}`, payload)
+}
+
+export const cancelAdminTrip = async (tripId: string, cancelReason: string) => {
+    return api.patch<ITrip>(`/v1/trips/${tripId}`, {
+        status: 'CANCELLED',
+        cancelReason,
+    })
 }

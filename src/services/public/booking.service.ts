@@ -31,14 +31,11 @@ const buildQuery = (query: IGetMyBookingsQuery = {}) => {
 }
 
 const toBody = (payload: ICreatePublicBookingPayload | IUpdatePublicBookingPayload) => ({
-    trip_id: payload.tripId,
-    seat_ids: payload.seatIds,
-    pickup_stop_id: payload.pickupStopId,
-    dropoff_stop_id: payload.dropoffStopId,
-    payment_method: payload.paymentMethod,
-    passenger_name: payload.passengerName,
-    passenger_phone: payload.passengerPhone,
-    passenger_email: payload.passengerEmail,
+    tripId: payload.tripId,
+    seatIds: payload.seatIds,
+    pickupStopId: payload.pickupStopId,
+    dropoffStopId: payload.dropoffStopId,
+    paymentMethod: payload.paymentMethod,
 })
 
 export const createPublicBooking = async (payload: ICreatePublicBookingPayload) => {

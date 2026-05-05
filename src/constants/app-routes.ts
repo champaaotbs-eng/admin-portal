@@ -17,6 +17,7 @@ export const APP_ROUTES = {
             EDIT: '/admin/roles/:id',
         },
         ROUTES: '/admin/routes',
+        TRIPS: '/admin/trips',
         REPORTS: '/admin/reports',
         BOOKINGS: '/admin/bookings',
         REVENUE: '/admin/revenue',
@@ -32,5 +33,14 @@ export const APP_ROUTES = {
         BOOKINGS: '/company/bookings',
         REVENUE: '/company/revenue',
         STAFF: '/company/staff',
+    },
+
+    CUSTOMER: {
+        ROOT: '/customer',
+        LOGIN: '/customer/login',
+        REGISTER: '/customer/register',
+        TRIP_DETAIL: '/customer/trips/$tripId',
+        MY_BOOKINGS: '/customer/my-bookings',
+        BOOKING_DETAIL: '/customer/my-bookings/$code',
     },
 } as const

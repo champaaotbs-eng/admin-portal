@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 import { ROLE_I18N_KEYS } from '@/constants/roles'
 import { APP_ROUTES } from '@/constants/app-routes'
 import { Bus, Globe } from 'lucide-react'
@@ -6,6 +6,10 @@ import { useAppHeader } from './hooks/use-app-header'
 
 export const AppHeader = () => {
     const { admin, isAuthenticated, currentLang, handleLogout, toggleLang, t } = useAppHeader()
+    const { location } = useRouterState()
+
+    // Customer routes render their own header inside the /customer layout
+    if (location.pathname.startsWith('/customer')) return null
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur">

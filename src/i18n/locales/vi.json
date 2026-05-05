@@ -1005,10 +1005,23 @@
         "trips": {
             "title": "Quản lý chuyến đi",
             "description": "Lịch trình các chuyến xe của công ty",
-            "search_placeholder": "Tìm theo tuyến, xe, tài xế...",
+            "admin_description": "Tất cả chuyến đi trên nền tảng",
+            "search_placeholder": "Tìm theo tuyến, xe...",
             "add_trip": "Thêm chuyến",
             "add_trip_title": "Tạo chuyến mới",
             "edit_trip_title": "Chỉnh sửa chuyến",
+            "cancel_trip": "Huỷ chuyến",
+            "cancel_trip_title": "Huỷ chuyến đi",
+            "cancel_trip_confirm": "Bạn có chắc chắn muốn huỷ chuyến đi này không? Hành động này không thể hoàn tác.",
+            "cancel_reason_label": "Lý do huỷ",
+            "cancel_reason_placeholder": "Nhập lý do huỷ chuyến...",
+            "cancel_confirm_btn": "Xác nhận huỷ",
+            "bus_assigned": "Đã phân xe",
+            "all_companies": "Tất cả nhà xe",
+            "company_label": "Nhà xe",
+            "create_success": "Tạo chuyến thành công",
+            "update_success": "Cập nhật chuyến thành công",
+            "cancel_success": "Huỷ chuyến thành công",
             "stats": {
                 "total": "Tổng chuyến",
                 "scheduled": "Sắp khởi hành",
@@ -1023,7 +1036,8 @@
                 "driver": "Tài xế",
                 "seats_sold": "Ghế đã bán",
                 "price": "Giá",
-                "status": "Trạng thái"
+                "status": "Trạng thái",
+                "company": "Nhà xe"
             },
             "form": {
                 "route": "Tuyến đường",
@@ -1032,7 +1046,8 @@
                 "bus": "Xe",
                 "driver": "Tài xế",
                 "price": "Giá mỗi ghế (VND)",
-                "seats": "Số ghế"
+                "seats": "Số ghế",
+                "is_published": "Hiển thị với khách hàng"
             },
             "errors": {
                 "route_required": "Tuyến đường là bắt buộc",
@@ -1053,6 +1068,152 @@
         "forbidden": {
             "description": "Bạn không có quyền truy cập trang này.",
             "back_to_dashboard": "Quay lại bảng điều khiển"
+        },
+        "customer": {
+            "login": {
+                "title": "Đăng nhập",
+                "subtitle": "Đặt vé xe khách",
+                "email_label": "Email",
+                "email_placeholder": "email@cua.ban.com",
+                "password_label": "Mật khẩu",
+                "password_placeholder": "••••••••",
+                "login_btn": "Đăng nhập",
+                "no_account": "Chưa có tài khoản?",
+                "register_link": "Đăng ký",
+                "back_to_search": "Quay lại tìm kiếm",
+                "errors": {
+                    "email_required": "Email là bắt buộc",
+                    "email_invalid": "Email không hợp lệ",
+                    "password_required": "Mật khẩu là bắt buộc",
+                    "password_min": "Mật khẩu phải có ít nhất 6 ký tự",
+                    "invalid_credentials": "Email hoặc mật khẩu không đúng"
+                }
+            },
+            "register": {
+                "title": "Tạo tài khoản",
+                "subtitle": "Đăng ký để đặt vé",
+                "full_name_label": "Họ và tên",
+                "full_name_placeholder": "Nhập họ và tên",
+                "email_label": "Email",
+                "email_placeholder": "email@cua.ban.com",
+                "phone_label": "Số điện thoại",
+                "phone_placeholder": "Nhập số điện thoại",
+                "password_label": "Mật khẩu",
+                "password_placeholder": "••••••••",
+                "register_btn": "Tạo tài khoản",
+                "have_account": "Đã có tài khoản?",
+                "login_link": "Đăng nhập",
+                "success": "Tạo tài khoản thành công! Bạn đã đăng nhập.",
+                "errors": {
+                    "full_name_required": "Họ và tên là bắt buộc",
+                    "email_required": "Email là bắt buộc",
+                    "email_invalid": "Email không hợp lệ",
+                    "phone_required": "Số điện thoại là bắt buộc",
+                    "password_required": "Mật khẩu là bắt buộc",
+                    "password_min": "Mật khẩu phải có ít nhất 6 ký tự"
+                }
+            },
+            "search": {
+                "hero_title": "Đặt vé xe khách",
+                "hero_subtitle": "Thoải mái, an toàn và đúng giờ",
+                "date_label": "Ngày đi",
+                "search_btn": "Tìm chuyến xe",
+                "all_trips": "Chuyến xe hiện có",
+                "no_trips": "Không tìm thấy chuyến xe theo tiêu chí đã chọn.",
+                "results_count": "Tìm thấy {{count}} chuyến xe",
+                "from_placeholder": "Điểm đi...",
+                "to_placeholder": "Điểm đến...",
+                "clear": "Xoá"
+            },
+            "trip_card": {
+                "seats_left": "Còn {{count}} chỗ",
+                "book_now": "Chọn ghế",
+                "duration": "{{h}}h {{m}}p",
+                "from": "Từ",
+                "base_price": "Từ {{price}}"
+            },
+            "trip_detail": {
+                "back": "Quay lại tìm kiếm",
+                "trip_info": "Thông tin chuyến xe",
+                "departure": "Khởi hành",
+                "arrival": "Đến nơi",
+                "company": "Nhà xe",
+                "select_seats": "Chọn ghế",
+                "seat_available": "Còn trống",
+                "seat_booked": "Đã đặt",
+                "seat_selected": "Đang chọn",
+                "floor_tab": "Tầng {{floor}}",
+                "seat_types": {
+                    "STANDARD": "Thường",
+                    "VIP": "VIP",
+                    "BED": "Giường nằm"
+                },
+                "booking_form": "Thông tin đặt vé",
+                "selected_seats": "Ghế đã chọn",
+                "no_seats_selected": "Chưa chọn ghế",
+                "pickup_stop": "Điểm lên xe",
+                "dropoff_stop": "Điểm xuống xe",
+                "select_stop": "Chọn điểm dừng...",
+                "payment_method": "Phương thức thanh toán",
+                "payment_online": "Thanh toán online",
+                "payment_online_desc": "VNPAY / MOMO",
+                "payment_onboard": "Trả tiền mặt trên xe",
+                "payment_onboard_desc": "Thanh toán cho tài xế",
+                "total": "Tổng tiền",
+                "confirm_btn": "Xác nhận đặt vé",
+                "login_to_book": "Bạn phải đăng nhập để đặt vé.",
+                "go_to_login": "Đăng nhập",
+                "errors": {
+                    "select_seats": "Vui lòng chọn ít nhất một ghế.",
+                    "select_pickup": "Vui lòng chọn điểm lên xe.",
+                    "select_dropoff": "Vui lòng chọn điểm xuống xe.",
+                    "same_stop": "Điểm lên và xuống xe phải khác nhau.",
+                    "booking_failed": "Đặt vé thất bại. Vui lòng thử lại."
+                }
+            },
+            "booking_success": {
+                "title": "Đặt vé thành công!",
+                "code_label": "Mã đặt vé",
+                "status_label": "Trạng thái",
+                "amount_label": "Tổng tiền",
+                "expires_label": "Hết hạn thanh toán",
+                "pay_now": "Thanh toán (VNPAY)",
+                "pay_momo": "Thanh toán MOMO",
+                "view_bookings": "Xem vé của tôi",
+                "onboard_note": "Vui lòng xuất trình mã này cho tài xế.",
+                "payment_initiated": "Đang chuyển đến cổng thanh toán..."
+            },
+            "my_bookings": {
+                "title": "Vé của tôi",
+                "empty": "Bạn chưa có vé nào.",
+                "search_trips": "Tìm chuyến xe",
+                "booking_code": "Mã vé",
+                "route": "Tuyến",
+                "date": "Khởi hành",
+                "seats": "Ghế",
+                "amount": "Số tiền",
+                "status": "Trạng thái",
+                "view": "Xem"
+            },
+            "booking_detail": {
+                "back": "Quay lại vé của tôi",
+                "title": "Vé #{{code}}",
+                "trip_section": "Chuyến xe",
+                "seats_section": "Ghế",
+                "payment_section": "Thanh toán",
+                "cancel_btn": "Huỷ vé",
+                "cancel_confirm": "Huỷ vé này? Không thể hoàn tác.",
+                "cancel_reason_label": "Lý do huỷ",
+                "cancel_reason_placeholder": "Nhập lý do (ít nhất 5 ký tự)",
+                "cancel_submit": "Xác nhận huỷ",
+                "cancelled_msg": "Vé đã được huỷ.",
+                "pay_now": "Thanh toán (VNPAY)",
+                "pay_momo": "Thanh toán MOMO",
+                "errors": {
+                    "cancel_reason_min": "Lý do phải có ít nhất 5 ký tự",
+                    "cancel_failed": "Không thể huỷ vé. Vui lòng thử lại."
+                }
+            }
         }
     }
 }

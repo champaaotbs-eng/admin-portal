@@ -8,6 +8,7 @@ import {
     ShieldCheck,
     Ticket,
     DollarSign,
+    Bus,
 } from 'lucide-react'
 import { Sidebar } from 'components/shared/side-bar'
 import { APP_ROUTES } from '@/constants/app-routes'
@@ -26,6 +27,7 @@ export const AdminLayout = () => {
         { label: t('nav.roles'), to: APP_ROUTES.ADMIN.ROLES.ROOT, icon: ShieldCheck, moduleName: ADMIN_MODULES.ROLE },
         // { label: t('nav.routes'), to: APP_ROUTES.ADMIN.ROUTES, icon: MapPin, moduleName: ADMIN_MODULES.ROUTE },
         { label: t('nav.stations'), to: APP_ROUTES.ADMIN.STATIONS, icon: MapPin, moduleName: ADMIN_MODULES.STATION },
+        { label: t('nav.trips'), to: APP_ROUTES.ADMIN.TRIPS, icon: Bus, moduleName: ADMIN_MODULES.BOOKING },
         { label: t('nav.bookings'), to: APP_ROUTES.ADMIN.BOOKINGS, icon: Ticket, moduleName: ADMIN_MODULES.BOOKING },
         { label: t('nav.revenue'), to: APP_ROUTES.ADMIN.REVENUE, icon: DollarSign, moduleName: ADMIN_MODULES.REVENUE },
         { label: t('nav.reports'), to: APP_ROUTES.ADMIN.REPORTS, icon: BarChart3, moduleName: ADMIN_MODULES.REPORT },

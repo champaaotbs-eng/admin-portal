@@ -22,6 +22,8 @@ export interface IBus {
     seatLayout?: ISeatLayout
     description: string
     licensePlate: string
+    latestVersionId?: string
+    latestVersion?: IBusVersion
     createdAt: string
     updatedAt: string
 }

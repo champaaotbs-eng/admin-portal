@@ -13,6 +13,10 @@ const config = defineConfig({
     tailwindcss(),
     viteReact(),
   ],
+  server: {
+    port: 5173,
+    strictPort: false
+  }
 })
 
 export default config

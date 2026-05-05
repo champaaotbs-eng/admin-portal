@@ -20,7 +20,7 @@ export interface ICreateAdminTripPayload {
     isPublished?: boolean
 }
 
-export type IUpdateAdminTripPayload = Partial<ICreateAdminTripPayload>
+export type IUpdateAdminTripPayload = Partial<ICreateAdminTripPayload> & { status?: string }
 
 const buildQuery = (query: IGetAdminTripsQuery = {}) => {
     const params = new URLSearchParams()

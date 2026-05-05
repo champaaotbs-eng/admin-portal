@@ -1,278 +1,223 @@
-import { useState } from 'react'
-import { Plus, Search, Calendar, Clock, MapPin, Bus, X, Users, Pencil, Ban } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Search, X } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
-import { STATUS_VARIANTS } from './data'
-import { useTripsPage } from './hooks/use-trips-page'
-import { TripForm } from './components/TripForm'
-import type { ITrip } from 'types/trip'
-import type { TripFormData } from './validation-schema'
-import { formatVnd, formatDate, formatTime } from '@/utils/format'
+import { TripList } from '@/components/shared/trips/trip-list'
+import { TripDetailsModal } from '@/components/shared/trips/trip-details-modal'
+import { TripEditModal } from '@/components/shared/trips/trip-edit-modal'
+import { TripForm } from '@/components/company/trips/components/TripForm'
+import { getCompanyTrips, getCompanyTripById, createCompanyTrip, updateCompanyTrip, cancelCompanyTrip } from '@/services/company/trip.service'
+import { useAuthStore } from '@/store/auth.store'
+import type { ITrip } from '@/types/trip'
+import type { TripFormData } from '@/components/company/trips/validation-schema'
 
-const toDateTimeLocal = (iso: string) => {
-    if (!iso) return ''
-    const d = new Date(iso)
-    const pad = (n: number) => String(n).padStart(2, '0')
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-
-const tripToFormDefaults = (trip: ITrip): Partial<TripFormData> => ({
-    routeId: trip.routeId,
-    busVersionId: trip.busVersionId ?? '',
-    departureTime: toDateTimeLocal(trip.departureTime),
-    arrivalTime: toDateTimeLocal(trip.arrivalTime),
-    basePrice: String(trip.basePrice),
-    isPublished: trip.isPublished,
-})
+const QUERY_KEY = ['company-trips']
 
 export const CompanyTripsPage = () => {
-    const { t } = useTranslation('translation', { keyPrefix: 'pages.trips' })
-    const { t: tCommon } = useTranslation()
-    const [search, setSearch] = useState('')
-    const [statusFilter, setStatusFilter] = useState('all')
-    const [dialogOpen, setDialogOpen] = useState(false)
-    const [editTrip, setEditTrip] = useState<ITrip | null>(null)
-    const [cancelTrip, setCancelTrip] = useState<ITrip | null>(null)
-    const [cancelReason, setCancelReason] = useState('')
+  const { t: tCommon } = useTranslation()
+  const { t: tTrips } = useTranslation('translation', { keyPrefix: 'pages.trips' })
+  const queryClient = useQueryClient()
+  const { admin } = useAuthStore()
 
-    const {
-        filtered, stats,
-        openDialog, closeDialog,
-        clearFilters, hasFilter,
-        isLoading, isError,
-        createMutation, updateMutation, cancelMutation,
-    } = useTripsPage({ search, setSearch, statusFilter, setStatusFilter, setDialogOpen })
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [viewTrip, setViewTrip] = useState<ITrip | null>(null)
+  const [editTrip, setEditTrip] = useState<ITrip | null>(null)
+  const [deleteTrip, setDeleteTrip] = useState<ITrip | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
 
-    const handleCreate = (data: TripFormData) => {
-        createMutation.mutate(data)
-    }
+  const limit = 10
 
-    const handleEdit = (data: TripFormData) => {
-        if (!editTrip) return
-        updateMutation.mutate(
-            { tripId: editTrip.tripId, data },
-            { onSuccess: () => setEditTrip(null) }
-        )
-    }
+  const { data, isLoading } = useQuery({
+    queryKey: [...QUERY_KEY, page, search, statusFilter],
+    queryFn: () =>
+      getCompanyTrips({
+        page,
+        limit,
+        busCompanyId: admin?.busCompanyId,
+        status: statusFilter !== 'all' ? (statusFilter as any) : undefined,
+      }),
+    select: (res) => res.data,
+    enabled: !!admin?.busCompanyId,
+  })
 
-    const handleCancel = () => {
-        if (!cancelTrip || !cancelReason.trim()) return
-        cancelMutation.mutate(
-            { tripId: cancelTrip.tripId, cancelReason: cancelReason.trim() },
-            { onSuccess: () => { setCancelTrip(null); setCancelReason('') } }
-        )
-    }
-
-    return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold">{t('title')}</h1>
-                    <p className="text-sm text-muted-foreground">{t('description')}</p>
-                </div>
-                <Button onClick={openDialog}>
-                    <Plus className="h-4 w-4" /> {t('add_trip')}
-                </Button>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-4">
-                {[
-                    { label: t('stats.total'), value: stats.total, color: 'text-foreground' },
-                    { label: t('stats.scheduled'), value: stats.scheduled, color: 'text-blue-500' },
-                    { label: t('stats.completed'), value: stats.completed, color: 'text-green-500' },
-                    { label: t('stats.cancelled'), value: stats.cancelled, color: 'text-red-500' },
-                ].map(s => (
-                    <Card key={s.label}>
-                        <CardContent className="p-4">
-                            <p className="text-xs text-muted-foreground">{s.label}</p>
-                            <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-                <div className="relative flex-1 min-w-48 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <input
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        placeholder={t('search_placeholder')}
-                        className="w-full rounded-md border border-input bg-background pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                </div>
-                <select
-                    value={statusFilter}
-                    onChange={e => setStatusFilter(e.target.value)}
-                    className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none"
-                >
-                    <option value="all">{tCommon('status.all')}</option>
-                    <option value="scheduled">{tCommon('status.scheduled')}</option>
-                    <option value="active">{tCommon('status.in_progress')}</option>
-                    <option value="completed">{tCommon('status.completed')}</option>
-                    <option value="cancelled">{tCommon('status.cancelled')}</option>
-                </select>
-                {hasFilter && (
-                    <Button variant="outline" size="sm" onClick={clearFilters}>
-                        <X className="h-3.5 w-3.5" />
-                    </Button>
-                )}
-            </div>
-
-            {isLoading && <p className="text-sm text-muted-foreground">{tCommon('common.loading')}</p>}
-            {isError && <p className="text-sm text-destructive">{tCommon('common.error')}</p>}
-
-            <div className="overflow-x-auto rounded-lg border border-border">
-                <table className="w-full text-sm">
-                    <thead className="bg-muted/50">
-                        <tr>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.route')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.departure')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.bus')}</th>
-                            <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('table.seats_sold')}</th>
-                            <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.price')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.status')}</th>
-                            <th className="px-4 py-3" />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filtered.map(trip => {
-                            const fromName = trip.fromLocationName ?? trip.route?.fromLocationName ?? trip.routeId
-                            const toName = trip.toLocationName ?? trip.route?.toLocationName ?? trip.routeId
-                            const isCancellable = trip.status.toUpperCase() === 'SCHEDULED'
-
-                            return (
-                                <tr key={trip.tripId} className="border-t border-border hover:bg-muted/30">
-                                    <td className="px-4 py-3 font-medium">
-                                        <div className="flex items-center gap-1">
-                                            <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                            <span className="truncate max-w-40">{fromName} → {toName}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                                        <div className="flex items-center gap-1">
-                                            <Calendar className="h-3 w-3" />
-                                            {formatDate(trip.departureTime)}
-                                        </div>
-                                        <div className="flex items-center gap-1 mt-0.5">
-                                            <Clock className="h-3 w-3" />
-                                            {formatTime(trip.departureTime)}
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex items-center gap-1 text-xs">
-                                            <Bus className="h-3.5 w-3.5 text-muted-foreground" />
-                                            <span>{trip.busVersionId ? t('bus_assigned') : '—'}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                                            <span className="text-xs">—</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3 text-right font-medium">
-                                        {formatVnd(trip.basePrice)}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <Badge variant={STATUS_VARIANTS[trip.status.toLowerCase()] ?? 'secondary'} className="text-xs">
-                                            {tCommon(`status.${trip.status.toLowerCase()}`, { defaultValue: trip.status })}
-                                        </Badge>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex items-center gap-1">
-                                            <button
-                                                onClick={() => setEditTrip(trip)}
-                                                className="rounded p-1 text-muted-foreground hover:text-primary hover:bg-accent transition-colors"
-                                                title={tCommon('common.edit')}
-                                            >
-                                                <Pencil className="h-3.5 w-3.5" />
-                                            </button>
-                                            {isCancellable && (
-                                                <button
-                                                    onClick={() => { setCancelTrip(trip); setCancelReason('') }}
-                                                    className="rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                                                    title={t('cancel_trip')}
-                                                >
-                                                    <Ban className="h-3.5 w-3.5" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            )
-                        })}
-                        {!isLoading && filtered.length === 0 && (
-                            <tr>
-                                <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">
-                                    {tCommon('common.no_results')}
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Create dialog */}
-            <Dialog open={dialogOpen} onClose={closeDialog} title={t('add_trip_title')}>
-                <TripForm
-                    onSubmit={handleCreate}
-                    onCancel={closeDialog}
-                    isSubmitting={createMutation.isPending}
-                />
-            </Dialog>
-
-            {/* Edit dialog */}
-            <Dialog
-                open={!!editTrip}
-                onClose={() => setEditTrip(null)}
-                title={t('edit_trip_title')}
-            >
-                {editTrip && (
-                    <TripForm
-                        defaultValues={tripToFormDefaults(editTrip)}
-                        onSubmit={handleEdit}
-                        onCancel={() => setEditTrip(null)}
-                        isSubmitting={updateMutation.isPending}
-                    />
-                )}
-            </Dialog>
-
-            {/* Cancel dialog */}
-            <Dialog
-                open={!!cancelTrip}
-                onClose={() => setCancelTrip(null)}
-                title={t('cancel_trip_title')}
-            >
-                <div className="grid gap-4">
-                    <p className="text-sm text-muted-foreground">{t('cancel_trip_confirm')}</p>
-                    <div>
-                        <label className="text-sm font-medium mb-1 block">{t('cancel_reason_label')}</label>
-                        <textarea
-                            value={cancelReason}
-                            onChange={e => setCancelReason(e.target.value)}
-                            placeholder={t('cancel_reason_placeholder')}
-                            rows={3}
-                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                        />
-                    </div>
-                    <div className="flex gap-2">
-                        <Button
-                            variant="destructive"
-                            onClick={handleCancel}
-                            disabled={!cancelReason.trim() || cancelMutation.isPending}
-                        >
-                            {cancelMutation.isPending ? tCommon('common.loading') : t('cancel_confirm_btn')}
-                        </Button>
-                        <Button variant="outline" onClick={() => setCancelTrip(null)}>
-                            {tCommon('common.cancel')}
-                        </Button>
-                    </div>
-                </div>
-            </Dialog>
-        </div>
+  const trips = useMemo(() => {
+    const list = data?.result || []
+    if (!search) return list
+    const q = search.toLowerCase()
+    return list.filter(
+      (t) =>
+        t.tripId.toLowerCase().includes(q) ||
+        t.fromLocationName?.toLowerCase().includes(q) ||
+        t.toLocationName?.toLowerCase().includes(q)
     )
+  }, [data?.result, search])
+
+  const updateMutation = useMutation({
+    mutationFn: ({ tripId, data }: { tripId: string; data: any }) =>
+      updateCompanyTrip(tripId, {
+        departureTime: new Date(data.departureTime).toISOString(),
+        arrivalTime: new Date(data.arrivalTime).toISOString(),
+        basePrice: Number(data.basePrice),
+        isPublished: data.isPublished,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+      toast.success('Trip updated')
+      setEditTrip(null)
+    },
+    onError: (err: any) => {
+      toast.error(err?.localizedMessage || 'Update failed')
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (tripId: string) => cancelCompanyTrip(tripId, { cancelReason: 'Cancelled by company' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+      toast.success('Trip cancelled')
+      setDeleteTrip(null)
+    },
+    onError: (err: any) => {
+      toast.error(err?.localizedMessage || 'Cancel failed')
+    },
+  })
+
+  const createMutation = useMutation({
+    mutationFn: (data: TripFormData) =>
+      createCompanyTrip({
+        routeId: data.routeId,
+        busVersionId: data.busVersionId || undefined,
+        busCompanyId: admin?.busCompanyId ?? '',
+        departureTime: new Date(data.departureTime).toISOString(),
+        arrivalTime: new Date(data.arrivalTime).toISOString(),
+        basePrice: Number(data.basePrice),
+        isPublished: data.isPublished ?? true,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+      toast.success(tTrips('create_success'))
+      setCreateOpen(false)
+    },
+    onError: (err: any) => {
+      toast.error(err?.localizedMessage || tCommon('common.error', 'Something went wrong'))
+    },
+  })
+
+  const hasFilter = search || statusFilter !== 'all'
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">{tTrips('my_trips')}</h1>
+        <p className="text-sm text-muted-foreground">{tTrips('company_description')}</p>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <div className="relative flex-1 min-w-48 max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={tTrips('search_placeholder')}
+            className="w-full rounded-md border border-input bg-background pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none"
+        >
+          <option value="all">{tCommon('status.all')}</option>
+          <option value="SCHEDULED">{tCommon('status.scheduled')}</option>
+          <option value="ACTIVE">{tCommon('status.active')}</option>
+          <option value="COMPLETED">{tCommon('status.completed')}</option>
+          <option value="CANCELLED">{tCommon('status.cancelled')}</option>
+        </select>
+        {hasFilter && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setSearch('')
+              setStatusFilter('all')
+            }}
+          >
+            <X className="h-3.5 w-3.5" /> {tCommon('common.clear')}
+          </Button>
+        )}
+        <Button onClick={() => setCreateOpen(true)} disabled={!admin?.busCompanyId}>
+          {tTrips('add_trip')}
+        </Button>
+      </div>
+
+      <TripList
+        trips={trips}
+        currentPage={page}
+        totalPages={data?.meta?.totalPages || 1}
+        pageSize={limit}
+        totalItems={data?.meta?.totalItems || 0}
+        isLoading={isLoading}
+        onPageChange={setPage}
+        onView={setViewTrip}
+        onEdit={setEditTrip}
+        onDelete={setDeleteTrip}
+      />
+
+      <TripDetailsModal
+        trip={viewTrip}
+        open={!!viewTrip}
+        onClose={() => setViewTrip(null)}
+        getTripDetails={getCompanyTripById}
+      />
+
+      <TripEditModal
+        trip={editTrip}
+        open={!!editTrip}
+        onClose={() => setEditTrip(null)}
+        onSubmit={(tripId, data) => updateMutation.mutate({ tripId, data })}
+        isSubmitting={updateMutation.isPending}
+      />
+
+      <Dialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title={tTrips('add_trip_title')}
+        className="max-w-2xl"
+      >
+        <TripForm
+          onSubmit={(data) => createMutation.mutate(data)}
+          onCancel={() => setCreateOpen(false)}
+          isSubmitting={createMutation.isPending}
+        />
+      </Dialog>
+
+      {deleteTrip && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
+            <h3 className="text-lg font-semibold">{tTrips('cancel_trip')}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {tTrips('cancel_confirmation')}
+            </p>
+            <div className="mt-4 flex gap-2">
+              <Button
+                variant="destructive"
+                onClick={() => deleteMutation.mutate(deleteTrip.tripId)}
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? tCommon('common.loading') : tTrips('cancel_trip')}
+              </Button>
+              <Button variant="outline" onClick={() => setDeleteTrip(null)}>
+                {tCommon('common.close')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }

@@ -9,7 +9,10 @@ export interface ITrip {
     toLocationName?: string
     busVersionId?: string
     busCompanyId: string
-    busCompany?: { busCompanyId: string; name: string; phone?: string }
+    busCompanyName?: string
+    busName?: string
+    busLicensePlate?: string
+    driverPhone?: string
     departureTime: string
     arrivalTime: string
     basePrice: number
@@ -24,14 +27,19 @@ export interface ITrip {
 
 export interface ITripStop {
     tripStopId: string
-    tripId: string
+    tripId?: string
     stopId: string
-    routeStop: IRouteStop
-    stopOrder: number
+    routeStopId?: string
+    routeStop?: IRouteStop
+    locationId?: string
+    locationName?: string
+    locationAddress?: string
+    stopOrder?: number
+    sortOrder?: number
     stopType: EStopType
-    pickupTime: string | null
-    dropoffTime: string | null
-    note: string | null
+    pickupTime?: string | null
+    dropoffTime?: string | null
+    note?: string | null
 }
 
 export interface ISeatAvailability {

@@ -20,7 +20,7 @@ export interface ICreateCompanyTripPayload {
     isPublished?: boolean
 }
 
-export type IUpdateCompanyTripPayload = Partial<Omit<ICreateCompanyTripPayload, 'busCompanyId'>>
+export type IUpdateCompanyTripPayload = Partial<Omit<ICreateCompanyTripPayload, 'busCompanyId'>> & { status?: string }
 
 export interface ICancelCompanyTripPayload {
     cancelReason: string

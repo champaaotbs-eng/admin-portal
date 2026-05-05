@@ -87,11 +87,13 @@ const toBookingRow = (booking: IBooking): AdminBookingRow => {
     const trip = (booking as unknown as { trip?: Record<string, unknown> }).trip
     const route = (trip?.route as Record<string, unknown> | undefined)
     const fromName =
-        (route?.fromLocation as { name?: string } | undefined)?.name
+        (trip?.fromLocationName as string | undefined)
+        ?? (route?.fromLocation as { name?: string } | undefined)?.name
         ?? (trip?.fromLocation as { name?: string } | undefined)?.name
         ?? ''
     const toName =
-        (route?.toLocation as { name?: string } | undefined)?.name
+        (trip?.toLocationName as string | undefined)
+        ?? (route?.toLocation as { name?: string } | undefined)?.name
         ?? (trip?.toLocation as { name?: string } | undefined)?.name
         ?? ''
 
@@ -123,10 +125,12 @@ const toBookingRow = (booking: IBooking): AdminBookingRow => {
         routeLabel: `${fromName || booking.tripId} → ${toName || booking.tripId}`,
         companyName:
             (company?.name as string | undefined)
+            ?? (trip?.busCompanyName as string | undefined)
             ?? (trip?.companyName as string | undefined)
             ?? '',
         companyId:
-            (trip?.busCompanyId as string | undefined)
+            (company?.busCompanyId as string | undefined)
+            ?? (trip?.busCompanyId as string | undefined)
             ?? (booking as unknown as { companyId?: string }).companyId
             ?? '',
         departureTime:

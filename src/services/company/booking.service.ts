@@ -17,38 +17,35 @@ export interface ICreateCompanyBookingPayload {
     passengerName: string
     passengerPhone: string
     passengerEmail?: string
+    pickupStopId?: string
+    dropoffStopId?: string
 }
 
-const buildQuery = (query: IGetCompanyBookingsQuery = {}) => {
+const buildQuery = (busCompanyId: string, query: IGetCompanyBookingsQuery = {}) => {
     const urlQuery = new URLSearchParams()
-
+    urlQuery.set('companyId', busCompanyId)
     if (query.page) urlQuery.set('page', String(query.page))
     if (query.limit) urlQuery.set('limit', String(query.limit))
-    if (query.tripId) urlQuery.set('trip_id', query.tripId)
-    if (query.status) urlQuery.set('status', query.status)
-    if (query.paymentMethod) urlQuery.set('payment_method', query.paymentMethod)
-    if (query.dateFrom) urlQuery.set('date_from', query.dateFrom)
-    if (query.dateTo) urlQuery.set('date_to', query.dateTo)
 
-    const search = urlQuery.toString()
-    return search.length > 0 ? `?${search}` : ''
+    const filters: Record<string, unknown> = {}
+    if (query.tripId) filters.tripId = query.tripId
+    if (query.status) filters.status = query.status
+    if (query.paymentMethod) filters.paymentMethod = query.paymentMethod
+    if (query.dateFrom) filters.dateFrom = query.dateFrom
+    if (query.dateTo) filters.dateTo = query.dateTo
+    if (Object.keys(filters).length > 0) {
+        urlQuery.set('filters', JSON.stringify(filters))
+    }
+
+    return `?${urlQuery.toString()}`
 }
 
-const toBody = (payload: ICreateCompanyBookingPayload) => ({
-    trip_id: payload.tripId,
-    seat_ids: payload.seatIds,
-    payment_method: payload.paymentMethod,
-    passenger_name: payload.passengerName,
-    passenger_phone: payload.passengerPhone,
-    passenger_email: payload.passengerEmail,
-})
-
-export const getCompanyBookings = async (query: IGetCompanyBookingsQuery = {}) => {
-    const response = await api.get<IPagination<IBooking>>(`/company/bookings${buildQuery(query)}`)
+export const getCompanyBookings = async (busCompanyId: string, query: IGetCompanyBookingsQuery = {}) => {
+    const response = await api.get<IPagination<IBooking>>(`/v1/company/bookings${buildQuery(busCompanyId, query)}`)
     return response
 }
 
-export const createCompanyBooking = async (payload: ICreateCompanyBookingPayload) => {
-    const response = await api.post<IBooking>('/company/bookings', toBody(payload))
+export const createCompanyBooking = async (busCompanyId: string, payload: ICreateCompanyBookingPayload) => {
+    const response = await api.post<IBooking>(`/v1/company/bookings?companyId=${encodeURIComponent(busCompanyId)}`, payload)
     return response
 }

@@ -1,4 +1,4 @@
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, Controller, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -9,6 +9,7 @@ import { getAllRoutes } from 'services/company/routes.service'
 import { getAllBuses } from 'services/company/bus.service'
 import type { IRoute } from 'types/route'
 import type { IBus } from 'types/bus'
+import { SeatPriceEditor } from './SeatPriceEditor'
 
 const readRows = <T,>(payload: unknown): T[] => {
     if (!payload || typeof payload !== 'object') return []
@@ -33,7 +34,7 @@ export const TripForm = ({ onSubmit, onCancel, defaultValues, isSubmitting }: Tr
     const { t } = useTranslation('translation', { keyPrefix: 'pages.trips' })
     const { t: tCommon } = useTranslation()
 
-    const { control, handleSubmit, formState: { errors } } = useForm<TripFormData>({
+    const { control, handleSubmit, setValue, formState: { errors } } = useForm<TripFormData>({
         resolver: zodResolver(tripSchema(t)),
         defaultValues: {
             routeId: '',
@@ -42,10 +43,15 @@ export const TripForm = ({ onSubmit, onCancel, defaultValues, isSubmitting }: Tr
             arrivalTime: '',
             basePrice: '',
             isPublished: true,
+            seatPrices: [],
             ...defaultValues,
         },
         mode: 'onChange',
     })
+
+    const busVersionId = useWatch({ control, name: 'busVersionId' })
+    const basePrice = useWatch({ control, name: 'basePrice' })
+    const seatPrices = useWatch({ control, name: 'seatPrices' })
 
     const routesQuery = useQuery({
         queryKey: ['company-routes-select'],
@@ -63,6 +69,10 @@ export const TripForm = ({ onSubmit, onCancel, defaultValues, isSubmitting }: Tr
 
     const routes = routesQuery.data ?? []
     const buses = busesQuery.data ?? []
+
+    // Find the selected bus to get its seat layout
+    const selectedBus = buses.find(b => b.latestVersion?.busVersionId === busVersionId)
+    const seats = selectedBus?.seatLayout?.seats ?? []
 
     const routeLabel = (r: IRoute) =>
         r.fromLocationName && r.toLocationName
@@ -89,7 +99,7 @@ export const TripForm = ({ onSubmit, onCancel, defaultValues, isSubmitting }: Tr
                     <label className="text-sm font-medium mb-1 block">{t('form.bus')}</label>
                     <select
                         value={field.value ?? ''}
-                        onChange={(e) => field.onChange(e.target.value)}
+                        onChange={(e) => { field.onChange(e.target.value); setValue('seatPrices', []) }}
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                         <option value="">{tCommon('common.select_option')}</option>
@@ -115,6 +125,15 @@ export const TripForm = ({ onSubmit, onCancel, defaultValues, isSubmitting }: Tr
             <Controller name="basePrice" control={control} render={({ field }) => (
                 <Input {...field} label={t('form.price')} type="number" placeholder="220000" error={errors.basePrice?.message} />
             )} />
+
+            {seats.length > 0 && (
+                <SeatPriceEditor
+                    seats={seats}
+                    basePrice={Number(basePrice) || 0}
+                    value={seatPrices ?? []}
+                    onChange={(prices) => setValue('seatPrices', prices)}
+                />
+            )}
 
             <Controller name="isPublished" control={control} render={({ field }) => (
                 <label className="flex items-center gap-2 text-sm cursor-pointer">

@@ -64,6 +64,7 @@ export const CompanyTripsPage = () => {
         arrivalTime: new Date(data.arrivalTime).toISOString(),
         basePrice: Number(data.basePrice),
         isPublished: data.isPublished,
+        seatPrices: data.seatPrices?.map((s: any) => ({ seatId: s.seatId, price: s.price })),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY })
@@ -97,6 +98,7 @@ export const CompanyTripsPage = () => {
         arrivalTime: new Date(data.arrivalTime).toISOString(),
         basePrice: Number(data.basePrice),
         isPublished: data.isPublished ?? true,
+        seatPrices: data.seatPrices?.map(s => ({ seatId: s.seatId, price: s.price })),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY })
@@ -181,6 +183,7 @@ export const CompanyTripsPage = () => {
         onClose={() => setEditTrip(null)}
         onSubmit={(tripId, data) => updateMutation.mutate({ tripId, data })}
         isSubmitting={updateMutation.isPending}
+        getTripDetails={getCompanyTripById}
       />
 
       <Dialog

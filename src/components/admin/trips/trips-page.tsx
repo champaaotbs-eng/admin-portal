@@ -58,6 +58,7 @@ export const AdminTripsPage = () => {
         basePrice: Number(data.basePrice),
         isPublished: data.isPublished,
         status: data.status,
+        seatPrices: data.seatPrices?.map((s: any) => ({ seatId: s.seatId, price: s.price })),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY })
@@ -151,6 +152,7 @@ export const AdminTripsPage = () => {
         onClose={() => setEditTrip(null)}
         onSubmit={(tripId, data) => updateMutation.mutate({ tripId, data })}
         isSubmitting={updateMutation.isPending}
+        getTripDetails={getAdminTripById}
       />
 
       {deleteTrip && (

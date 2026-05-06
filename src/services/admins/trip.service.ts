@@ -18,9 +18,10 @@ export interface ICreateAdminTripPayload {
     arrivalTime: string
     basePrice: number
     isPublished?: boolean
+    seatPrices?: { seatId: string; price: number }[]
 }
 
-export type IUpdateAdminTripPayload = Partial<ICreateAdminTripPayload> & { status?: string }
+export type IUpdateAdminTripPayload = Partial<ICreateAdminTripPayload> & { status?: string; seatPrices?: { seatId: string; price: number }[] }
 
 const buildQuery = (query: IGetAdminTripsQuery = {}) => {
     const params = new URLSearchParams()

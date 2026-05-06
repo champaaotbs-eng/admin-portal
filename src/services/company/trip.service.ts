@@ -10,6 +10,11 @@ export interface IGetCompanyTripsQuery {
     departureDate?: string
 }
 
+export interface ISeatPrice {
+    seatId: string
+    price: number
+}
+
 export interface ICreateCompanyTripPayload {
     routeId: string
     busVersionId?: string
@@ -18,9 +23,10 @@ export interface ICreateCompanyTripPayload {
     arrivalTime: string
     basePrice: number
     isPublished?: boolean
+    seatPrices?: ISeatPrice[]
 }
 
-export type IUpdateCompanyTripPayload = Partial<Omit<ICreateCompanyTripPayload, 'busCompanyId'>> & { status?: string }
+export type IUpdateCompanyTripPayload = Partial<Omit<ICreateCompanyTripPayload, 'busCompanyId'>> & { status?: string; seatPrices?: ISeatPrice[] }
 
 export interface ICancelCompanyTripPayload {
     cancelReason: string

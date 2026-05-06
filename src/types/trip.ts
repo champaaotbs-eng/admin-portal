@@ -1,12 +1,22 @@
 import type { IRoute, IRouteStop, EStopType } from './route'
 import type { ESeatType } from './seat-layout'
 
+export interface ITripLocation {
+    stationId: string
+    label: string
+    address: string
+    latitude: number
+    longitude: number
+}
+
 export interface ITrip {
     tripId: string
     routeId: string
     route?: IRoute
     fromLocationName?: string
     toLocationName?: string
+    fromLocation?: ITripLocation
+    toLocation?: ITripLocation
     busVersionId?: string
     busCompanyId: string
     busCompanyName?: string

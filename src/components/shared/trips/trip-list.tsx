@@ -61,7 +61,7 @@ export const TripList = ({
         renderCell: (trip) => (
           <div className="flex items-center gap-1">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            <span className="max-w-40 truncate">
+            <span className="whitespace-normal break-words">
               {trip.fromLocationName || tTrips('unknown_location')} → {trip.toLocationName || tTrips('unknown_location')}
             </span>
           </div>

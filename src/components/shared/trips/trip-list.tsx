@@ -22,8 +22,8 @@ interface TripListProps {
   isLoading?: boolean
   onPageChange: (page: number) => void
   onView: (trip: ITrip) => void
-  onEdit: (trip: ITrip) => void
-  onDelete: (trip: ITrip) => void
+  onEdit?: (trip: ITrip) => void
+  onDelete?: (trip: ITrip) => void
 }
 
 export const TripList = ({
@@ -133,22 +133,26 @@ export const TripList = ({
             >
               <Eye className="h-3.5 w-3.5" />
             </button>
-            <button
-              type="button"
-              onClick={() => onEdit(trip)}
-              className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-primary"
-              title={tCommon('common.edit')}
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(trip)}
-              className="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-              title={tCommon('common.delete')}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+            {onEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(trip)}
+                className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-primary"
+                title={tCommon('common.edit')}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            )}
+            {onDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(trip)}
+                className="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                title={tCommon('common.delete')}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         ),
       },

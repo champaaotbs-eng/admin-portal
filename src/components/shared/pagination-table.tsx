@@ -53,7 +53,7 @@ export function PaginatedTable<T>({
         <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
             <table className="min-w-[860px] w-full">
                 <thead>
-                    <tr className="bg-indigo-100 text-left text-xs font-semibold text-indigo-800 uppercase tracking-wider">
+                    <tr className="bg-slate-50 text-left text-sm font-semibold text-slate-500 border-b border-slate-200">
                         {columns.map((column) => (
                             <th key={column.id} className={['px-4 py-3', column.headerClassName ?? ''].join(' ')}>
                                 {column.header}

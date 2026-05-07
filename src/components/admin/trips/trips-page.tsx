@@ -1,13 +1,11 @@
 import { useState, useMemo } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Search, X } from 'lucide-react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { TripList } from '@/components/shared/trips/trip-list'
 import { TripDetailsModal } from '@/components/shared/trips/trip-details-modal'
-import { TripEditModal } from '@/components/shared/trips/trip-edit-modal'
-import { getAdminTrips, getAdminTripById, updateAdminTrip, cancelAdminTrip } from '@/services/admins/trip.service'
+import { getAdminTrips, getAdminTripById } from '@/services/admins/trip.service'
 import type { ITrip } from '@/types/trip'
 
 const QUERY_KEY = ['admin-trips']
@@ -15,14 +13,11 @@ const QUERY_KEY = ['admin-trips']
 export const AdminTripsPage = () => {
   const { t: tCommon } = useTranslation()
   const { t: tTrips } = useTranslation('translation', { keyPrefix: 'pages.trips' })
-  const queryClient = useQueryClient()
 
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [viewTrip, setViewTrip] = useState<ITrip | null>(null)
-  const [editTrip, setEditTrip] = useState<ITrip | null>(null)
-  const [deleteTrip, setDeleteTrip] = useState<ITrip | null>(null)
 
   const limit = 10
 
@@ -49,38 +44,6 @@ export const AdminTripsPage = () => {
         t.busCompanyName?.toLowerCase().includes(q)
     )
   }, [data?.result, search])
-
-  const updateMutation = useMutation({
-    mutationFn: ({ tripId, data }: { tripId: string; data: any }) =>
-      updateAdminTrip(tripId, {
-        departureTime: new Date(data.departureTime).toISOString(),
-        arrivalTime: new Date(data.arrivalTime).toISOString(),
-        basePrice: Number(data.basePrice),
-        isPublished: data.isPublished,
-        status: data.status,
-        seatPrices: data.seatPrices?.map((s: any) => ({ seatId: s.seatId, price: s.price })),
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEY })
-      toast.success('Trip updated')
-      setEditTrip(null)
-    },
-    onError: (err: any) => {
-      toast.error(err?.localizedMessage || 'Update failed')
-    },
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: (tripId: string) => cancelAdminTrip(tripId, 'Deleted by admin'),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEY })
-      toast.success('Trip deleted')
-      setDeleteTrip(null)
-    },
-    onError: (err: any) => {
-      toast.error(err?.localizedMessage || 'Delete failed')
-    },
-  })
 
   const hasFilter = search || statusFilter !== 'all'
 
@@ -135,8 +98,6 @@ export const AdminTripsPage = () => {
         isLoading={isLoading}
         onPageChange={setPage}
         onView={setViewTrip}
-        onEdit={setEditTrip}
-        onDelete={setDeleteTrip}
       />
 
       <TripDetailsModal
@@ -145,38 +106,6 @@ export const AdminTripsPage = () => {
         onClose={() => setViewTrip(null)}
         getTripDetails={getAdminTripById}
       />
-
-      <TripEditModal
-        trip={editTrip}
-        open={!!editTrip}
-        onClose={() => setEditTrip(null)}
-        onSubmit={(tripId, data) => updateMutation.mutate({ tripId, data })}
-        isSubmitting={updateMutation.isPending}
-        getTripDetails={getAdminTripById}
-      />
-
-      {deleteTrip && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
-            <h3 className="text-lg font-semibold">{tTrips('delete_trip')}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {tTrips('delete_confirmation')}
-            </p>
-            <div className="mt-4 flex gap-2">
-              <Button
-                variant="destructive"
-                onClick={() => deleteMutation.mutate(deleteTrip.tripId)}
-                disabled={deleteMutation.isPending}
-              >
-                {deleteMutation.isPending ? tCommon('common.loading') : tCommon('common.delete')}
-              </Button>
-              <Button variant="outline" onClick={() => setDeleteTrip(null)}>
-                {tCommon('common.cancel')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

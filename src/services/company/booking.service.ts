@@ -49,3 +49,7 @@ export const createCompanyBooking = async (busCompanyId: string, payload: ICreat
     const response = await api.post<IBooking>(`/v1/company/bookings?companyId=${encodeURIComponent(busCompanyId)}`, payload)
     return response
 }
+
+export const getBookingSeatLayout = async (bookingId: string) => {
+    return api.get<{ seatId: string; seatCode: string; row: number; col: number; floor: number; isBooked: boolean }[]>(`/v1/bookings/${bookingId}/seat-layout`)
+}

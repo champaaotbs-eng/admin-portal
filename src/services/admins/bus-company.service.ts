@@ -17,26 +17,31 @@ const buildQuery = (query: IRequestPagination<ICompany>) => {
 }
 
 export const getAdminBusCompanies = async (query: IRequestPagination<ICompany>) => {
-    const response = await api.get<IPagination<ICompany>>(`/admin/companies${buildQuery(query)}`)
+    const response = await api.get<IPagination<ICompany>>(`/v1/bus-companies${buildQuery(query)}`)
+    return response
+}
+
+export const getAllAdminBusCompanies = async () => {
+    const response = await api.get<ICompany[]>('/v1/bus-companies/all')
     return response
 }
 
 export const getAdminBusCompanyById = async (companyId: string) => {
-    const response = await api.get<ICompany>(`/admin/companies/${companyId}`)
+    const response = await api.get<ICompany>(`/v1/bus-companies/${companyId}`)
     return response
 }
 
 export const createAdminBusCompany = async (payload: ICreateAdminBusCompanyPayload) => {
-    const response = await api.post<ICompany>('/admin/companies', payload)
+    const response = await api.post<ICompany>('/v1/bus-companies', payload)
     return response
 }
 
 export const updateAdminBusCompany = async (companyId: string, payload: IUpdateAdminBusCompanyPayload) => {
-    const response = await api.patch<ICompany>(`/admin/companies/${companyId}`, payload)
+    const response = await api.patch<ICompany>(`/v1/bus-companies/${companyId}`, payload)
     return response
 }
 
 export const toggleAdminBusCompanyActive = async (companyId: string) => {
-    const response = await api.patch<ICompany>(`/admin/companies/${companyId}/toggle-active`)
+    const response = await api.patch<ICompany>(`/v1/bus-companies/${companyId}/toggle-active`)
     return response
 }

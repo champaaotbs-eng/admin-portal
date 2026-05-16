@@ -1,39 +1,105 @@
 import { useState } from 'react'
+import { Search, X, Eye } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Search, CalendarDays, X, CheckCircle2, XCircle, AlertCircle, Building2, Eye, Ticket } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import { useQuery } from '@tanstack/react-query'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { PaginatedTable } from '@/components/shared/pagination-table'
 import { formatDate, formatVnd } from '@/utils/format'
-import { useBookingsPage } from './hooks/use-bookings-page'
-import type { AdminBookingRow, BookingStatus, PaymentStatus, PaymentMethod } from './hooks/use-bookings-page'
-import { BookingDetailModal, statusBadge, paymentBadge } from './components/BookingDetailModal'
+import { getAdminBookings } from 'services/admins/booking.service'
+import { getBookingSeatLayout } from 'services/company/booking.service'
+import type { IBooking } from 'types/booking'
+import { Dialog } from '@/components/ui/dialog'
+
+const PAGE_SIZE = 15
+
+const STATUS_VARIANTS: Record<string, 'success' | 'warning' | 'destructive' | 'secondary'> = {
+    confirmed: 'success',
+    completed: 'success',
+    reserved: 'warning',
+    pending_payment: 'warning',
+    cancelled: 'destructive',
+    expired: 'secondary',
+}
+
+const readRows = <T,>(payload: unknown): T[] => {
+    if (!payload || typeof payload !== 'object') return []
+    const p = payload as Record<string, unknown>
+    if (Array.isArray(p.result)) return p.result as T[]
+    if (p.data && typeof p.data === 'object') {
+        const nested = p.data as Record<string, unknown>
+        if (Array.isArray(nested.result)) return nested.result as T[]
+    }
+    return []
+}
+
+const readMeta = (payload: unknown) => {
+    if (!payload || typeof payload !== 'object') return null
+    const p = payload as Record<string, unknown>
+    if (p.meta && typeof p.meta === 'object') return p.meta as { totalPages: number; totalItems: number }
+    if (p.data && typeof p.data === 'object') {
+        const nested = p.data as Record<string, unknown>
+        if (nested.meta && typeof nested.meta === 'object') return nested.meta as { totalPages: number; totalItems: number }
+    }
+    return null
+}
+
+function SeatLayoutGrid({ bookingId }: { bookingId: string }) {
+    const { data, isLoading } = useQuery({
+        queryKey: ['booking-seat-layout', bookingId],
+        queryFn: () => getBookingSeatLayout(bookingId),
+        select: (res) => (res as any).data ?? res,
+        staleTime: 60_000,
+    })
+    if (isLoading) return <p className="text-xs text-muted-foreground">Loading...</p>
+    if (!data?.length) return <p className="text-xs text-muted-foreground">No seat layout</p>
+    const floors = [...new Set(data.map((s: any) => s.floor))].sort()
+    return (
+        <div className="space-y-3">
+            {floors.map((floor: number) => {
+                const floorSeats = data.filter((s: any) => s.floor === floor)
+                const maxRow = Math.max(...floorSeats.map((s: any) => s.row))
+                const maxCol = Math.max(...floorSeats.map((s: any) => s.col))
+                return (
+                    <div key={floor}>
+                        {floors.length > 1 && <p className="mb-1 text-xs text-muted-foreground">Floor {floor}</p>}
+                        <div className="inline-grid gap-1" style={{ gridTemplateColumns: `repeat(${maxCol + 1}, minmax(0, 1fr))` }}>
+                            {Array.from({ length: (maxRow + 1) * (maxCol + 1) }).map((_, idx) => {
+                                const row = Math.floor(idx / (maxCol + 1))
+                                const col = idx % (maxCol + 1)
+                                const seat = floorSeats.find((s: any) => s.row === row && s.col === col)
+                                if (!seat) return <div key={idx} className="h-8 w-8" />
+                                return (
+                                    <div key={seat.seatId} className={`flex h-8 w-8 items-center justify-center rounded border text-[10px] font-medium ${seat.isBooked ? 'border-primary bg-primary text-primary-foreground' : 'border-gray-200 bg-gray-50 text-gray-400'}`}>
+                                        {seat.seatCode}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )
+            })}
+        </div>
+    )
+}
 
 export const AdminBookingsPage = () => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.bookings' })
     const { t: tCommon } = useTranslation()
+
     const [search, setSearch] = useState('')
-    const [statusFilter, setStatusFilter] = useState<BookingStatus>('all')
-    const [paymentFilter, setPaymentFilter] = useState<PaymentStatus>('all')
-    const [methodFilter, setMethodFilter] = useState<PaymentMethod>('all')
-    const [dateFrom, setDateFrom] = useState('')
-    const [dateTo, setDateTo] = useState('')
-    const [detailBooking, setDetailBooking] = useState<AdminBookingRow | null>(null)
     const [page, setPage] = useState(1)
+    const [selectedBooking, setSelectedBooking] = useState<IBooking | null>(null)
 
-    const {
-        filtered, paginated, totalPages, hasFilter, statCounts,
-        handleSearch, handleStatusFilter, handlePaymentFilter, handleDateFrom, handleDateTo,
-        clearFilters,
-        isLoading,
-        isError,
-    } = useBookingsPage({ search, setSearch, statusFilter, setStatusFilter, paymentFilter, setPaymentFilter, methodFilter, setMethodFilter, dateFrom, setDateFrom, dateTo, setDateTo, page, setPage })
+    const { data, isLoading } = useQuery({
+        queryKey: ['admin-bookings', page, search],
+        queryFn: () => getAdminBookings({ page, limit: PAGE_SIZE, search: search || undefined }),
+    })
 
-    const stats = [
-        { label: t('stats.total'), value: statCounts.total, color: 'text-blue-500', bg: 'bg-blue-500/10', icon: Ticket },
-        { label: t('stats.confirmed'), value: statCounts.confirmed, color: 'text-green-500', bg: 'bg-green-500/10', icon: CheckCircle2 },
-        { label: t('stats.cancelled'), value: statCounts.cancelled, color: 'text-red-500', bg: 'bg-red-500/10', icon: XCircle },
-        { label: t('stats.pending'), value: statCounts.pending, color: 'text-orange-500', bg: 'bg-orange-500/10', icon: AlertCircle },
-    ]
+    const rows = readRows<IBooking>(data)
+    const meta = readMeta(data)
+
+    const hasFilter = !!search
 
     return (
         <div className="space-y-6">
@@ -42,138 +108,122 @@ export const AdminBookingsPage = () => {
                 <p className="text-sm text-muted-foreground">{t('description')}</p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-4">
-                {stats.map(s => {
-                    const Icon = s.icon
-                    return (
-                        <Card key={s.label}>
-                            <CardContent className="p-4 flex items-center gap-3">
-                                <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${s.bg}`}>
-                                    <Icon className={`h-4 w-4 ${s.color}`} />
-                                </span>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{s.label}</p>
-                                    <p className="text-xl font-bold">{s.value}</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )
-                })}
-            </div>
-
             <div className="flex flex-wrap gap-3">
-                <div className="relative flex-1 min-w-48 max-w-xs">
+                <div className="relative flex-1 min-w-48 max-w-sm">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <input value={search} onChange={e => handleSearch(e.target.value)}
+                    <input
+                        value={search}
+                        onChange={(e) => { setSearch(e.target.value); setPage(1) }}
                         placeholder={t('search_placeholder')}
-                        className="w-full rounded-md border border-input bg-background pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                </div>
-                <select value={statusFilter} onChange={e => handleStatusFilter(e.target.value as BookingStatus)}
-                    className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                    <option value="all">{tCommon('status.all')}</option>
-                    <option value="confirmed">{tCommon('status.confirmed')}</option>
-                    <option value="pending">{tCommon('status.pending')}</option>
-                    <option value="cancelled">{tCommon('status.cancelled')}</option>
-                    <option value="expired">{tCommon('status.expired')}</option>
-                </select>
-                <select value={paymentFilter} onChange={e => handlePaymentFilter(e.target.value as PaymentStatus)}
-                    className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                    <option value="all">{tCommon('payment_status.all')}</option>
-                    <option value="paid">{tCommon('payment_status.paid')}</option>
-                    <option value="unpaid">{tCommon('payment_status.unpaid')}</option>
-                    <option value="refunded">{tCommon('payment_status.refunded')}</option>
-                </select>
-                <div className="flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                    <input type="date" value={dateFrom} onChange={e => handleDateFrom(e.target.value)}
-                        className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                    <span className="text-muted-foreground">—</span>
-                    <input type="date" value={dateTo} onChange={e => handleDateTo(e.target.value)}
-                        className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                        className="w-full rounded-md border border-input bg-background pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
                 </div>
                 {hasFilter && (
-                    <Button variant="outline" size="sm" onClick={clearFilters}>
-                        <X className="h-3.5 w-3.5" /> {tCommon('common.clear_filters')}
+                    <Button variant="outline" size="sm" onClick={() => { setSearch(''); setPage(1) }}>
+                        <X className="h-3.5 w-3.5" />
                     </Button>
                 )}
             </div>
 
-            <p className="text-sm text-muted-foreground">{tCommon('common.showing', { shown: paginated.length, total: filtered.length })}</p>
+            <PaginatedTable
+                data={rows}
+                rowKey={(b) => (b as any).id ?? b.bookingId}
+                isLoading={isLoading}
+                emptyMessage={tCommon('common.no_results')}
+                pagination={{
+                    currentPage: page,
+                    totalPages: meta?.totalPages ?? 1,
+                    totalItems: meta?.totalItems ?? 0,
+                    pageSize: PAGE_SIZE,
+                    onPageChange: setPage,
+                }}
+                columns={[
+                    {
+                        id: 'code', header: t('table.booking_code'),
+                        renderCell: (b) => <span className="font-mono text-xs font-medium">{b.bookingCode}</span>,
+                    },
+                    {
+                        id: 'route', header: t('table.route'),
+                        renderCell: (b) => {
+                            const ti = (b as any).tripInfo
+                            const label = ti?.fromLocationName && ti?.toLocationName ? `${ti.fromLocationName} → ${ti.toLocationName}` : '—'
+                            return <span className="text-xs text-muted-foreground truncate block max-w-40" aria-label={label} title={label}>{label}</span>
+                        },
+                    },
+                    {
+                        id: 'company', header: t('table.company'),
+                        renderCell: (b) => <span className="text-xs truncate block max-w-32">{(b as any).tripInfo?.busCompanyName ?? '—'}</span>,
+                    },
+                    {
+                        id: 'customer', header: t('table.customer'),
+                        renderCell: (b) => <span className="text-xs">{(b as any).passengerName ?? (b as any).user?.fullName ?? '—'}</span>,
+                    },
+                    {
+                        id: 'date', header: t('table.booking_date'),
+                        renderCell: (b) => <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(b.createdAt)}</span>,
+                    },
+                    {
+                        id: 'seats', header: t('table.seats'),
+                        renderCell: (b) => {
+                            const codes = Array.isArray(b.seats) ? b.seats.map((s) => s.seatCode).filter(Boolean).join(', ') : '—'
+                            return <span className="text-xs text-muted-foreground">{codes}</span>
+                        },
+                    },
+                    {
+                        id: 'amount', header: t('table.amount'), headerClassName: 'text-right', cellClassName: 'text-right',
+                        renderCell: (b) => <span className="text-xs font-medium">{formatVnd(b.totalAmount)}</span>,
+                    },
+                    {
+                        id: 'status', header: t('table.booking_status'),
+                        renderCell: (b) => {
+                            const status = b.status.toString().toLowerCase()
+                            return <Badge variant={STATUS_VARIANTS[status] ?? 'secondary'} className="text-xs">{tCommon(`status.${status}`, { defaultValue: status })}</Badge>
+                        },
+                    },
+                    {
+                        id: 'action', header: '',
+                        renderCell: (b) => (
+                            <button onClick={() => setSelectedBooking(b)} className="text-muted-foreground hover:text-foreground p-1">
+                                <Eye className="h-4 w-4" />
+                            </button>
+                        ),
+                    },
+                ]}
+            />
 
-            {isLoading ? <p className="text-sm text-muted-foreground">{tCommon('common.loading')}</p> : null}
-            {isError ? <p className="text-sm text-destructive">{tCommon('common.error')}</p> : null}
-
-            <div className="overflow-x-auto rounded-lg border border-border">
-                <table className="w-full text-sm">
-                    <thead className="bg-muted/50">
-                        <tr>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">{t('table.booking_code')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">{t('table.route')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">{t('table.company')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">{t('table.customer')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">{t('table.booking_date')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">{t('table.seats')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">{t('table.amount')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">{t('table.booking_status')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">{t('table.payment_status')}</th>
-                            <th className="px-4 py-3" />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {paginated.map(b => (
-                            <tr key={b.id} className="border-t border-border hover:bg-muted/30">
-                                <td className="px-4 py-3">
-                                    <span className="font-mono text-xs font-medium">{b.bookingCode}</span>
-                                </td>
-                                <td className="px-4 py-3 max-w-40">
-                                    <p className="text-xs text-muted-foreground truncate">{b.routeLabel}</p>
-                                </td>
-                                <td className="px-4 py-3">
-                                    <span className="flex items-center gap-1 text-xs">
-                                        <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                                        <span className="truncate max-w-28">{b.companyName}</span>
-                                    </span>
-                                </td>
-                                <td className="px-4 py-3">
-                                    <p className="text-xs truncate max-w-36">{b.userEmail}</p>
-                                </td>
-                                <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                                    {formatDate(b.createdAt)}
-                                </td>
-                                <td className="px-4 py-3 text-center font-medium">{b.seatCount}</td>
-                                <td className="px-4 py-3 font-medium whitespace-nowrap">{formatVnd(b.totalAmount)}</td>
-                                <td className="px-4 py-3">{statusBadge(b.status, tCommon)}</td>
-                                <td className="px-4 py-3">{paymentBadge(b.paymentStatus, tCommon)}</td>
-                                <td className="px-4 py-3">
-                                    <button onClick={() => setDetailBooking(b)}
-                                        className="text-muted-foreground hover:text-primary">
-                                        <Eye className="h-4 w-4" />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                        {paginated.length === 0 && (
-                            <tr>
-                                <td colSpan={10} className="px-4 py-10 text-center text-muted-foreground">
-                                    {tCommon('common.no_results')}
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-
-            {totalPages > 1 && (
-                <div className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">{tCommon('common.page', { page, total: totalPages })}</p>
-                    <div className="flex gap-2">
-                        <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>{tCommon('common.prev')}</Button>
-                        <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>{tCommon('common.next')}</Button>
+            {selectedBooking && (
+                <Dialog open onClose={() => setSelectedBooking(null)} title={t('detail.title', { code: selectedBooking.bookingCode })} className="max-w-lg">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <span className="font-mono text-lg font-bold">{selectedBooking.bookingCode}</span>
+                            <Badge variant={STATUS_VARIANTS[selectedBooking.status.toString().toLowerCase()] ?? 'secondary'}>
+                                {tCommon(`status.${selectedBooking.status.toString().toLowerCase()}`, { defaultValue: selectedBooking.status })}
+                            </Badge>
+                        </div>
+                        <div className="rounded-lg bg-muted/40 p-3 space-y-2 text-sm">
+                            {([
+                                [t('table.customer'), (selectedBooking as any).passengerName ?? (selectedBooking as any).user?.fullName ?? '—'],
+                                ['Phone', (selectedBooking as any).passengerPhone ?? '—'],
+                                ['Email', (selectedBooking as any).passengerEmail ?? (selectedBooking as any).user?.email ?? '—'],
+                                [t('table.company'), (selectedBooking as any).tripInfo?.busCompanyName ?? '—'],
+                                [t('table.route'), (() => { const ti = (selectedBooking as any).tripInfo; return ti?.fromLocationName && ti?.toLocationName ? `${ti.fromLocationName} → ${ti.toLocationName}` : '—' })()],
+                                [t('table.amount'), formatVnd(selectedBooking.totalAmount)],
+                                [t('table.booking_date'), formatDate(selectedBooking.createdAt)],
+                            ] as [string, string][]).map(([label, value]) => (
+                                <div key={label} className="flex justify-between">
+                                    <span className="text-muted-foreground">{label}</span>
+                                    <span className="font-medium">{value}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <div>
+                            <p className="mb-2 text-sm font-medium">{t('table.seats')}</p>
+                            <SeatLayoutGrid bookingId={(selectedBooking as any).id ?? selectedBooking.bookingId} />
+                        </div>
+                        <Button variant="outline" className="w-full" onClick={() => setSelectedBooking(null)}>{tCommon('common.close')}</Button>
                     </div>
-                </div>
+                </Dialog>
             )}
-
-            {detailBooking && <BookingDetailModal booking={detailBooking} onClose={() => setDetailBooking(null)} />}
         </div>
     )
 }

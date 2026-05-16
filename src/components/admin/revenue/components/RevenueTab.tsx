@@ -4,6 +4,7 @@ import { Search, CalendarDays, X } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { LineChart } from '@/components/ui/charts'
+import { PaginatedTable } from '@/components/shared/pagination-table'
 import { formatDate, formatVnd } from '@/utils/format'
 import { useRevenueTab } from '../hooks/use-revenue-tab'
 
@@ -11,13 +12,14 @@ export const RevenueTab = () => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.revenue' })
     const { t: tCommon } = useTranslation()
     const [search, setSearch] = useState('')
+    const [companyId, setCompanyId] = useState('')
     const [dateFrom, setDateFrom] = useState('')
     const [dateTo, setDateTo] = useState('')
     const {
-        filtered, totals, companyMap, clearFilters, hasFilter, dailyRevenues,
-        isLoading,
-        isError,
-    } = useRevenueTab({ search, dateFrom, dateTo, setSearch, setDateFrom, setDateTo })
+        filtered, totals, companyMap, companies, clearFilters, hasFilter, dailyRevenues,
+        page, setPage, totalPages, totalItems, pageSize,
+        isLoading, isError,
+    } = useRevenueTab({ search, companyId, dateFrom, dateTo, setSearch, setCompanyId, setDateFrom, setDateTo })
 
     return (
         <div className="space-y-5">
@@ -31,7 +33,7 @@ export const RevenueTab = () => {
                         <CardContent className="p-4">
                             <p className="text-xs text-muted-foreground mb-2">{s.label}</p>
                             <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{t('total_count', { count: filtered.length })}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{t('total_count', { count: totalItems })}</p>
                         </CardContent>
                     </Card>
                 ))}
@@ -42,8 +44,7 @@ export const RevenueTab = () => {
                     <CardTitle className="text-sm font-medium">{t('chart_30d')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {isLoading ? <p className="text-sm text-muted-foreground">{tCommon('common.loading')}</p> : null}
-                    {isError ? <p className="text-sm text-destructive">{tCommon('common.error')}</p> : null}
+                    {isError && <p className="text-sm text-destructive">{tCommon('common.error')}</p>}
                     <LineChart
                         data={dailyRevenues as unknown as Record<string, string | number>[]}
                         series={[
@@ -64,12 +65,24 @@ export const RevenueTab = () => {
                         placeholder={t('search_placeholder')}
                         className="w-full rounded-md border border-input bg-background pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                 </div>
+                <select
+                    value={companyId}
+                    onChange={e => { setCompanyId(e.target.value); setPage(1) }}
+                    className="min-w-52 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                    <option value="">{t('filter_all_companies')}</option>
+                    {companies.map((company) => (
+                        <option key={company.busCompanyId} value={company.busCompanyId}>
+                            {company.name}
+                        </option>
+                    ))}
+                </select>
                 <div className="flex items-center gap-2">
                     <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                    <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+                    <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(1) }}
                         className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none" />
                     <span className="text-muted-foreground">—</span>
-                    <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+                    <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(1) }}
                         className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none" />
                 </div>
                 {hasFilter && (
@@ -79,50 +92,22 @@ export const RevenueTab = () => {
                 )}
             </div>
 
-            <div className="overflow-x-auto rounded-lg border border-border">
-                <table className="w-full text-sm">
-                    <thead className="bg-muted/50">
-                        <tr>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.company')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.booking_code')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.time')}</th>
-                            <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.gross')}</th>
-                            <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.fee_pct')}</th>
-                            <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.commission')}</th>
-                            <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.net')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filtered.slice(0, 50).map(r => (
-                            <tr key={r.id} className="border-t border-border hover:bg-muted/30">
-                                <td className="px-4 py-3 font-medium text-xs truncate max-w-36">{companyMap.get(r.companyId) ?? r.companyId}</td>
-                                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{r.bookingId}</td>
-                                <td className="px-4 py-3 text-xs text-muted-foreground">{formatDate(r.createdAt)}</td>
-                                <td className="px-4 py-3 text-right">{formatVnd(r.grossAmount)}</td>
-                                <td className="px-4 py-3 text-right text-muted-foreground">{r.commissionRate}%</td>
-                                <td className="px-4 py-3 text-right text-red-500">{formatVnd(r.commissionAmount)}</td>
-                                <td className="px-4 py-3 text-right font-medium text-green-600">{formatVnd(r.netAmount)}</td>
-                            </tr>
-                        ))}
-                        {filtered.length === 0 && (
-                            <tr>
-                                <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">{t('no_data')}</td>
-                            </tr>
-                        )}
-                    </tbody>
-                    {filtered.length > 0 && (
-                        <tfoot className="bg-muted/50 font-semibold">
-                            <tr className="border-t-2 border-border">
-                                <td colSpan={3} className="px-4 py-3 text-sm">{t('total_count', { count: filtered.length })}</td>
-                                <td className="px-4 py-3 text-right">{formatVnd(totals.gross)}</td>
-                                <td />
-                                <td className="px-4 py-3 text-right text-red-500">{formatVnd(totals.commission)}</td>
-                                <td className="px-4 py-3 text-right text-green-600">{formatVnd(totals.net)}</td>
-                            </tr>
-                        </tfoot>
-                    )}
-                </table>
-            </div>
+            <PaginatedTable
+                data={filtered}
+                rowKey={r => r.id}
+                isLoading={isLoading}
+                emptyMessage={t('no_data')}
+                pagination={{ currentPage: page, totalPages, totalItems, pageSize, onPageChange: setPage }}
+                columns={[
+                    { id: 'company', header: t('table.company'), renderCell: r => <span className="truncate max-w-36 block">{companyMap.get(r.companyId) ?? r.companyId}</span> },
+                    { id: 'booking', header: t('table.booking_code'), renderCell: r => <span className="font-mono text-xs text-muted-foreground">{r.bookingId}</span> },
+                    { id: 'time', header: t('table.time'), renderCell: r => <span className="text-xs text-muted-foreground">{formatDate(r.createdAt)}</span> },
+                    { id: 'gross', header: t('table.gross'), headerClassName: 'text-right', cellClassName: 'text-right', renderCell: r => formatVnd(r.grossAmount) },
+                    { id: 'rate', header: t('table.fee_pct'), headerClassName: 'text-right', cellClassName: 'text-right text-muted-foreground', renderCell: r => `${r.commissionRate}%` },
+                    { id: 'commission', header: t('table.commission'), headerClassName: 'text-right', cellClassName: 'text-right text-red-500', renderCell: r => formatVnd(r.commissionAmount) },
+                    { id: 'net', header: t('table.net'), headerClassName: 'text-right', cellClassName: 'text-right font-medium text-green-600', renderCell: r => formatVnd(r.netAmount) },
+                ]}
+            />
         </div>
     )
 }

@@ -1,10 +1,12 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { MapPin, Calendar, Clock, Bus, Phone, DollarSign, Info } from 'lucide-react'
+import { MapPin, Calendar, Clock, Bus, Phone, DollarSign, Info, AlertTriangle, User, Mail } from 'lucide-react'
 import { Dialog } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { formatDate, formatTime, formatVnd } from '@/utils/format'
-import type { ITrip } from '@/types/trip'
+import type { ITrip, ISeatAvailability } from '@/types/trip'
+import { getTripDisplayStatus } from '@/types/trip'
 
 interface TripDetailsModalProps {
   trip: ITrip | null
@@ -15,60 +17,104 @@ interface TripDetailsModalProps {
 
 const SeatPreview = ({ seats }: { seats: ITrip['seatAvailability'] }) => {
   const { t } = useTranslation('translation', { keyPrefix: 'pages.trips' })
+  const [selected, setSelected] = useState<ISeatAvailability | null>(null)
 
   if (!seats?.length) return <p className="text-sm text-muted-foreground">{t('no_seat_layout')}</p>
 
   const floors = [...new Set(seats.map((s) => s.floor))].sort()
 
   return (
-    <div className="space-y-4">
-      {floors.map((floor) => {
-        const floorSeats = seats.filter((s) => s.floor === floor)
-        const maxRow = Math.max(...floorSeats.map((s) => s.row))
-        const maxCol = Math.max(...floorSeats.map((s) => s.col))
-        const available = floorSeats.filter((s) => s.isAvailable).length
-        const occupied = floorSeats.length - available
+    <div className="flex gap-4">
+      {/* Left: seat layout */}
+      <div className="flex-1 space-y-4 overflow-x-auto">
+        {floors.map((floor) => {
+          const floorSeats = seats.filter((s) => s.floor === floor)
+          const maxRow = Math.max(...floorSeats.map((s) => s.row))
+          const maxCol = Math.max(...floorSeats.map((s) => s.col))
+          const available = floorSeats.filter((s) => s.isAvailable).length
+          const occupied = floorSeats.length - available
 
-        return (
-          <div key={floor} className="rounded-lg border p-4">
-            <p className="mb-3 text-sm font-medium">{t('floor')} {floor}</p>
-            <div className="overflow-x-auto">
+          return (
+            <div key={floor} className="rounded-lg border p-4">
+              <p className="mb-3 text-sm font-medium">{t('floor')} {floor}</p>
               <div className="inline-grid gap-1.5" style={{ gridTemplateColumns: `repeat(${maxCol + 1}, minmax(0, 1fr))` }}>
                 {Array.from({ length: (maxRow + 1) * (maxCol + 1) }).map((_, idx) => {
                   const row = Math.floor(idx / (maxCol + 1))
                   const col = idx % (maxCol + 1)
                   const seat = floorSeats.find((s) => s.row === row && s.col === col)
-
                   if (!seat) return <div key={idx} className="h-9 w-9" />
-
+                  const isSelected = selected?.seatId === seat.seatId
                   return (
-                    <div
+                    <button
                       key={seat.seatId}
-                      className={`flex h-9 w-9 items-center justify-center rounded border text-[10px] font-medium transition-colors ${seat.isAvailable
-                        ? 'border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-950 dark:text-green-400'
-                        : 'border-gray-300 bg-gray-200 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 opacity-60'
-                        }`}
-                      title={`${seat.seatCode} - ${seat.isAvailable ? t('available') : t('occupied')} - ${formatVnd(seat.price)}`}
+                      type="button"
+                      onClick={() => setSelected(isSelected ? null : seat)}
+                      className={`flex h-9 w-9 items-center justify-center rounded border text-[10px] font-medium transition-colors ${
+                        isSelected
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : seat.isAvailable
+                          ? 'border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-950 dark:text-green-400'
+                          : 'border-gray-300 bg-gray-200 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                      }`}
                     >
                       {seat.seatCode}
-                    </div>
+                    </button>
                   )
                 })}
               </div>
-            </div>
-            <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <div className="h-4 w-4 rounded border border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-950" />
-                <span>{t('available')} ({available})</span>
+              <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-4 w-4 rounded border border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-950" />
+                  <span>{t('available')} ({available})</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-4 w-4 rounded border border-gray-300 bg-gray-200 dark:border-gray-700 dark:bg-gray-800" />
+                  <span>{t('occupied')} ({occupied})</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="h-4 w-4 rounded border border-gray-300 bg-gray-200 dark:border-gray-700 dark:bg-gray-800" />
-                <span>{t('occupied')} ({occupied})</span>
-              </div>
             </div>
+          )
+        })}
+      </div>
+
+      {/* Right: seat detail */}
+      <div className="w-52 shrink-0 rounded-lg border p-4 text-sm">
+        {selected ? (
+          <div className="space-y-2">
+            <p className="font-semibold">{selected.seatCode}</p>
+            <p className="text-muted-foreground">{formatVnd(selected.price)}</p>
+            <p className={selected.isAvailable ? 'text-green-600' : 'text-gray-500'}>
+              {selected.isAvailable ? t('available') : t('occupied')}
+            </p>
+            {selected.booking && (
+              <div className="mt-3 space-y-1.5 border-t pt-3">
+                <p className="text-xs font-medium text-muted-foreground">{t('booking_info')}</p>
+                <p className="font-mono text-xs">{selected.booking.bookingCode}</p>
+                {selected.booking.passengerName && (
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <User className="h-3 w-3 text-muted-foreground" />
+                    {selected.booking.passengerName}
+                  </div>
+                )}
+                {selected.booking.passengerEmail && (
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <Mail className="h-3 w-3 text-muted-foreground" />
+                    {selected.booking.passengerEmail}
+                  </div>
+                )}
+                {selected.booking.passengerPhone && (
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <Phone className="h-3 w-3 text-muted-foreground" />
+                    {selected.booking.passengerPhone}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        )
-      })}
+        ) : (
+          <p className="text-xs text-muted-foreground">{t('select_seat_to_view')}</p>
+        )}
+      </div>
     </div>
   )
 }
@@ -114,7 +160,15 @@ export const TripDetailsModal = ({ trip, open, onClose, getTripDetails }: TripDe
             </div>
             <div>
               <p className="mb-1 text-xs font-medium text-muted-foreground">{tTrips('status')}</p>
-              <Badge>{tCommon(`status.${details.status.toLowerCase()}`)}</Badge>
+              <div className="flex items-center gap-2">
+                <Badge>{tCommon(`status.${getTripDisplayStatus(details).toLowerCase()}`)}</Badge>
+                {details.hasBookings && (
+                  <span className="flex items-center gap-1 text-xs text-amber-600">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    {tTrips('has_bookings')}
+                  </span>
+                )}
+              </div>
             </div>
             <div>
               <p className="mb-1 text-xs font-medium text-muted-foreground">{tTrips('departure')}</p>

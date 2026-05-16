@@ -1,15 +1,16 @@
-import { useMemo, type Dispatch, type SetStateAction } from 'react'
+import { useMemo, useState, type Dispatch, type SetStateAction } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getAdminBusCompanies } from 'services/admins/bus-company.service'
+import { getAllAdminBusCompanies } from 'services/admins/bus-company.service'
 import {
     createAdminSettlement,
     getAdminSettlements,
     markAdminSettlementPaid,
 } from 'services/admins/settlement.service'
-import type { ISettlement } from 'types/revenue'
+import type { ESettlementStatus, ISettlement } from 'types/revenue'
 import type { ICompany } from 'types/company'
 
 export type SettlementStatus = 'all' | 'pending' | 'paid'
+const PAGE_SIZE = 20
 
 export interface SettlementRow {
     id: string
@@ -36,6 +37,12 @@ interface UseSettlementsTabProps {
     setDialogOpen: Dispatch<SetStateAction<boolean>>
     search: string
     setSearch: Dispatch<SetStateAction<string>>
+    companyId: string
+    setCompanyId: Dispatch<SetStateAction<string>>
+    dateFrom: string
+    setDateFrom: Dispatch<SetStateAction<string>>
+    dateTo: string
+    setDateTo: Dispatch<SetStateAction<string>>
     statusFilter: SettlementStatus
     setStatusFilter: Dispatch<SetStateAction<SettlementStatus>>
 }
@@ -53,6 +60,11 @@ const readPaginationRows = <T,>(payload: unknown): T[] => {
     if (Array.isArray(value.data)) return value.data
     if (Array.isArray(value.result)) return value.result
     return []
+}
+
+const readMeta = (payload: unknown) => {
+    if (!payload || typeof payload !== 'object') return null
+    return (payload as { meta?: { totalPages: number; totalItems: number } }).meta ?? null
 }
 
 const normalizeStatus = (status: unknown): SettlementRow['status'] => {
@@ -79,17 +91,38 @@ const toSettlementRow = (settlement: ISettlement): SettlementRow => {
     }
 }
 
-export const useSettlementsTab = ({ dialogOpen, setDialogOpen, search, setSearch, statusFilter, setStatusFilter }: UseSettlementsTabProps) => {
+export const useSettlementsTab = ({
+    dialogOpen,
+    setDialogOpen,
+    search,
+    setSearch,
+    companyId,
+    setCompanyId,
+    dateFrom,
+    setDateFrom,
+    dateTo,
+    setDateTo,
+    statusFilter,
+    setStatusFilter,
+}: UseSettlementsTabProps) => {
     const queryClient = useQueryClient()
+    const [page, setPage] = useState(1)
 
     const settlementsQuery = useQuery({
-        queryKey: ['admin-revenue', 'settlements'],
-        queryFn: () => getAdminSettlements({ page: 1, limit: 1000 }),
+        queryKey: ['admin-revenue', 'settlements', page, companyId, dateFrom, dateTo, statusFilter],
+        queryFn: () => getAdminSettlements({
+            page,
+            limit: PAGE_SIZE,
+            companyId: companyId || undefined,
+            dateFrom: dateFrom || undefined,
+            dateTo: dateTo || undefined,
+            status: statusFilter === 'all' ? undefined : statusFilter.toUpperCase() as ESettlementStatus,
+        }),
     })
 
     const companiesQuery = useQuery({
         queryKey: ['admin-revenue', 'companies'],
-        queryFn: () => getAdminBusCompanies({ page: 1, limit: 1000 }),
+        queryFn: () => getAllAdminBusCompanies(),
     })
 
     const markPaidMutation = useMutation({
@@ -111,6 +144,7 @@ export const useSettlementsTab = ({ dialogOpen, setDialogOpen, search, setSearch
         const payload = settlementsQuery.data?.data
         return readPaginationRows<ISettlement>(payload).map(toSettlementRow)
     }, [settlementsQuery.data])
+    const meta = useMemo(() => readMeta(settlementsQuery.data?.data), [settlementsQuery.data])
 
     const companies = useMemo(() => {
         const payload = companiesQuery.data?.data
@@ -121,11 +155,14 @@ export const useSettlementsTab = ({ dialogOpen, setDialogOpen, search, setSearch
         const q = search.toLowerCase()
         return settlements.filter((settlement) => {
             const company = companies.find((item) => item.busCompanyId === settlement.companyId)
-            if (q && !company?.name.toLowerCase().includes(q)) return false
-            if (statusFilter !== 'all' && settlement.status !== statusFilter) return false
+            if (q) {
+                const matchesCompany = company?.name.toLowerCase().includes(q)
+                const matchesCode = settlement.referenceCode.toLowerCase().includes(q)
+                if (!matchesCompany && !matchesCode) return false
+            }
             return true
         })
-    }, [settlements, companies, search, statusFilter])
+    }, [settlements, companies, search])
 
     const companyMap = useMemo(() => new Map(companies.map((company) => [company.busCompanyId, company.name])), [companies])
 
@@ -139,13 +176,32 @@ export const useSettlementsTab = ({ dialogOpen, setDialogOpen, search, setSearch
 
     const openDialog = () => setDialogOpen(true)
     const closeDialog = () => setDialogOpen(false)
+    const clearFilters = () => {
+        setSearch('')
+        setCompanyId('')
+        setDateFrom('')
+        setDateTo('')
+        setStatusFilter('all')
+        setPage(1)
+    }
+    const hasFilter = Boolean(search || companyId || dateFrom || dateTo || statusFilter !== 'all')
 
     return {
         dialogOpen, openDialog, closeDialog,
         settlements, filtered, companyMap,
         companies,
+        companyId, setCompanyId,
+        dateFrom, setDateFrom,
+        dateTo, setDateTo,
         search, setSearch,
         statusFilter, setStatusFilter,
+        clearFilters,
+        hasFilter,
+        page,
+        setPage,
+        totalPages: meta?.totalPages ?? 1,
+        totalItems: meta?.totalItems ?? 0,
+        pageSize: PAGE_SIZE,
         markPaid,
         createSettlement,
         isLoading: settlementsQuery.isLoading || companiesQuery.isLoading,

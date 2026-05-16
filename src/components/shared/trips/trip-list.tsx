@@ -5,12 +5,13 @@ import { Badge } from '@/components/ui/badge'
 import { PaginatedTable, type PaginatedTableColumn } from '@/components/shared/pagination-table'
 import { formatDate, formatTime } from '@/utils/format'
 import type { ITrip } from '@/types/trip'
+import { ETripDisplayStatus, ETripStatus, getTripDisplayStatus } from '@/types/trip'
 
-const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline' | 'success'> = {
   scheduled: 'default',
-  active: 'secondary',
-  completed: 'outline',
-  cancelled: 'destructive',
+  on_way: 'secondary',
+  completed: 'success',
+  inactive: 'destructive',
 }
 
 interface TripListProps {
@@ -112,11 +113,15 @@ export const TripList = ({
       {
         id: 'status',
         header: tTrips('table.status'),
-        renderCell: (trip) => (
-          <Badge variant={STATUS_VARIANTS[trip.status.toLowerCase()] ?? 'secondary'} className="text-xs">
-            {tCommon(`status.${trip.status.toLowerCase()}`, { defaultValue: trip.status })}
-          </Badge>
-        ),
+        renderCell: (trip) => {
+          const displayStatus = getTripDisplayStatus(trip)
+          const key = displayStatus.toLowerCase()
+          return (
+            <Badge variant={STATUS_VARIANTS[key] ?? 'secondary'} className="text-xs">
+              {tCommon(`status.${key}`, { defaultValue: displayStatus })}
+            </Badge>
+          )
+        },
       },
       {
         id: 'actions',
@@ -136,9 +141,10 @@ export const TripList = ({
             {onEdit && (
               <button
                 type="button"
-                onClick={() => onEdit(trip)}
-                className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-primary"
-                title={tCommon('common.edit')}
+                onClick={() => !trip.hasBookings && onEdit(trip)}
+                disabled={trip.hasBookings}
+                className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                title={trip.hasBookings ? tTrips('cannot_edit_booked') : tCommon('common.edit')}
               >
                 <Pencil className="h-3.5 w-3.5" />
               </button>
@@ -146,9 +152,10 @@ export const TripList = ({
             {onDelete && (
               <button
                 type="button"
-                onClick={() => onDelete(trip)}
-                className="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                title={tCommon('common.delete')}
+                onClick={() => !trip.hasBookings && onDelete(trip)}
+                disabled={trip.hasBookings}
+                className="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-40"
+                title={trip.hasBookings ? tTrips('cannot_delete_booked') : tCommon('common.delete')}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>

@@ -1,33 +1,61 @@
-import { useMemo } from 'react'
-import { DollarSign, TrendingUp, Wallet, CalendarDays } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { DollarSign, TrendingUp, Wallet, CalendarDays, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { LineChart, HorizontalBarChart } from '@/components/ui/charts'
-import { MOCK_DAILY_REVENUES, MOCK_SETTLEMENTS, MOCK_REVENUES } from '@/data/mock-extended'
+import { LineChart } from '@/components/ui/charts'
+import { PaginatedTable } from '@/components/shared/pagination-table'
 import { formatDate, formatVnd } from '@/utils/format'
+import { getRevenues, getRevenueStats } from 'services/company/revenue.service'
+import type { IRevenue } from 'types/revenue'
+import { CompanySettlementsTab } from './components/company-settlements-tab'
 
-// Filter to company c1 data
-const MY_REVENUES = MOCK_REVENUES.filter(r => r.companyId === 'c1')
-const MY_SETTLEMENTS = MOCK_SETTLEMENTS.filter(s => s.companyId === 'c1')
+const PAGE_SIZE = 20
 
-const ROUTE_BREAKDOWN = [
-    { label: 'HCM→Da Lat', value: 45_000_000 },
-    { label: 'HCM→Nha Trang', value: 62_000_000 },
-    { label: 'HCM→Vung Tau', value: 28_000_000 },
-    { label: 'HCM→Can Tho', value: 18_000_000 },
-    { label: 'HCM→Phan Thiet', value: 14_000_000 },
-]
+const readRows = <T,>(payload: unknown): T[] => {
+    if (!payload || typeof payload !== 'object') return []
+    const v = payload as { result?: T[]; data?: T[] }
+    return Array.isArray(v.result) ? v.result : Array.isArray(v.data) ? v.data : []
+}
+
+const readMeta = (payload: unknown) => {
+    if (!payload || typeof payload !== 'object') return null
+    return (payload as { meta?: { totalPages: number; totalItems: number } }).meta ?? null
+}
 
 export function CompanyRevenuePage() {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.revenue' })
     const { t: tCommon } = useTranslation()
-    const totalGross = useMemo(() => MY_REVENUES.reduce((s, r) => s + r.grossAmount, 0), [])
-    const totalCommission = useMemo(() => MY_REVENUES.reduce((s, r) => s + r.commissionAmount, 0), [])
-    const totalNet = useMemo(() => MY_REVENUES.reduce((s, r) => s + r.netAmount, 0), [])
-    const pendingSettlement = useMemo(() =>
-        MY_SETTLEMENTS.filter(s => s.status === 'pending').reduce((sum, s) => sum + s.totalNet, 0), [])
+
+    const [page, setPage] = useState(1)
+    const [dateFrom, setDateFrom] = useState('')
+    const [dateTo, setDateTo] = useState('')
+
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ['company-revenues', page, dateFrom, dateTo],
+        queryFn: () => getRevenues({ page, limit: PAGE_SIZE, dateFrom: dateFrom || undefined, dateTo: dateTo || undefined }),
+    })
+
+    const statsQuery = useQuery({
+        queryKey: ['company-revenues', 'stats', dateFrom, dateTo],
+        queryFn: () => getRevenueStats(dateFrom || undefined, dateTo || undefined),
+    })
+
+    const rawPayload = (data as any)?.data ?? data
+    const revenues = useMemo(() => readRows<IRevenue>(rawPayload), [rawPayload])
+    const meta = useMemo(() => readMeta(rawPayload), [rawPayload])
+
+    const statsData = (statsQuery.data as any)?.data ?? statsQuery.data
+
+    const dailyRevenues = useMemo(() => (statsData?.daily ?? []).map((d: { date: string; gross: number; commission: number; net: number }) => ({
+        ...d,
+        label: new Date(d.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
+    })), [statsData])
+
+    const hasFilter = dateFrom || dateTo
+    const clearFilters = () => { setDateFrom(''); setDateTo(''); setPage(1) }
 
     return (
         <div className="space-y-6">
@@ -36,13 +64,11 @@ export function CompanyRevenuePage() {
                 <p className="text-sm text-muted-foreground">{t('company_description')}</p>
             </div>
 
-            {/* KPI Cards */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-3">
                 {[
-                    { label: t('stats.total_gross'), value: formatVnd(totalGross), icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                    { label: t('stats.commission'), value: formatVnd(totalCommission), icon: TrendingUp, color: 'text-red-500', bg: 'bg-red-500/10' },
-                    { label: t('stats.net'), value: formatVnd(totalNet), icon: Wallet, color: 'text-green-500', bg: 'bg-green-500/10' },
-                    { label: t('stats.pending_settlement'), value: formatVnd(pendingSettlement), icon: CalendarDays, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+                    { label: t('stats.total_gross'), value: formatVnd(statsData?.totalGross ?? 0), icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                    { label: t('stats.commission'), value: formatVnd(statsData?.totalCommission ?? 0), icon: TrendingUp, color: 'text-red-500', bg: 'bg-red-500/10' },
+                    { label: t('stats.net'), value: formatVnd(statsData?.totalNet ?? 0), icon: Wallet, color: 'text-green-500', bg: 'bg-green-500/10' },
                 ].map(kpi => {
                     const Icon = kpi.icon
                     return (
@@ -61,32 +87,37 @@ export function CompanyRevenuePage() {
                 })}
             </div>
 
-            {/* Chart section */}
-            <div className="grid gap-4 lg:grid-cols-3">
-                <Card className="lg:col-span-2">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">{t('chart_30d')}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <LineChart
-                            data={MOCK_DAILY_REVENUES as unknown as Record<string, string | number>[]}
-                            series={[
-                                { key: 'gross', label: 'Gross', color: '#3b82f6' },
-                                { key: 'net', label: 'Net', color: '#22c55e' },
-                            ]}
-                            height={220}
-                            labelKey="label"
-                        />
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">{t('chart_by_route')}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <HorizontalBarChart data={ROUTE_BREAKDOWN} />
-                    </CardContent>
-                </Card>
+            <Card>
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">{t('chart_30d')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {isError && <p className="text-sm text-destructive">{tCommon('common.error')}</p>}
+                    <LineChart
+                        data={dailyRevenues as unknown as Record<string, string | number>[]}
+                        series={[
+                            { key: 'gross', label: 'Gross', color: '#3b82f6' },
+                            { key: 'commission', label: 'Hoa hong', color: '#ef4444' },
+                            { key: 'net', label: 'Net', color: '#22c55e' },
+                        ]}
+                        height={220}
+                        labelKey="label"
+                    />
+                </CardContent>
+            </Card>
+
+            <div className="flex flex-wrap items-center gap-3">
+                <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(1) }}
+                    className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none" />
+                <span className="text-muted-foreground">—</span>
+                <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(1) }}
+                    className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none" />
+                {hasFilter && (
+                    <Button variant="outline" size="sm" onClick={clearFilters}>
+                        <X className="h-3.5 w-3.5" /> {tCommon('common.clear_filters')}
+                    </Button>
+                )}
             </div>
 
             <Tabs defaultValue="transactions">
@@ -94,81 +125,34 @@ export function CompanyRevenuePage() {
                     <TabsTrigger value="transactions">{t('tab_revenue')}</TabsTrigger>
                     <TabsTrigger value="settlements">{t('tab_settlements')}</TabsTrigger>
                 </TabsList>
-
                 <TabsContent value="transactions">
-                    <div className="rounded-lg border border-border overflow-hidden">
-                        <table className="w-full text-sm">
-                            <thead className="bg-muted/50">
-                                <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.booking_code')}</th>
-                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('table.time')}</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.gross')}</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.fee_pct')}</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.commission')}</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('table.net')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {MY_REVENUES.slice(0, 20).map(r => (
-                                    <tr key={r.id} className="border-t border-border hover:bg-muted/30">
-                                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{r.bookingId}</td>
-                                        <td className="px-4 py-3 text-xs text-muted-foreground">{formatDate(r.createdAt)}</td>
-                                        <td className="px-4 py-3 text-right">{formatVnd(r.grossAmount)}</td>
-                                        <td className="px-4 py-3 text-right text-muted-foreground">{r.commissionRate}%</td>
-                                        <td className="px-4 py-3 text-right text-red-500">-{formatVnd(r.commissionAmount)}</td>
-                                        <td className="px-4 py-3 text-right font-semibold text-green-600">{formatVnd(r.netAmount)}</td>
-                                    </tr>
-                                ))}
-                                {MY_REVENUES.length === 0 && (
-                                    <tr>
-                                        <td colSpan={6} className="py-10 text-center text-muted-foreground">{t('no_data')}</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    <PaginatedTable
+                        data={revenues}
+                        rowKey={r => r.id}
+                        isLoading={isLoading}
+                        emptyMessage={t('no_data')}
+                        pagination={{
+                            currentPage: page,
+                            totalPages: meta?.totalPages ?? 1,
+                            totalItems: statsData?.totalCount ?? meta?.totalItems ?? 0,
+                            pageSize: PAGE_SIZE,
+                            onPageChange: setPage,
+                        }}
+                        columns={[
+                            { id: 'booking', header: t('table.booking_code'), renderCell: r => <span className="font-mono text-xs text-muted-foreground">{r.bookingId}</span> },
+                            { id: 'time', header: t('table.time'), renderCell: r => <span className="text-xs text-muted-foreground">{formatDate(r.createdAt)}</span> },
+                            { id: 'gross', header: t('table.gross'), headerClassName: 'text-right', cellClassName: 'text-right', renderCell: r => formatVnd(r.grossAmount) },
+                            {
+                                id: 'rate', header: t('table.fee_pct'), headerClassName: 'text-right', cellClassName: 'text-right text-muted-foreground',
+                                renderCell: r => `${r.grossAmount > 0 ? Number(((r.commission / r.grossAmount) * 100).toFixed(2)) : 0}%`
+                            },
+                            { id: 'commission', header: t('table.commission'), headerClassName: 'text-right', cellClassName: 'text-right text-red-500', renderCell: r => `-${formatVnd(r.commission)}` },
+                            { id: 'net', header: t('table.net'), headerClassName: 'text-right', cellClassName: 'text-right font-semibold text-green-600', renderCell: r => formatVnd(r.netAmount) },
+                        ]}
+                    />
                 </TabsContent>
-
                 <TabsContent value="settlements">
-                    <div className="rounded-lg border border-border overflow-hidden">
-                        <table className="w-full text-sm">
-                            <thead className="bg-muted/50">
-                                <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('settlements_table.code')}</th>
-                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('settlements_table.period')}</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('settlements_table.gross')}</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('settlements_table.commission')}</th>
-                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('settlements_table.net')}</th>
-                                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('settlements_table.bookings')}</th>
-                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('settlements_table.status')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {MY_SETTLEMENTS.map(s => (
-                                    <tr key={s.id} className="border-t border-border hover:bg-muted/30">
-                                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{s.referenceCode}</td>
-                                        <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                                            {formatDate(s.periodFrom)} — {formatDate(s.periodTo)}
-                                        </td>
-                                        <td className="px-4 py-3 text-right">{formatVnd(s.totalGross)}</td>
-                                        <td className="px-4 py-3 text-right text-red-500">-{formatVnd(s.totalCommission)}</td>
-                                        <td className="px-4 py-3 text-right font-semibold text-green-600">{formatVnd(s.totalNet)}</td>
-                                        <td className="px-4 py-3 text-center">{s.bookingCount}</td>
-                                        <td className="px-4 py-3">
-                                            <Badge variant={s.status === 'paid' ? 'success' : 'warning'} className="text-xs">
-                                                {s.status === 'paid' ? tCommon('payment_status.paid') : tCommon('payment_status.pending')}
-                                            </Badge>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {MY_SETTLEMENTS.length === 0 && (
-                                    <tr>
-                                        <td colSpan={7} className="py-10 text-center text-muted-foreground">{t('no_settlements')}</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    <CompanySettlementsTab />
                 </TabsContent>
             </Tabs>
         </div>

@@ -112,6 +112,7 @@
         "inactive": "Inactive",
         "locked": "Locked",
         "scheduled": "Scheduled",
+        "on_way": "On the way",
         "in_progress": "In progress",
         "expired": "Expired",
         "reserved": "Reserved",
@@ -639,6 +640,8 @@
             "description": "Monitor all ticket booking transactions on the platform",
             "company_title": "Booking Management",
             "company_description": "Company booking list",
+            "bookings": "bookings",
+            "filter_all_trips": "All trips",
             "search_placeholder": "Ticket code, route, email, company...",
             "date_from": "From date",
             "date_to": "To date",
@@ -721,6 +724,7 @@
             "create_settlement": "Create settlement",
             "auto_calculate_info": "The system will automatically calculate gross, commission, and net for the company within the accounting period.",
             "filter_all": "All",
+            "filter_all_companies": "All companies",
             "filter_pending": "Pending",
             "filter_paid": "Settled",
             "company_label": "Company",
@@ -1097,7 +1101,12 @@
                 "price_min": "Price must be greater than 0",
                 "seats_required": "Number of seats is required",
                 "seats_min": "Must have at least 1 seat"
-            }
+            },
+            "has_bookings": "Has bookings",
+            "cannot_edit_booked": "Cannot edit a trip with active bookings",
+            "cannot_delete_booked": "Cannot delete a trip with active bookings",
+            "booking_info": "Booking info",
+            "select_seat_to_view": "Click a seat to view details"
         },
         "not_found": {
             "title": "Page not found",

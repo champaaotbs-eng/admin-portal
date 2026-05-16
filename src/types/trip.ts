@@ -27,6 +27,7 @@ export interface ITrip {
     arrivalTime: string
     basePrice: number
     status: ETripStatus
+    hasBookings?: boolean
     isPublished: boolean
     cancelReason?: string | null
     createdAt: string
@@ -52,6 +53,14 @@ export interface ITripStop {
     note?: string | null
 }
 
+export interface ISeatBookingInfo {
+    seatId: string
+    bookingCode: string
+    passengerName?: string
+    passengerEmail?: string
+    passengerPhone?: string
+}
+
 export interface ISeatAvailability {
     seatId: string
     seatCode: string
@@ -61,11 +70,26 @@ export interface ISeatAvailability {
     floor: number
     price: number
     isAvailable: boolean
+    booking?: ISeatBookingInfo | null
 }
 
 export enum ETripStatus {
-    SCHEDULED = 'SCHEDULED',
     ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
+}
+
+export enum ETripDisplayStatus {
+    SCHEDULED = 'SCHEDULED',
+    ON_WAY = 'ON_WAY',
     COMPLETED = 'COMPLETED',
-    CANCELLED = 'CANCELLED',
+}
+
+export function getTripDisplayStatus(trip: Pick<ITrip, 'status' | 'departureTime' | 'arrivalTime'>): ETripDisplayStatus | ETripStatus.INACTIVE {
+    if (trip.status === ETripStatus.INACTIVE) return ETripStatus.INACTIVE
+    const now = Date.now()
+    const dep = new Date(trip.departureTime).getTime()
+    const arr = new Date(trip.arrivalTime).getTime()
+    if (now < dep) return ETripDisplayStatus.SCHEDULED
+    if (now <= arr) return ETripDisplayStatus.ON_WAY
+    return ETripDisplayStatus.COMPLETED
 }

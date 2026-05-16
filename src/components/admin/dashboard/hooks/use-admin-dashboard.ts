@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { Ticket, Building2, CalendarDays, DollarSign } from 'lucide-react'
 import { formatVnd } from '@/utils/format'
 import { getAdminBookings } from 'services/admins/booking.service'
-import { getAdminBusCompanies } from 'services/admins/bus-company.service'
-import { getAdminRevenues } from 'services/admins/revenue.service'
+import { getAllAdminBusCompanies } from 'services/admins/bus-company.service'
+import { getRevenues } from 'services/admins/revenue.service'
 import { getAdminSettlements } from 'services/admins/settlement.service'
 import { getAdminTrips } from 'services/admins/trip.service'
 import type { IBooking } from 'types/booking'
@@ -118,12 +118,12 @@ export const useAdminDashboard = () => {
 
     const revenuesQuery = useQuery({
         queryKey: ['admin-dashboard', 'revenues'],
-        queryFn: () => getAdminRevenues({ page: 1, limit: 1000 }),
+        queryFn: () => getRevenues({ page: 1, limit: 1000 }),
     })
 
     const companiesQuery = useQuery({
         queryKey: ['admin-dashboard', 'companies'],
-        queryFn: () => getAdminBusCompanies({ page: 1, limit: 1000 }),
+        queryFn: () => getAllAdminBusCompanies(),
     })
 
     const tripsQuery = useQuery({

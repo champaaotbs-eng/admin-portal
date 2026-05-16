@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Search, Plus, CheckCircle2, Clock, DollarSign, FileText } from 'lucide-react'
+import { Search, Plus, CheckCircle2, Clock, DollarSign, FileText, CalendarDays, X } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
+import { PaginatedTable } from '@/components/shared/pagination-table'
 import { formatDate, formatVnd } from '@/utils/format'
 import { useSettlementsTab } from '../hooks/use-settlements-tab'
 import type { SettlementStatus } from '../hooks/use-settlements-tab'
@@ -14,6 +15,9 @@ export const SettlementsTab = () => {
     const { t: tCommon } = useTranslation()
     const [dialogOpen, setDialogOpen] = useState(false)
     const [search, setSearch] = useState('')
+    const [selectedCompanyId, setSelectedCompanyId] = useState('')
+    const [dateFrom, setDateFrom] = useState('')
+    const [dateTo, setDateTo] = useState('')
     const [statusFilter, setStatusFilter] = useState<SettlementStatus>('all')
     const [companyId, setCompanyId] = useState('')
     const [periodFrom, setPeriodFrom] = useState('')
@@ -25,6 +29,13 @@ export const SettlementsTab = () => {
         filtered,
         companyMap,
         companies,
+        clearFilters,
+        hasFilter,
+        page,
+        setPage,
+        totalPages,
+        totalItems,
+        pageSize,
         markPaid,
         createSettlement,
         isLoading,
@@ -32,7 +43,18 @@ export const SettlementsTab = () => {
         isMarkingPaid,
         isCreatingSettlement,
     } = useSettlementsTab({
-        dialogOpen, setDialogOpen, search, setSearch, statusFilter, setStatusFilter,
+        dialogOpen,
+        setDialogOpen,
+        search,
+        setSearch,
+        companyId: selectedCompanyId,
+        setCompanyId: setSelectedCompanyId,
+        dateFrom,
+        setDateFrom,
+        dateTo,
+        setDateTo,
+        statusFilter,
+        setStatusFilter,
     })
 
     useEffect(() => {
@@ -95,78 +117,99 @@ export const SettlementsTab = () => {
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('search_placeholder')}
                         className="w-full rounded-md border border-input bg-background pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                 </div>
+                <select
+                    value={selectedCompanyId}
+                    onChange={(event) => { setSelectedCompanyId(event.target.value); setPage(1) }}
+                    className="min-w-52 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                    <option value="">{t('filter_all_companies')}</option>
+                    {companies.map((company) => (
+                        <option key={company.busCompanyId} value={company.busCompanyId}>
+                            {company.name}
+                        </option>
+                    ))}
+                </select>
+                <div className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                    <input
+                        type="date"
+                        value={dateFrom}
+                        onChange={(event) => { setDateFrom(event.target.value); setPage(1) }}
+                        className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none"
+                    />
+                    <span className="text-muted-foreground">—</span>
+                    <input
+                        type="date"
+                        value={dateTo}
+                        onChange={(event) => { setDateTo(event.target.value); setPage(1) }}
+                        className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none"
+                    />
+                </div>
                 <div className="flex rounded-md border border-border overflow-hidden text-sm">
                     {statusOptions.map(([value, label]) => (
-                        <button key={value} onClick={() => setStatusFilter(value)}
+                        <button key={value} onClick={() => { setStatusFilter(value); setPage(1) }}
                             className={`px-3 py-2 ${statusFilter === value ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}>
                             {label}
                         </button>
                     ))}
                 </div>
+                {hasFilter && (
+                    <Button variant="outline" size="sm" onClick={clearFilters}>
+                        <X className="h-3.5 w-3.5" /> {tCommon('common.clear_filters')}
+                    </Button>
+                )}
                 <Button size="sm" onClick={openDialog}>
                     <Plus className="h-4 w-4" /> {t('create_settlement')}
                 </Button>
             </div>
 
-            {isLoading ? <p className="text-sm text-muted-foreground">{tCommon('common.loading')}</p> : null}
             {isError ? <p className="text-sm text-destructive">{tCommon('common.error')}</p> : null}
 
-            <div className="overflow-x-auto rounded-lg border border-border">
-                <table className="w-full text-sm">
-                    <thead className="bg-muted/50">
-                        <tr>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('settlements_table.code')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('settlements_table.company')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('settlements_table.period')}</th>
-                            <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('settlements_table.gross')}</th>
-                            <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('settlements_table.commission')}</th>
-                            <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('settlements_table.net')}</th>
-                            <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t('settlements_table.bookings')}</th>
-                            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('settlements_table.status')}</th>
-                            <th className="px-4 py-3" />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filtered.map(s => (
-                            <tr key={s.id} className="border-t border-border hover:bg-muted/30">
-                                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{s.referenceCode}</td>
-                                <td className="px-4 py-3 font-medium text-sm">{companyMap.get(s.companyId) ?? s.companyId}</td>
-                                <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                                    {formatDate(s.periodFrom)} — {formatDate(s.periodTo)}
-                                </td>
-                                <td className="px-4 py-3 text-right">{formatVnd(s.totalGross)}</td>
-                                <td className="px-4 py-3 text-right text-red-500">{formatVnd(s.totalCommission)}</td>
-                                <td className="px-4 py-3 text-right font-semibold text-green-600">{formatVnd(s.totalNet)}</td>
-                                <td className="px-4 py-3 text-center">{s.bookingCount}</td>
-                                <td className="px-4 py-3">
-                                    <Badge variant={s.status === 'paid' ? 'success' : 'warning'} className="text-xs">
-                                        {s.status === 'paid' ? t('filter_paid') : t('filter_pending')}
-                                    </Badge>
-                                </td>
-                                <td className="px-4 py-3">
-                                    <div className="flex items-center gap-2">
-                                        <button className="text-muted-foreground hover:text-foreground p-1" title={t('view_pdf')}>
-                                            <FileText className="h-4 w-4" />
-                                        </button>
-                                        {s.status === 'pending' && (
-                                            <button onClick={() => { void markPaid(s.id) }}
-                                                disabled={isMarkingPaid}
-                                                className="text-xs font-medium text-green-600 hover:text-green-700 border border-green-200 rounded px-2 py-1 hover:bg-green-50">
-                                                {t('mark_paid')}
-                                            </button>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                        {filtered.length === 0 && (
-                            <tr>
-                                <td colSpan={9} className="px-4 py-10 text-center text-muted-foreground">{t('no_settlements')}</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+            <PaginatedTable
+                data={filtered}
+                rowKey={s => s.id}
+                isLoading={isLoading}
+                emptyMessage={t('no_settlements')}
+                pagination={{ currentPage: page, totalPages, totalItems, pageSize, onPageChange: setPage }}
+                columns={[
+                    { id: 'code', header: t('settlements_table.code'), renderCell: s => <span className="font-mono text-xs text-muted-foreground">{s.referenceCode}</span> },
+                    { id: 'company', header: t('settlements_table.company'), renderCell: s => <span className="font-medium text-sm">{companyMap.get(s.companyId) ?? s.companyId}</span> },
+                    { id: 'period', header: t('settlements_table.period'), renderCell: s => <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(s.periodFrom)} — {formatDate(s.periodTo)}</span> },
+                    { id: 'gross', header: t('settlements_table.gross'), headerClassName: 'text-right', cellClassName: 'text-right', renderCell: s => formatVnd(s.totalGross) },
+                    { id: 'commission', header: t('settlements_table.commission'), headerClassName: 'text-right', cellClassName: 'text-right text-red-500', renderCell: s => formatVnd(s.totalCommission) },
+                    { id: 'net', header: t('settlements_table.net'), headerClassName: 'text-right', cellClassName: 'text-right font-semibold text-green-600', renderCell: s => formatVnd(s.totalNet) },
+                    { id: 'bookings', header: t('settlements_table.bookings'), headerClassName: 'text-center', cellClassName: 'text-center', renderCell: s => s.bookingCount },
+                    {
+                        id: 'status',
+                        header: t('settlements_table.status'),
+                        renderCell: s => (
+                            <Badge variant={s.status === 'paid' ? 'success' : 'warning'} className="text-xs">
+                                {s.status === 'paid' ? t('filter_paid') : t('filter_pending')}
+                            </Badge>
+                        ),
+                    },
+                    {
+                        id: 'actions',
+                        header: '',
+                        renderCell: s => (
+                            <div className="flex items-center gap-2">
+                                <button className="text-muted-foreground hover:text-foreground p-1" title={t('view_pdf')}>
+                                    <FileText className="h-4 w-4" />
+                                </button>
+                                {s.status === 'pending' && (
+                                    <button
+                                        onClick={() => { void markPaid(s.id) }}
+                                        disabled={isMarkingPaid}
+                                        className="text-xs font-medium text-green-600 hover:text-green-700 border border-green-200 rounded px-2 py-1 hover:bg-green-50"
+                                    >
+                                        {t('mark_paid')}
+                                    </button>
+                                )}
+                            </div>
+                        ),
+                    },
+                ]}
+            />
 
             <Dialog open={dialogOpen} onClose={closeDialog} title={t('create_settlement_title')}>
                 <div className="grid gap-4">

@@ -112,6 +112,7 @@
         "inactive": "Ngừng hoạt động",
         "locked": "Khoá",
         "scheduled": "Sắp khởi hành",
+        "on_way": "Đang trên đường",
         "in_progress": "Đang chạy",
         "expired": "Hết hạn",
         "reserved": "Đã giữ chỗ",
@@ -639,6 +640,8 @@
             "description": "Giám sát tất cả giao dịch đặt vé trên nền tảng",
             "company_title": "Quản lý đặt vé",
             "company_description": "Danh sách đặt vé của công ty",
+            "bookings": "đặt vé",
+            "filter_all_trips": "Tất cả chuyến",
             "search_placeholder": "Mã vé, tuyến, email, nhà xe...",
             "date_from": "Từ ngày",
             "date_to": "Đến ngày",
@@ -721,6 +724,7 @@
             "create_settlement": "Tạo quyết toán",
             "auto_calculate_info": "Hệ thống sẽ tự động tính toán tổng gross, hoa hồng, và net chuyển cho nhà xe trong kỳ kế toán.",
             "filter_all": "Tất cả",
+            "filter_all_companies": "Tất cả nhà xe",
             "filter_pending": "Chờ TT",
             "filter_paid": "Đã TT",
             "company_label": "Nhà xe",
@@ -1097,7 +1101,12 @@
                 "price_min": "Giá phải lớn hơn 0",
                 "seats_required": "Số ghế là bắt buộc",
                 "seats_min": "Phải có ít nhất 1 ghế"
-            }
+            },
+            "has_bookings": "Đã có đặt vé",
+            "cannot_edit_booked": "Không thể chỉnh sửa chuyến đã có đặt vé",
+            "cannot_delete_booked": "Không thể xóa chuyến đã có đặt vé",
+            "booking_info": "Thông tin đặt vé",
+            "select_seat_to_view": "Nhấn vào ghế để xem chi tiết"
         },
         "not_found": {
             "title": "Không tìm thấy trang",

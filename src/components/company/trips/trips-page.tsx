@@ -64,6 +64,7 @@ export const CompanyTripsPage = () => {
         arrivalTime: new Date(data.arrivalTime).toISOString(),
         basePrice: Number(data.basePrice),
         isPublished: data.isPublished,
+        status: data.status,
         seatPrices: data.seatPrices?.map((s: any) => ({ seatId: s.seatId, price: s.price })),
       }),
     onSuccess: () => {
@@ -135,10 +136,8 @@ export const CompanyTripsPage = () => {
           className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none"
         >
           <option value="all">{tCommon('status.all')}</option>
-          <option value="SCHEDULED">{tCommon('status.scheduled')}</option>
           <option value="ACTIVE">{tCommon('status.active')}</option>
-          <option value="COMPLETED">{tCommon('status.completed')}</option>
-          <option value="CANCELLED">{tCommon('status.cancelled')}</option>
+          <option value="INACTIVE">{tCommon('status.inactive')}</option>
         </select>
         {hasFilter && (
           <Button

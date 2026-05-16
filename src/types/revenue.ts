@@ -1,7 +1,7 @@
 import type { EPaymentMethod } from './booking'
 
 export interface IRevenue {
-    revenueId: string
+    id: string
     companyId: string
     bookingId: string
     grossAmount: number
@@ -9,6 +9,14 @@ export interface IRevenue {
     netAmount: number
     paymentType: EPaymentMethod
     createdAt: string
+}
+
+export interface IRevenueStats {
+    totalGross: number
+    totalCommission: number
+    totalNet: number
+    totalCount: number
+    daily: { date: string; gross: number; commission: number; net: number }[]
 }
 
 export interface ISettlement {

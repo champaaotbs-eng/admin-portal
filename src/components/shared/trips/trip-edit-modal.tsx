@@ -161,10 +161,8 @@ export const TripEditModal = ({ trip, open, onClose, onSubmit, isSubmitting, get
                             {...register('status')}
                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                         >
-                            <option value="SCHEDULED">{tCommon('status.scheduled')}</option>
                             <option value="ACTIVE">{tCommon('status.active')}</option>
-                            <option value="COMPLETED">{tCommon('status.completed')}</option>
-                            <option value="CANCELLED">{tCommon('status.cancelled')}</option>
+                            <option value="INACTIVE">{tCommon('status.inactive')}</option>
                         </select>
                     </div>
                 </div>

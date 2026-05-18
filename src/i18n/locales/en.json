@@ -102,7 +102,7 @@
         "customer": "Customer"
     },
     "status": {
-        "all": "All Status",
+        "all": "All statuses",
         "confirmed": "Confirmed",
         "pending": "Pending",
         "pending_payment": "Awaiting payment",
@@ -115,8 +115,7 @@
         "on_way": "On the way",
         "in_progress": "In progress",
         "expired": "Expired",
-        "reserved": "Reserved",
-        "all": "All statuses"
+        "reserved": "Reserved"
     },
     "payment_status": {
         "paid": "Paid",
@@ -125,7 +124,12 @@
         "failed": "Payment failed",
         "all": "All payments",
         "completed": "Completed",
-        "pending": "Pending"
+        "pending": "Pending",
+        "confirmed_on_board": "Confirmed on board"
+    },
+    "paymentMethod": {
+        "online": "Online",
+        "pay_on_board": "Pay on board"
     },
     "lang": {
         "switch": "Language"
@@ -674,7 +678,19 @@
                     "paid": "Paid",
                     "confirmed": "Confirmed",
                     "completed": "Completed"
-                }
+                },
+                "customer": "Customer",
+                "phone": "Phone",
+                "email": "Email",
+                "company": "Company",
+                "route": "Route",
+                "amount": "Amount",
+                "booking_date": "Booked on",
+                "payment_method": "Payment method",
+                "payment_status": "Payment status",
+                "collected_amount": "Collected amount",
+                "repay_amount": "Repay amount",
+                "confirm_time": "Time"
             }
         },
         "revenue": {

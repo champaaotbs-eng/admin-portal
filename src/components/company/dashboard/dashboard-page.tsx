@@ -2,32 +2,8 @@ import { Bus, Ticket, DollarSign, TrendingUp, MapPin, Clock } from 'lucide-react
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LineChart, DonutChart, HorizontalBarChart } from '@/components/ui/charts'
-import { MOCK_DAILY_REVENUES } from '@/data/mock-extended'
-import { formatVnd } from '@/utils/format'
+import { formatDateTime, formatVnd } from '@/utils/format'
 import { useCompanyDashboard } from './hooks/use-company-dashboard'
-
-const FLEET_STATS = [
-    { label: 'Xe hoat dong', value: 18, color: 'text-green-500' },
-    { label: 'Dang trong chuyen', value: 6, color: 'text-blue-500' },
-    { label: 'Cho bao duong', value: 2, color: 'text-orange-500' },
-    { label: 'Tam dung', value: 1, color: 'text-muted-foreground' },
-]
-
-const RECENT_TRIPS = [
-    { id: 't1', route: 'TP.HCM → Da Lat', departure: '2025-06-16 07:00', seats: 32, sold: 28, status: 'completed' },
-    { id: 't2', route: 'TP.HCM → Nha Trang', departure: '2025-06-16 08:30', seats: 40, sold: 35, status: 'in_progress' },
-    { id: 't3', route: 'TP.HCM → Vung Tau', departure: '2025-06-16 09:00', seats: 30, sold: 20, status: 'scheduled' },
-    { id: 't4', route: 'TP.HCM → Da Lat', departure: '2025-06-16 18:00', seats: 32, sold: 10, status: 'scheduled' },
-    { id: 't5', route: 'TP.HCM → Nha Trang', departure: '2025-06-16 19:30', seats: 40, sold: 14, status: 'scheduled' },
-]
-
-const ROUTE_REVENUE = [
-    { label: 'HCM→Da Lat', value: 45_000_000 },
-    { label: 'HCM→Nha Trang', value: 62_000_000 },
-    { label: 'HCM→Vung Tau', value: 28_000_000 },
-    { label: 'HCM→Can Tho', value: 18_000_000 },
-    { label: 'HCM→Phan Thiet', value: 14_000_000 },
-]
 
 const STATUS_COLORS: Record<string, string> = {
     completed: 'text-green-600 bg-green-50',
@@ -41,7 +17,18 @@ export const CompanyDashboardPage = () => {
     const { t: tTrips } = useTranslation('translation', { keyPrefix: 'pages.trips' })
     const { t: tFleet } = useTranslation('translation', { keyPrefix: 'pages.buses' })
     const { t: tCommon } = useTranslation()
-    const { weekRevenue, monthRevenue, confirmedToday, donutData } = useCompanyDashboard()
+    const {
+        weekRevenue,
+        monthRevenue,
+        confirmedToday,
+        totalBuses,
+        donutData,
+        routeRevenueSeries,
+        dailyRevenueSeries,
+        recentTrips,
+        isLoading,
+        isError,
+    } = useCompanyDashboard()
 
     return (
         <div className="space-y-6">
@@ -50,18 +37,17 @@ export const CompanyDashboardPage = () => {
                 <p className="text-sm text-muted-foreground">{t('description')}</p>
             </div>
 
-            {/* KPI Cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {[
                     { label: t('kpi_platform_revenue'), value: formatVnd(weekRevenue), icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10', trend: '+12%' },
                     { label: t('revenue_title'), value: formatVnd(monthRevenue), icon: TrendingUp, color: 'text-green-500', bg: 'bg-green-500/10', trend: '+8%' },
                     { label: t('kpi_bookings_today'), value: confirmedToday, icon: Ticket, color: 'text-purple-500', bg: 'bg-purple-500/10', trend: '+5%' },
-                    { label: tFleet('stats.total'), value: 27, icon: Bus, color: 'text-orange-500', bg: 'bg-orange-500/10', trend: null },
+                    { label: tFleet('stats.total'), value: totalBuses, icon: Bus, color: 'text-orange-500', bg: 'bg-orange-500/10', trend: null },
                 ].map(kpi => {
                     const Icon = kpi.icon
                     return (
                         <Card key={kpi.label}>
-                            <CardContent className="p-4 flex items-start gap-3">
+                            <CardContent className="flex items-start gap-3 p-4">
                                 <span className={`flex h-10 w-10 items-center justify-center rounded-lg ${kpi.bg}`}>
                                     <Icon className={`h-5 w-5 ${kpi.color}`} />
                                 </span>
@@ -69,7 +55,7 @@ export const CompanyDashboardPage = () => {
                                     <p className="text-xs text-muted-foreground">{kpi.label}</p>
                                     <p className="text-2xl font-bold">{kpi.value}</p>
                                     {kpi.trend && (
-                                        <p className="text-xs text-green-600 font-medium">{kpi.trend} {tCommon('common.prev')}</p>
+                                        <p className="text-xs font-medium text-green-600">{kpi.trend} {tCommon('common.prev')}</p>
                                     )}
                                 </div>
                             </CardContent>
@@ -79,10 +65,9 @@ export const CompanyDashboardPage = () => {
             </div>
 
             <div className="grid gap-4 lg:grid-cols-3">
-                {/* Fleet Status Donut */}
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
                             <Bus className="h-4 w-4 text-primary" /> {tFleet('table.status')}
                         </CardTitle>
                     </CardHeader>
@@ -91,30 +76,32 @@ export const CompanyDashboardPage = () => {
                     </CardContent>
                 </Card>
 
-                {/* Revenue by Route */}
                 <Card className="lg:col-span-2">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-primary" /> {t('chart_top_companies')}
+                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                            <MapPin className="h-4 w-4 text-primary" /> {t('chart_routes_revenue', { defaultValue: 'Revenue by route' })}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <HorizontalBarChart data={ROUTE_REVENUE} />
+                        {isLoading ? <p className="pb-2 text-sm text-muted-foreground">{tCommon('common.loading')}</p> : null}
+                        {isError ? <p className="pb-2 text-sm text-destructive">{tCommon('common.error')}</p> : null}
+                        <HorizontalBarChart data={routeRevenueSeries} formatValue={formatVnd} />
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Revenue trend */}
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">{t('chart_platform_revenue')}</CardTitle>
                 </CardHeader>
                 <CardContent>
+                    {isLoading ? <p className="pb-2 text-sm text-muted-foreground">{tCommon('common.loading')}</p> : null}
+                    {isError ? <p className="pb-2 text-sm text-destructive">{tCommon('common.error')}</p> : null}
                     <LineChart
-                        data={MOCK_DAILY_REVENUES as unknown as Record<string, string | number>[]}
+                        data={dailyRevenueSeries as unknown as Record<string, string | number>[]}
                         series={[
-                            { key: 'gross', label: 'Gross', color: '#3b82f6' },
-                            { key: 'net', label: 'Net', color: '#22c55e' },
+                            { key: 'gross', label: t('chart_gross', { defaultValue: 'Gross' }), color: '#3b82f6' },
+                            { key: 'net', label: t('chart_net', { defaultValue: 'Net' }), color: '#22c55e' },
                         ]}
                         height={220}
                         labelKey="label"
@@ -122,10 +109,9 @@ export const CompanyDashboardPage = () => {
                 </CardContent>
             </Card>
 
-            {/* Today's Trips */}
             <Card>
                 <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-sm font-medium">
                         <Clock className="h-4 w-4 text-primary" /> {t('kpi_trips_today')}
                     </CardTitle>
                 </CardHeader>
@@ -143,19 +129,19 @@ export const CompanyDashboardPage = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {RECENT_TRIPS.map(trip => (
+                                {recentTrips.map(trip => (
                                     <tr key={trip.id} className="border-b border-border last:border-0">
                                         <td className="py-2.5 font-medium">{trip.route}</td>
-                                        <td className="py-2.5 text-muted-foreground text-xs">{trip.departure}</td>
+                                        <td className="py-2.5 text-xs text-muted-foreground">{formatDateTime(trip.departureTime)}</td>
                                         <td className="py-2.5 text-center">{trip.seats}</td>
                                         <td className="py-2.5 text-center">{trip.sold}</td>
                                         <td className="py-2.5 text-center">
                                             <div className="flex items-center gap-2">
-                                                <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                                                    <div className="h-full bg-primary rounded-full" style={{ width: `${(trip.sold / trip.seats) * 100}%` }} />
+                                                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                                                    <div className="h-full rounded-full bg-primary" style={{ width: `${trip.seats > 0 ? (trip.sold / trip.seats) * 100 : 0}%` }} />
                                                 </div>
                                                 <span className="text-xs text-muted-foreground">
-                                                    {Math.round((trip.sold / trip.seats) * 100)}%
+                                                    {trip.seats > 0 ? Math.round((trip.sold / trip.seats) * 100) : 0}%
                                                 </span>
                                             </div>
                                         </td>
@@ -165,11 +151,20 @@ export const CompanyDashboardPage = () => {
                                                     ? tCommon('status.completed')
                                                     : trip.status === 'in_progress'
                                                         ? tCommon('status.in_progress')
-                                                        : tCommon('status.scheduled')}
+                                                        : trip.status === 'cancelled'
+                                                            ? tCommon('status.cancelled')
+                                                            : tCommon('status.scheduled')}
                                             </span>
                                         </td>
                                     </tr>
                                 ))}
+                                {recentTrips.length === 0 && (
+                                    <tr>
+                                        <td colSpan={6} className="py-6 text-center text-muted-foreground">
+                                            {tCommon('common.no_results')}
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>

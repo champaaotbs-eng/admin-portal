@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { VndInput } from '@/components/ui/vnd-input'
 import { RouteDirection } from '@/components/shared/route-direction'
 import { tripSchema, type TripFormData } from '../validation-schema'
 import { getAllRoutes } from 'services/company/routes.service'
@@ -214,7 +215,7 @@ export const TripForm = ({ onSubmit, onCancel, defaultValues, isSubmitting, excl
             </div>
 
             <Controller name="basePrice" control={control} render={({ field }) => (
-                <Input {...field} label={t('form.price')} type="number" placeholder="220000" error={errors.basePrice?.message} />
+                <VndInput {...field} label={t('form.price')} placeholder="220.000" error={errors.basePrice?.message} />
             )} />
 
             {seats.length > 0 && (

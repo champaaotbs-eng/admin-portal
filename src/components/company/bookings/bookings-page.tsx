@@ -1,24 +1,20 @@
-import { useState, useMemo } from 'react'
-import { Search, X, Eye } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { Search, X, Eye, CheckCircle2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/badge'
 import { Dialog } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { formatDate, formatVnd } from '@/utils/format'
+import { VndInput } from '@/components/ui/vnd-input'
+import { formatDateTime, formatVnd } from '@/utils/format'
+import { getBookingStatusVariant, getPaymentMethodLabelKey, getPaymentMethodVariant, getPaymentStatusLabelKey, getPaymentStatusVariant, normalizeStatusKey } from '@/utils/booking-status'
 import { getCompanyBookings, getBookingSeatLayout } from '@/services/company/booking.service'
+import { confirmCompanyPaymentOnBoard, getCompanyPaymentByBookingId } from '@/services/company/payment.service'
 import { useAuthStore } from '@/store/auth.store'
 import type { IBooking } from '@/types/booking'
-
-const STATUS_VARIANTS: Record<string, 'success' | 'warning' | 'destructive' | 'secondary'> = {
-    confirmed: 'success',
-    completed: 'success',
-    reserved: 'warning',
-    pending_payment: 'warning',
-    cancelled: 'destructive',
-    expired: 'secondary',
-}
-
+import { EBookingStatus, EPaymentMethod } from '@/types/booking'
+import type { IPayment } from '@/types/payment'
+import { EPaymentStatus } from '@/types/payment'
 const readRows = <T,>(payload: unknown): T[] => {
     if (!payload || typeof payload !== 'object') return []
     const p = payload as Record<string, unknown>
@@ -49,6 +45,16 @@ const formatTripOption = (b: IBooking) => {
     return `${dateStr}${from && to ? ` · ${from} → ${to}` : ''}`
 }
 
+const toDateTimeLocalValue = (input: Date | string) => {
+    const date = new Date(input)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
 function SeatLayoutGrid({ bookingId }: { bookingId: string }) {
     const { data, isLoading } = useQuery({
         queryKey: ['booking-seat-layout', bookingId],
@@ -56,15 +62,41 @@ function SeatLayoutGrid({ bookingId }: { bookingId: string }) {
         select: (res) => (res as any).data ?? res,
         staleTime: 60_000,
     })
+    const [activeFloor, setActiveFloor] = useState<number | null>(null)
+    const floors = [...new Set((data ?? []).map((s: any) => s.floor))].sort()
+
+    useEffect(() => {
+        if (!floors.length) return
+        setActiveFloor((current) => (current && floors.includes(current) ? current : floors[0]))
+    }, [bookingId, floors])
 
     if (isLoading) return <p className="text-xs text-muted-foreground">Loading...</p>
     if (!data?.length) return <p className="text-xs text-muted-foreground">No seat layout</p>
 
-    const floors = [...new Set(data.map((s: any) => s.floor))].sort()
+    const currentFloor = activeFloor && floors.includes(activeFloor) ? activeFloor : floors[0]
+    const visibleFloors = floors.length > 1 ? [currentFloor] : floors
 
     return (
         <div className="space-y-3">
-            {floors.map((floor: number) => {
+            {floors.length > 1 && (
+                <div className="flex flex-wrap gap-2">
+                    {floors.map((floor: number) => (
+                        <button
+                            key={floor}
+                            type="button"
+                            onClick={() => setActiveFloor(floor)}
+                            className={
+                                currentFloor === floor
+                                    ? 'rounded-lg border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground'
+                                    : 'rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent'
+                            }
+                        >
+                            Floor {floor}
+                        </button>
+                    ))}
+                </div>
+            )}
+            {visibleFloors.map((floor: number) => {
                 const floorSeats = data.filter((s: any) => s.floor === floor)
                 const maxRow = Math.max(...floorSeats.map((s: any) => s.row))
                 const maxCol = Math.max(...floorSeats.map((s: any) => s.col))
@@ -112,11 +144,16 @@ export function CompanyBookingsPage() {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.bookings' })
     const { t: tCommon } = useTranslation()
     const { admin } = useAuthStore()
+    const qc = useQueryClient()
     const busCompanyId = admin?.busCompanyId ?? ''
 
     const [search, setSearch] = useState('')
     const [tripFilter, setTripFilter] = useState('all')
     const [selectedBooking, setSelectedBooking] = useState<IBooking | null>(null)
+    const [confirmationNote, setConfirmationNote] = useState('')
+    const [collectedAmountInput, setCollectedAmountInput] = useState('')
+    const [confirmedAtInput, setConfirmedAtInput] = useState('')
+    const [confirmFeedback, setConfirmFeedback] = useState<string | null>(null)
     const [page, setPage] = useState(1)
     const PER_PAGE = 15
 
@@ -127,6 +164,48 @@ export function CompanyBookingsPage() {
         enabled: !!busCompanyId,
         staleTime: 30_000,
     })
+
+    const selectedBookingId = (selectedBooking as any)?.id ?? selectedBooking?.bookingId ?? ''
+    const paymentQuery = useQuery({
+        queryKey: ['company-booking-payment', selectedBookingId],
+        queryFn: () => getCompanyPaymentByBookingId(selectedBookingId),
+        select: (res) => (res.data ?? res) as IPayment,
+        enabled: !!selectedBookingId,
+        staleTime: 30_000,
+    })
+
+    const confirmOnBoardMutation = useMutation({
+        mutationFn: ({
+            paymentId,
+            collectedAmount,
+            repayAmount,
+            confirmedAt,
+            note,
+        }: {
+            paymentId: string
+            collectedAmount: number
+            repayAmount: number
+            confirmedAt: string
+            note?: string
+        }) =>
+            confirmCompanyPaymentOnBoard(paymentId, { collectedAmount, repayAmount, confirmedAt, note }),
+        onSuccess: () => {
+            setConfirmFeedback(t('detail.confirm_success', { defaultValue: 'Payment confirmed. Booking moved to confirmed.' }))
+            setSelectedBooking((current) => current ? { ...current, status: EBookingStatus.CONFIRMED } : current)
+            void qc.invalidateQueries({ queryKey: ['company-bookings', busCompanyId] })
+            void qc.invalidateQueries({ queryKey: ['company-booking-payment', selectedBookingId] })
+        },
+        onError: (error: any) => {
+            setConfirmFeedback(error?.localizedMessage || error?.message || tCommon('common.error'))
+        },
+    })
+
+    useEffect(() => {
+        setConfirmationNote('')
+        setCollectedAmountInput(selectedBooking ? String(Number(selectedBooking.totalAmount)) : '')
+        setConfirmedAtInput(toDateTimeLocalValue(new Date()))
+        setConfirmFeedback(null)
+    }, [selectedBookingId])
 
     const tripOptions = useMemo(() => {
         const seen = new Set<string>()
@@ -154,6 +233,19 @@ export function CompanyBookingsPage() {
         }
         return list
     }, [bookings, tripFilter, search])
+
+    const canConfirmOnBoardPayment = Boolean(
+        selectedBooking &&
+        paymentQuery.data &&
+        selectedBooking.paymentMethod === EPaymentMethod.PAY_ON_BOARD &&
+        selectedBooking.status === EBookingStatus.RESERVED &&
+        paymentQuery.data.status === EPaymentStatus.PENDING,
+    )
+    const bookingTotalAmount = Number(selectedBooking?.totalAmount ?? 0)
+    const collectedAmount = Number(collectedAmountInput || 0)
+    const repayAmount = Math.max(0, Number((collectedAmount - bookingTotalAmount).toFixed(2)))
+    const isCollectedAmountValid = collectedAmount >= bookingTotalAmount
+    const isConfirmedAtValid = Boolean(confirmedAtInput)
 
     const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE)
     const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE))
@@ -223,11 +315,11 @@ export function CompanyBookingsPage() {
                                     <td className="px-4 py-3 font-mono text-xs font-medium">{b.bookingCode}</td>
                                     <td className="px-4 py-3 text-xs max-w-40 truncate" title={routeLabel}>{routeLabel}</td>
                                     <td className="px-4 py-3 text-xs">{passenger}</td>
-                                    <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{formatDate(b.createdAt)}</td>
+                                    <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{formatDateTime(b.createdAt)}</td>
                                     <td className="px-4 py-3 text-xs text-muted-foreground">{seatCodes}</td>
                                     <td className="px-4 py-3 text-right text-xs font-medium">{formatVnd(b.totalAmount)}</td>
                                     <td className="px-4 py-3">
-                                        <Badge variant={STATUS_VARIANTS[status] ?? 'secondary'} className="text-xs">
+                                        <Badge variant={getBookingStatusVariant(status)} className="text-xs">
                                             {tCommon(`status.${status}`, { defaultValue: status })}
                                         </Badge>
                                     </td>
@@ -260,21 +352,21 @@ export function CompanyBookingsPage() {
             )}
 
             {selectedBooking && (
-                <Dialog open onClose={() => setSelectedBooking(null)} title={t('detail.title', { code: selectedBooking.bookingCode })} className="max-w-lg">
+                <Dialog open onClose={() => setSelectedBooking(null)} title={t('detail.title', { code: selectedBooking.bookingCode })} className="max-w-4xl">
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
                             <span className="font-mono text-lg font-bold">{selectedBooking.bookingCode}</span>
-                            <Badge variant={STATUS_VARIANTS[selectedBooking.status.toString().toLowerCase()] ?? 'secondary'}>
-                                {tCommon(`status.${selectedBooking.status.toString().toLowerCase()}`, { defaultValue: selectedBooking.status })}
+                            <Badge variant={getBookingStatusVariant(selectedBooking.status)}>
+                                {tCommon(`status.${normalizeStatusKey(selectedBooking.status)}`, { defaultValue: selectedBooking.status })}
                             </Badge>
                         </div>
                         <div className="rounded-lg bg-muted/40 p-3 space-y-2 text-sm">
                             {[
-                                [t('table.customer'), (selectedBooking as any).passengerName ?? (selectedBooking as any).user?.fullName ?? '—'],
-                                ['Phone', (selectedBooking as any).passengerPhone ?? '—'],
-                                ['Email', (selectedBooking as any).passengerEmail ?? (selectedBooking as any).user?.email ?? '—'],
-                                [t('table.amount'), formatVnd(selectedBooking.totalAmount)],
-                                [t('table.booking_date'), formatDate(selectedBooking.createdAt)],
+                                [t('detail.customer', { defaultValue: t('table.customer') }), (selectedBooking as any).passengerName ?? (selectedBooking as any).user?.fullName ?? '-'],
+                                [t('detail.phone', { defaultValue: 'Phone' }), (selectedBooking as any).passengerPhone ?? '-'],
+                                [t('detail.email', { defaultValue: 'Email' }), (selectedBooking as any).passengerEmail ?? (selectedBooking as any).user?.email ?? '-'],
+                                [t('detail.amount', { defaultValue: t('table.amount') }), formatVnd(selectedBooking.totalAmount)],
+                                [t('detail.booking_date', { defaultValue: t('table.booking_date') }), formatDateTime(selectedBooking.createdAt)],
                             ].map(([label, value]) => (
                                 <div key={label} className="flex justify-between">
                                     <span className="text-muted-foreground">{label}</span>
@@ -282,10 +374,137 @@ export function CompanyBookingsPage() {
                                 </div>
                             ))}
                         </div>
+                        <div className="rounded-lg bg-muted/40 p-3 space-y-2 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">{t('detail.payment_method', { defaultValue: 'Payment method' })}</span>
+                                <Badge variant={getPaymentMethodVariant(selectedBooking.paymentMethod)}>
+                                    {tCommon(getPaymentMethodLabelKey(selectedBooking.paymentMethod), { defaultValue: selectedBooking.paymentMethod })}
+                                </Badge>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">{t('detail.payment_status', { defaultValue: 'Payment status' })}</span>
+                                {paymentQuery.isLoading ? (
+                                    <span className="font-medium">{tCommon('common.loading')}</span>
+                                ) : paymentQuery.data?.status ? (
+                                    <Badge variant={getPaymentStatusVariant(paymentQuery.data.status)}>
+                                        {tCommon(getPaymentStatusLabelKey(paymentQuery.data.status), { defaultValue: paymentQuery.data.status })}
+                                    </Badge>
+                                ) : (
+                                    <span className="font-medium">-</span>
+                                )}
+                            </div>
+                            {paymentQuery.data?.collectedAmount !== null && paymentQuery.data?.collectedAmount !== undefined && (
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">{t('detail.collected_amount', { defaultValue: 'Collected amount' })}</span>
+                                    <span className="font-medium">{formatVnd(Number(paymentQuery.data.collectedAmount))}</span>
+                                </div>
+                            )}
+                            {paymentQuery.data?.repayAmount !== null && paymentQuery.data?.repayAmount !== undefined && (
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">{t('detail.repay_amount', { defaultValue: 'Repay amount' })}</span>
+                                    <span className="font-medium">{formatVnd(Number(paymentQuery.data.repayAmount))}</span>
+                                </div>
+                            )}
+                            {paymentQuery.data?.confirmedAt && (
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">{t('detail.confirm_time', { defaultValue: 'Time' })}</span>
+                                    <span className="font-medium">{formatDateTime(paymentQuery.data.confirmedAt)}</span>
+                                </div>
+                            )}
+                        </div>
                         <div>
                             <p className="mb-2 text-sm font-medium">{t('table.seats')}</p>
                             <SeatLayoutGrid bookingId={(selectedBooking as any).id ?? selectedBooking.bookingId} />
                         </div>
+                        {canConfirmOnBoardPayment && paymentQuery.data && (
+                            <div className="rounded-lg border border-border p-4 space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                                    <p className="text-sm font-medium">
+                                        {t('detail.confirm_on_board_title', { defaultValue: 'Confirm pay-on-board payment' })}
+                                    </p>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {t('detail.confirm_on_board_desc', { defaultValue: 'Mark this reserved booking as paid and move it to confirmed.' })}
+                                </p>
+                                <div className="grid gap-3 md:grid-cols-2">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-medium text-muted-foreground">
+                                            {t('detail.amount_received', { defaultValue: 'Amount received from customer' })}
+                                        </label>
+                                        <VndInput
+                                            value={collectedAmountInput}
+                                            onChange={(e) => setCollectedAmountInput(e.target.value)}
+                                            placeholder="100.000"
+                                            inputClassName="bg-background"
+                                        />
+                                        {!isCollectedAmountValid && (
+                                            <p className="text-xs text-destructive">
+                                                {t('detail.amount_received_error', { defaultValue: 'Received amount must be at least the booking total.' })}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-medium text-muted-foreground">
+                                            {t('detail.repay_amount', { defaultValue: 'Repay amount' })}
+                                        </label>
+                                        <VndInput
+                                            value={repayAmount}
+                                            readOnly
+                                            inputClassName="bg-muted text-muted-foreground"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5 md:col-span-2">
+                                        <label className="text-xs font-medium text-muted-foreground">
+                                            {t('detail.confirm_time', { defaultValue: 'Time' })}
+                                        </label>
+                                        <input
+                                            type="datetime-local"
+                                            value={confirmedAtInput}
+                                            onChange={(e) => setConfirmedAtInput(e.target.value)}
+                                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-muted-foreground">
+                                        {t('detail.confirm_note', { defaultValue: 'Note' })}
+                                    </label>
+                                    <textarea
+                                        value={confirmationNote}
+                                        onChange={(e) => setConfirmationNote(e.target.value)}
+                                        rows={3}
+                                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                        placeholder={t('detail.confirm_note_placeholder', { defaultValue: 'Optional payment note' })}
+                                    />
+                                </div>
+                                {confirmFeedback && (
+                                    <p className="text-xs text-muted-foreground">{confirmFeedback}</p>
+                                )}
+                                <Button
+                                    className="w-full"
+                                    loading={confirmOnBoardMutation.isPending}
+                                    onClick={() => {
+                                        setConfirmFeedback(null)
+                                        const paymentId = paymentQuery.data.paymentId || paymentQuery.data.id
+                                        if (!paymentId) {
+                                            setConfirmFeedback(t('detail.confirm_payment_missing', { defaultValue: 'Payment record is missing. Reload booking details and try again.' }))
+                                            return
+                                        }
+                                        confirmOnBoardMutation.mutate({
+                                            paymentId,
+                                            collectedAmount,
+                                            repayAmount,
+                                            confirmedAt: new Date(confirmedAtInput).toISOString(),
+                                            note: confirmationNote.trim() || undefined,
+                                        })
+                                    }}
+                                    disabled={!isCollectedAmountValid || !isConfirmedAtValid}
+                                >
+                                    {t('detail.confirm_on_board_cta', { defaultValue: 'Confirm payment' })}
+                                </Button>
+                            </div>
+                        )}
                         <Button variant="outline" className="w-full" onClick={() => setSelectedBooking(null)}>{tCommon('common.close')}</Button>
                     </div>
                 </Dialog>

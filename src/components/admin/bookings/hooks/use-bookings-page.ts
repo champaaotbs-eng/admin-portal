@@ -1,5 +1,6 @@
 import { useMemo, type Dispatch, type SetStateAction } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { derivePaymentStatus, normalizeBookingStatus, normalizePaymentMethod } from '@/utils/booking-status'
 import { getAdminBookings } from 'services/admins/booking.service'
 import type { IBooking } from 'types/booking'
 
@@ -50,39 +51,6 @@ const readPaginationRows = <T,>(payload: unknown): T[] => {
     return []
 }
 
-const normalizeBookingStatus = (status: unknown): AdminBookingRow['status'] => {
-    const normalized = String(status ?? '').toLowerCase()
-
-    if (normalized === 'pending') return 'pending_payment'
-    if (normalized === 'pending_payment') return 'pending_payment'
-    if (normalized === 'reserved') return 'reserved'
-    if (normalized === 'confirmed') return 'confirmed'
-    if (normalized === 'cancelled') return 'cancelled'
-    if (normalized === 'expired') return 'expired'
-    if (normalized === 'completed') return 'completed'
-
-    return 'pending_payment'
-}
-
-const normalizePaymentMethod = (method: unknown): AdminBookingRow['paymentMethod'] => {
-    const normalized = String(method ?? '').toLowerCase()
-    if (normalized === 'pay_on_board') return 'pay_on_board'
-    return 'online'
-}
-
-const normalizePaymentStatus = (booking: IBooking): AdminBookingRow['paymentStatus'] => {
-    const paymentStatus = String((booking as unknown as { payment?: { status?: string } }).payment?.status ?? '').toUpperCase()
-
-    if (paymentStatus === 'PAID' || paymentStatus === 'CONFIRMED_ON_BOARD') return 'paid'
-    if (paymentStatus === 'REFUNDED') return 'refunded'
-
-    const bookingStatus = normalizeBookingStatus(booking.status)
-    if (bookingStatus === 'confirmed' || bookingStatus === 'completed') return 'paid'
-    if (bookingStatus === 'cancelled') return 'refunded'
-
-    return 'unpaid'
-}
-
 const toBookingRow = (booking: IBooking): AdminBookingRow => {
     const trip = (booking as unknown as { trip?: Record<string, unknown> }).trip
     const route = (trip?.route as Record<string, unknown> | undefined)
@@ -105,9 +73,13 @@ const toBookingRow = (booking: IBooking): AdminBookingRow => {
         bookingCode: booking.bookingCode,
         tripId: booking.tripId,
         totalAmount: booking.totalAmount,
-        status: normalizeBookingStatus(booking.status),
-        paymentMethod: normalizePaymentMethod(booking.paymentMethod),
-        paymentStatus: normalizePaymentStatus(booking),
+        status: normalizeBookingStatus(booking.status) as AdminBookingRow['status'],
+        paymentMethod: normalizePaymentMethod(booking.paymentMethod) as AdminBookingRow['paymentMethod'],
+        paymentStatus: derivePaymentStatus(
+            (booking as unknown as { payment?: { status?: string } }).payment?.status,
+            booking.status,
+            'booking-filter',
+        ) as AdminBookingRow['paymentStatus'],
         createdAt: booking.createdAt,
         userEmail:
             (user?.email as string | undefined)

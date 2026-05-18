@@ -3,33 +3,21 @@ import { CheckCircle2, Clock, Calendar, User, Phone, Mail } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
+import {
+    getBookingStatusLabelKey,
+    getBookingStatusVariant,
+    getPaymentStatusLabelKey,
+    getPaymentStatusVariant,
+} from '@/utils/booking-status'
 import { formatDate, formatVnd } from '@/utils/format'
 import type { AdminBookingRow } from '../hooks/use-bookings-page'
 
 export function statusBadge(status: string, t: (k: string) => string) {
-    const map: Record<string, 'success' | 'destructive' | 'warning' | 'secondary'> = {
-        confirmed: 'success',
-        paid: 'success',
-        cancelled: 'destructive',
-        expired: 'secondary',
-        pending: 'warning',
-        pending_payment: 'warning',
-    }
-    const variant = map[status] ?? 'secondary'
-    return <Badge variant={variant} className="text-xs whitespace-nowrap">{t(`status.${status}`, { defaultValue: status })}</Badge>
+    return <Badge variant={getBookingStatusVariant(status)} className="text-xs whitespace-nowrap">{t(getBookingStatusLabelKey(status), { defaultValue: status })}</Badge>
 }
 
 export function paymentBadge(status: string, t: (k: string) => string) {
-    const map: Record<string, 'success' | 'destructive' | 'warning' | 'secondary'> = {
-        paid: 'success',
-        unpaid: 'warning',
-        pending: 'warning',
-        completed: 'success',
-        refunded: 'secondary',
-        failed: 'destructive',
-    }
-    const variant = map[status] ?? 'secondary'
-    return <Badge variant={variant} className="text-xs whitespace-nowrap">{t(`payment_status.${status}`, { defaultValue: status })}</Badge>
+    return <Badge variant={getPaymentStatusVariant(status)} className="text-xs whitespace-nowrap">{t(getPaymentStatusLabelKey(status), { defaultValue: status })}</Badge>
 }
 
 export const BookingDetailModal = ({ booking, onClose }: { booking: AdminBookingRow; onClose: () => void }) => {

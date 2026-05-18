@@ -115,8 +115,7 @@
         "on_way": "Đang trên đường",
         "in_progress": "Đang chạy",
         "expired": "Hết hạn",
-        "reserved": "Đã giữ chỗ",
-        "all": "Tất cả trạng thái"
+        "reserved": "Đã giữ chỗ"
     },
     "payment_status": {
         "paid": "Đã thanh toán",
@@ -125,7 +124,12 @@
         "failed": "Thanh toán lỗi",
         "all": "Tất cả thanh toán",
         "completed": "Đã hoàn thành",
-        "pending": "Chờ xử lý"
+        "pending": "Chờ xử lý",
+        "confirmed_on_board": "Đã xác nhận trên xe"
+    },
+    "paymentMethod": {
+        "online": "Thanh toán trực tuyến",
+        "pay_on_board": "Thanh toán trên xe"
     },
     "lang": {
         "switch": "Ngôn ngữ"
@@ -674,7 +678,19 @@
                     "paid": "Thanh toán",
                     "confirmed": "Xác nhận",
                     "completed": "Hoàn thành"
-                }
+                },
+                "customer": "Kh?ch h?ng",
+                "phone": "Phone",
+                "email": "Email",
+                "company": "Nhà xe",
+                "route": "Tuyến xe",
+                "amount": "Tiền",
+                "booking_date": "Ngày đặt",
+                "payment_method": "Phương thức thanh toán",
+                "payment_status": "Trạng thái thanh toán",
+                "collected_amount": "Tiền đã thu",
+                "repay_amount": "Tiền trả lại",
+                "confirm_time": "Thời gian"
             }
         },
         "revenue": {

@@ -1,6 +1,7 @@
 import type { EPaymentMethod } from './booking'
 
 export interface IPayment {
+    id?: string
     paymentId: string
     bookingId: string
     paymentType: EPaymentMethod
@@ -12,6 +13,7 @@ export interface IPayment {
     confirmedAt?: string | null
     confirmationNote?: string | null
     collectedAmount?: number | null
+    repayAmount?: number | null
     amount: number
     status: EPaymentStatus
     transactionCode: string | null

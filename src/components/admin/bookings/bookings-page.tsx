@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Search, X, Eye } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
@@ -6,22 +6,15 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PaginatedTable } from '@/components/shared/pagination-table'
 import { RouteDirection } from '@/components/shared/route-direction'
-import { formatDate, formatVnd } from '@/utils/format'
+import { getBookingStatusVariant, getPaymentMethodLabelKey, getPaymentMethodVariant, getPaymentStatusLabelKey, getPaymentStatusVariant, normalizeStatusKey } from '@/utils/booking-status'
+import { formatDateTime, formatVnd } from '@/utils/format'
 import { getAdminBookings } from 'services/admins/booking.service'
 import { getBookingSeatLayout } from 'services/company/booking.service'
+import { getCompanyPaymentByBookingId } from 'services/company/payment.service'
 import type { IBooking } from 'types/booking'
+import type { IPayment } from '@/types/payment'
 import { Dialog } from '@/components/ui/dialog'
-
 const PAGE_SIZE = 15
-
-const STATUS_VARIANTS: Record<string, 'success' | 'warning' | 'destructive' | 'secondary'> = {
-    confirmed: 'success',
-    completed: 'success',
-    reserved: 'warning',
-    pending_payment: 'warning',
-    cancelled: 'destructive',
-    expired: 'secondary',
-}
 
 const readRows = <T,>(payload: unknown): T[] => {
     if (!payload || typeof payload !== 'object') return []
@@ -52,12 +45,40 @@ function SeatLayoutGrid({ bookingId }: { bookingId: string }) {
         select: (res) => (res as any).data ?? res,
         staleTime: 60_000,
     })
+    const [activeFloor, setActiveFloor] = useState<number | null>(null)
+    const floors = [...new Set((data ?? []).map((s: any) => s.floor))].sort()
+
+    useEffect(() => {
+        if (!floors.length) return
+        setActiveFloor((current) => (current && floors.includes(current) ? current : floors[0]))
+    }, [bookingId, floors])
+
     if (isLoading) return <p className="text-xs text-muted-foreground">Loading...</p>
     if (!data?.length) return <p className="text-xs text-muted-foreground">No seat layout</p>
-    const floors = [...new Set(data.map((s: any) => s.floor))].sort()
+    const currentFloor = activeFloor && floors.includes(activeFloor) ? activeFloor : floors[0]
+    const visibleFloors = floors.length > 1 ? [currentFloor] : floors
+
     return (
         <div className="space-y-3">
-            {floors.map((floor: number) => {
+            {floors.length > 1 && (
+                <div className="flex flex-wrap gap-2">
+                    {floors.map((floor: number) => (
+                        <button
+                            key={floor}
+                            type="button"
+                            onClick={() => setActiveFloor(floor)}
+                            className={
+                                currentFloor === floor
+                                    ? 'rounded-lg border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground'
+                                    : 'rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent'
+                            }
+                        >
+                            Floor {floor}
+                        </button>
+                    ))}
+                </div>
+            )}
+            {visibleFloors.map((floor: number) => {
                 const floorSeats = data.filter((s: any) => s.floor === floor)
                 const maxRow = Math.max(...floorSeats.map((s: any) => s.row))
                 const maxCol = Math.max(...floorSeats.map((s: any) => s.col))
@@ -91,10 +112,18 @@ export const AdminBookingsPage = () => {
     const [search, setSearch] = useState('')
     const [page, setPage] = useState(1)
     const [selectedBooking, setSelectedBooking] = useState<IBooking | null>(null)
+    const selectedBookingId = (selectedBooking as any)?.id ?? selectedBooking?.bookingId ?? ''
 
     const { data, isLoading } = useQuery({
         queryKey: ['admin-bookings', page, search],
         queryFn: () => getAdminBookings({ page, limit: PAGE_SIZE, search: search || undefined }),
+    })
+    const paymentQuery = useQuery({
+        queryKey: ['admin-booking-payment', selectedBookingId],
+        queryFn: () => getCompanyPaymentByBookingId(selectedBookingId),
+        select: (res) => (res.data ?? res) as IPayment,
+        enabled: !!selectedBookingId,
+        staleTime: 30_000,
     })
 
     const rows = readRows<IBooking>(data)
@@ -161,7 +190,7 @@ export const AdminBookingsPage = () => {
                     },
                     {
                         id: 'date', header: t('table.booking_date'),
-                        renderCell: (b) => <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(b.createdAt)}</span>,
+                        renderCell: (b) => <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDateTime(b.createdAt)}</span>,
                     },
                     {
                         id: 'seats', header: t('table.seats'),
@@ -178,7 +207,7 @@ export const AdminBookingsPage = () => {
                         id: 'status', header: t('table.booking_status'),
                         renderCell: (b) => {
                             const status = b.status.toString().toLowerCase()
-                            return <Badge variant={STATUS_VARIANTS[status] ?? 'secondary'} className="text-xs">{tCommon(`status.${status}`, { defaultValue: status })}</Badge>
+                            return <Badge variant={getBookingStatusVariant(status)} className="text-xs">{tCommon(`status.${status}`, { defaultValue: status })}</Badge>
                         },
                     },
                     {
@@ -193,27 +222,27 @@ export const AdminBookingsPage = () => {
             />
 
             {selectedBooking && (
-                <Dialog open onClose={() => setSelectedBooking(null)} title={t('detail.title', { code: selectedBooking.bookingCode })} className="max-w-lg">
+                <Dialog open onClose={() => setSelectedBooking(null)} title={t('detail.title', { code: selectedBooking.bookingCode })} className="max-w-4xl">
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
                             <span className="font-mono text-lg font-bold">{selectedBooking.bookingCode}</span>
-                            <Badge variant={STATUS_VARIANTS[selectedBooking.status.toString().toLowerCase()] ?? 'secondary'}>
-                                {tCommon(`status.${selectedBooking.status.toString().toLowerCase()}`, { defaultValue: selectedBooking.status })}
+                            <Badge variant={getBookingStatusVariant(selectedBooking.status)}>
+                                {tCommon(`status.${normalizeStatusKey(selectedBooking.status)}`, { defaultValue: selectedBooking.status })}
                             </Badge>
                         </div>
                         <div className="rounded-lg bg-muted/40 p-3 space-y-2 text-sm">
                             {([
-                                [t('table.customer'), (selectedBooking as any).passengerName ?? (selectedBooking as any).user?.fullName ?? '—'],
-                                ['Phone', (selectedBooking as any).passengerPhone ?? '—'],
-                                ['Email', (selectedBooking as any).passengerEmail ?? (selectedBooking as any).user?.email ?? '—'],
-                                [t('table.company'), (selectedBooking as any).tripInfo?.busCompanyName ?? '—'],
-                                [t('table.route'), (() => { const ti = (selectedBooking as any).tripInfo; return ti?.fromLocationName && ti?.toLocationName ? `${ti.fromLocationName} → ${ti.toLocationName}` : '—' })()],
-                                [t('table.amount'), formatVnd(selectedBooking.totalAmount)],
-                                [t('table.booking_date'), formatDate(selectedBooking.createdAt)],
+                                [t('detail.customer', { defaultValue: t('table.customer') }), (selectedBooking as any).passengerName ?? (selectedBooking as any).user?.fullName ?? '-'],
+                                [t('detail.phone', { defaultValue: 'Phone' }), (selectedBooking as any).passengerPhone ?? '-'],
+                                [t('detail.email', { defaultValue: 'Email' }), (selectedBooking as any).passengerEmail ?? (selectedBooking as any).user?.email ?? '-'],
+                                [t('detail.company', { defaultValue: t('table.company') }), (selectedBooking as any).tripInfo?.busCompanyName ?? '-'],
+                                [t('detail.route', { defaultValue: t('table.route') }), (() => { const ti = (selectedBooking as any).tripInfo; return ti?.fromLocationName && ti?.toLocationName ? `${ti.fromLocationName} -> ${ti.toLocationName}` : '-' })()],
+                                [t('detail.amount', { defaultValue: t('table.amount') }), formatVnd(selectedBooking.totalAmount)],
+                                [t('detail.booking_date', { defaultValue: t('table.booking_date') }), formatDateTime(selectedBooking.createdAt)],
                             ] as [string, string][]).map(([label, value]) => (
                                 <div key={label} className="flex justify-between">
                                     <span className="text-muted-foreground">{label}</span>
-                                    {label === t('table.route') ? (
+                                    {label === t('detail.route', { defaultValue: t('table.route') }) ? (
                                         <RouteDirection
                                             pickup={(selectedBooking as any).tripInfo?.fromLocationName}
                                             dropoff={(selectedBooking as any).tripInfo?.toLocationName}
@@ -225,6 +254,44 @@ export const AdminBookingsPage = () => {
                                     )}
                                 </div>
                             ))}
+                        </div>
+                        <div className="rounded-lg bg-muted/40 p-3 space-y-2 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">{t('detail.payment_method', { defaultValue: 'Payment method' })}</span>
+                                <Badge variant={getPaymentMethodVariant(selectedBooking.paymentMethod)}>
+                                    {tCommon(getPaymentMethodLabelKey(selectedBooking.paymentMethod), { defaultValue: selectedBooking.paymentMethod })}
+                                </Badge>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">{t('detail.payment_status', { defaultValue: 'Payment status' })}</span>
+                                {paymentQuery.isLoading ? (
+                                    <span className="font-medium">{tCommon('common.loading')}</span>
+                                ) : paymentQuery.data?.status ? (
+                                    <Badge variant={getPaymentStatusVariant(paymentQuery.data.status)}>
+                                        {tCommon(getPaymentStatusLabelKey(paymentQuery.data.status), { defaultValue: paymentQuery.data.status })}
+                                    </Badge>
+                                ) : (
+                                    <span className="font-medium">-</span>
+                                )}
+                            </div>
+                            {paymentQuery.data?.collectedAmount !== null && paymentQuery.data?.collectedAmount !== undefined && (
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">{t('detail.collected_amount', { defaultValue: 'Collected amount' })}</span>
+                                    <span className="font-medium">{formatVnd(Number(paymentQuery.data.collectedAmount))}</span>
+                                </div>
+                            )}
+                            {paymentQuery.data?.repayAmount !== null && paymentQuery.data?.repayAmount !== undefined && (
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">{t('detail.repay_amount', { defaultValue: 'Repay amount' })}</span>
+                                    <span className="font-medium">{formatVnd(Number(paymentQuery.data.repayAmount))}</span>
+                                </div>
+                            )}
+                            {paymentQuery.data?.confirmedAt && (
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">{t('detail.confirm_time', { defaultValue: 'Time' })}</span>
+                                    <span className="font-medium">{formatDateTime(paymentQuery.data.confirmedAt)}</span>
+                                </div>
+                            )}
                         </div>
                         <div>
                             <p className="mb-2 text-sm font-medium">{t('table.seats')}</p>

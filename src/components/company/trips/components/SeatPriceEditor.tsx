@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { VndInput } from '@/components/ui/vnd-input'
 import type { ISeat } from 'types/seat-layout'
 
 interface SeatPriceItem {
@@ -30,16 +31,6 @@ export function SeatPriceEditor({ seats, basePrice, value, onChange }: SeatPrice
         onChange(next)
     }
 
-    const normalizeNumberInput = (raw: string) => {
-        if (!raw) return ''
-        return raw.replace(/^0+(?=\d)/, '')
-    }
-
-    const applyNormalizedInput = (raw: string) => {
-        const normalized = normalizeNumberInput(raw)
-        return normalized === '' ? '' : normalized
-    }
-
     // Group by floor
     const floors = Array.from(new Set(seats.map(s => s.floor))).sort()
 
@@ -64,23 +55,13 @@ export function SeatPriceEditor({ seats, basePrice, value, onChange }: SeatPrice
                             {floorSeats.map(seat => (
                                 <div key={seat.seatId} className="flex flex-col gap-1">
                                     <span className="text-xs font-medium text-center">{seat.seatCode}</span>
-                                    <input
-                                        type="number"
+                                    <VndInput
                                         min={0}
-                                        step={1}
                                         value={getPrice(seat.seatId)}
-                                        onInput={e => {
-                                            const el = e.currentTarget
-                                            const normalized = applyNormalizedInput(el.value)
-                                            if (normalized !== el.value) {
-                                                el.value = normalized
-                                            }
-                                        }}
                                         onChange={e => {
-                                            const normalized = applyNormalizedInput(e.target.value)
-                                            setPrice(seat, normalized === '' ? 0 : Number(normalized))
+                                            setPrice(seat, e.target.value === '' ? 0 : Number(e.target.value))
                                         }}
-                                        className="w-full rounded border border-input bg-background px-2 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-ring"
+                                        inputClassName="px-2 py-1 text-center text-xs"
                                     />
                                 </div>
                             ))}

@@ -28,5 +28,4 @@ export const ADMIN_TYPE = {
 export enum ERouteStopType {
     PICKUP = 'PICKUP',
     DROPOFF = 'DROPOFF',
-    BOTH = 'BOTH',
 }

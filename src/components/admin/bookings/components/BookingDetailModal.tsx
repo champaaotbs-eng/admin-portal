@@ -56,7 +56,7 @@ export const BookingDetailModal = ({ booking, onClose }: { booking: AdminBooking
 
                 <div className="bg-muted/30 rounded-lg p-4">
                     <p className="text-xs text-muted-foreground mb-2 font-medium uppercase">{t('detail.trip_section')}</p>
-                    <p className="font-semibold">{booking.routeLabel}</p>
+                    <p className="whitespace-pre-line font-semibold">{booking.routeLabel}</p>
                     <p className="text-sm text-muted-foreground mt-1">
                         <Calendar className="inline h-3.5 w-3.5 mr-1" />
                         {formatDate(booking.departureTime)} — {booking.companyName}

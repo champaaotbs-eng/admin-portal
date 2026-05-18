@@ -5,8 +5,11 @@ import { useQuery } from '@tanstack/react-query'
 import { Dialog } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { SeatPriceEditor } from '@/components/company/trips/components/SeatPriceEditor'
+import { getCompanyBusVersionCurrentLocation } from '@/services/company/bus.service'
+import { checkCompanyTripBusAvailability } from '@/services/company/trip.service'
 import type { ITrip } from '@/types/trip'
 import type { ISeat } from '@/types/seat-layout'
+import type { IBusCurrentLocation } from '@/types/bus'
 
 interface SeatPriceItem {
     seatId: string
@@ -39,6 +42,34 @@ const toDateTimeLocal = (iso: string) => {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
+const readObject = <T,>(payload: unknown): T | undefined => {
+    if (!payload || typeof payload !== 'object') return undefined
+    const p = payload as Record<string, unknown>
+    if (p.data && typeof p.data === 'object') return p.data as T
+    return p as T
+}
+
+const isValidDateRange = (departureTime?: string, arrivalTime?: string) => {
+    if (!departureTime || !arrivalTime) return false
+    const departure = new Date(departureTime).getTime()
+    const arrival = new Date(arrivalTime).getTime()
+    return Number.isFinite(departure) && Number.isFinite(arrival) && departure < arrival
+}
+
+const formatCurrentLocation = (location: IBusCurrentLocation | undefined, tTrips: any) => {
+    if (!location || !location.available || location.state === 'UNKNOWN') {
+        return tTrips('current_location_unknown')
+    }
+
+    if (location.locationType === 'ROUTE') {
+        const source = location.source?.label || tTrips('unknown_location')
+        const destination = location.destination?.label || tTrips('unknown_location')
+        return tTrips('current_location_route', { source, destination })
+    }
+
+    return location.label || tTrips('unknown_location')
+}
+
 export const TripEditModal = ({ trip, open, onClose, onSubmit, isSubmitting, getTripDetails }: TripEditModalProps) => {
     const { t: tCommon } = useTranslation()
     const { t: tTrips } = useTranslation('translation', { keyPrefix: 'pages.trips' })
@@ -61,7 +92,33 @@ export const TripEditModal = ({ trip, open, onClose, onSubmit, isSubmitting, get
     } = useForm<TripFormData>()
 
     const basePrice = useWatch({ control, name: 'basePrice' })
+    const departureTime = useWatch({ control, name: 'departureTime' })
+    const arrivalTime = useWatch({ control, name: 'arrivalTime' })
     const basePriceNumber = Number(basePrice) || 0
+    const canCheckAvailability = !!trip?.busVersionId && isValidDateRange(departureTime, arrivalTime)
+
+    const busLocationQuery = useQuery({
+        queryKey: ['company-bus-version-current-location', trip?.busVersionId],
+        queryFn: () => getCompanyBusVersionCurrentLocation(trip!.busVersionId!),
+        select: (res) => readObject<IBusCurrentLocation>(res),
+        enabled: !!trip?.busVersionId && open,
+        staleTime: 30_000,
+    })
+
+    const busAvailabilityQuery = useQuery({
+        queryKey: ['company-trip-bus-availability-edit', trip?.busVersionId, departureTime, arrivalTime, trip?.tripId],
+        queryFn: () => checkCompanyTripBusAvailability({
+            busVersionId: trip!.busVersionId!,
+            departureTime: new Date(departureTime).toISOString(),
+            arrivalTime: new Date(arrivalTime).toISOString(),
+            excludeTripId: trip!.tripId,
+        }),
+        select: (res) => readObject<{ available: boolean }>(res),
+        enabled: canCheckAvailability && open,
+        staleTime: 10_000,
+    })
+
+    const busUnavailable = busAvailabilityQuery.data?.available === false
 
     useEffect(() => {
         if (trip && open) {
@@ -121,6 +178,22 @@ export const TripEditModal = ({ trip, open, onClose, onSubmit, isSubmitting, get
         <Dialog open={open} onClose={onClose} title={tTrips('edit_trip')} className="max-w-2xl">
             <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto pr-1">
                 <div className="grid gap-4 sm:grid-cols-2">
+                    {trip.busVersionId && (
+                        <div className="sm:col-span-2 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                            <p className="font-medium text-foreground">{tTrips('current_location')}</p>
+                            {busLocationQuery.isLoading ? (
+                                <p>{tCommon('common.loading')}</p>
+                            ) : busLocationQuery.isError ? (
+                                <p className="text-destructive">{tTrips('current_location_error')}</p>
+                            ) : (
+                                <p>
+                                    {formatCurrentLocation(busLocationQuery.data, tTrips)}
+                                    {busLocationQuery.data?.address ? ` - ${busLocationQuery.data.address}` : ''}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
                     <div>
                         <label className="mb-1 block text-sm font-medium">{tTrips('departure_time')}</label>
                         <input
@@ -141,11 +214,17 @@ export const TripEditModal = ({ trip, open, onClose, onSubmit, isSubmitting, get
                         {errors.arrivalTime && <p className="mt-1 text-xs text-destructive">{errors.arrivalTime.message}</p>}
                     </div>
 
+                    {busUnavailable && (
+                        <p className="sm:col-span-2 text-xs text-destructive">
+                            {tTrips('errors.bus_not_available_for_trip_time')}
+                        </p>
+                    )}
+
                     <div>
                         <label className="mb-1 block text-sm font-medium">{tTrips('base_price')} (VND)</label>
                         <input
                             type="text"
-                            step="1000"
+                            step="1"
                             {...register('basePrice', {
                                 required: tCommon('common.required'),
                                 min: { value: 0, message: tCommon('common.must_be_positive') },
@@ -189,7 +268,7 @@ export const TripEditModal = ({ trip, open, onClose, onSubmit, isSubmitting, get
                 )}
 
                 <div className="flex gap-2">
-                    <Button type="submit" disabled={isSubmitting}>
+                    <Button type="submit" disabled={isSubmitting || busUnavailable}>
                         {isSubmitting ? tCommon('common.loading') : tCommon('common.save')}
                     </Button>
                     <Button type="button" variant="outline" onClick={onClose}>

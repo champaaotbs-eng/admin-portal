@@ -9,7 +9,7 @@ export const routeSchema = (t: (key: string) => string) =>
         routeStops: z.array(
             z.object({
                 stationId: z.string().min(1, t('errors.location_required')),
-                stopType: z.enum([ERouteStopType.PICKUP, ERouteStopType.DROPOFF, ERouteStopType.BOTH]),
+                stopType: z.enum([ERouteStopType.PICKUP, ERouteStopType.DROPOFF]),
                 stopOrder: z.number().int().positive(),
                 offsetMins: z.string().min(1, t('errors.offset_required')).refine((v) => !isNaN(Number(v)) && Number(v) >= 0, t('errors.offset_non_negative')),
                 isActive: z.boolean(),

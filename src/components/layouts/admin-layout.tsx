@@ -4,7 +4,6 @@ import {
     Building2,
     Users,
     MapPin,
-    BarChart3,
     ShieldCheck,
     Ticket,
     DollarSign,
@@ -30,7 +29,6 @@ export const AdminLayout = () => {
         { label: t('nav.trips'), to: APP_ROUTES.ADMIN.TRIPS, icon: Bus, moduleName: ADMIN_MODULES.BOOKING },
         { label: t('nav.bookings'), to: APP_ROUTES.ADMIN.BOOKINGS, icon: Ticket, moduleName: ADMIN_MODULES.BOOKING },
         { label: t('nav.revenue'), to: APP_ROUTES.ADMIN.REVENUE, icon: DollarSign, moduleName: ADMIN_MODULES.REVENUE },
-        { label: t('nav.reports'), to: APP_ROUTES.ADMIN.REPORTS, icon: BarChart3, moduleName: ADMIN_MODULES.REPORT },
     ].filter((item) => item.moduleName === ADMIN_MODULES.DASHBOARD || hasReadAccess(item.moduleName))
 
     return (

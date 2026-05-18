@@ -97,7 +97,7 @@ const toDashboardBooking = (booking: IBooking): DashboardBooking => {
     return {
         id: booking.bookingId,
         bookingCode: booking.bookingCode,
-        routeLabel: `${fromName} → ${toName}`,
+        routeLabel: `PICKUP: ${fromName}\nDROPOFF: ${toName}`,
         totalAmount: booking.totalAmount,
         status: normalizeBookingStatus(booking.status),
         paymentStatus: normalizePaymentStatus(booking),

@@ -122,7 +122,7 @@ export function CompanyBookingsPage() {
 
     const { data: bookings = [], isLoading } = useQuery({
         queryKey: ['company-bookings', busCompanyId],
-        queryFn: () => getCompanyBookings(busCompanyId, { page: 1, limit: 1000 }),
+        queryFn: () => getCompanyBookings({ page: 1, limit: 1000 }),
         select: (res) => readRows<IBooking>(res.data),
         enabled: !!busCompanyId,
         staleTime: 30_000,

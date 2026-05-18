@@ -182,7 +182,7 @@ export const AdminDashboardPage = () => {
                                     {recentBookings.map((booking) => (
                                         <tr key={booking.id} className="border-b border-border/50 hover:bg-muted/20 last:border-0">
                                             <td className="px-4 py-2 font-mono font-medium text-primary">{booking.bookingCode}</td>
-                                            <td className="px-4 py-2 text-muted-foreground">{booking.routeLabel}</td>
+                                            <td className="whitespace-pre-line px-4 py-2 text-muted-foreground">{booking.routeLabel}</td>
                                             <td className="px-4 py-2 font-medium">{formatVnd(booking.totalAmount)}</td>
                                             <td className="px-4 py-2">
                                                 <span className="inline-flex items-center gap-1 text-xs">

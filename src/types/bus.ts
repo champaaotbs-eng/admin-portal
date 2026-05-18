@@ -37,6 +37,29 @@ export interface IBusVersion {
     createdAt: string
 }
 
+export interface IBusTripLocation {
+    label?: string
+    address?: string
+    latitude?: number
+    longitude?: number
+}
+
+export interface IBusCurrentLocation {
+    busId: string
+    available: boolean
+    state: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'UNKNOWN'
+    locationType: 'SOURCE' | 'ROUTE' | 'DESTINATION' | 'UNKNOWN'
+    tripId?: string
+    label?: string
+    address?: string
+    latitude?: number
+    longitude?: number
+    source?: IBusTripLocation
+    destination?: IBusTripLocation
+    departureTime?: string
+    arrivalTime?: string
+}
+
 export enum EBusType {
     SEAT = 'SEAT',
     SLEEPER = 'SLEEPER',

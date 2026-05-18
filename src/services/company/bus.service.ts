@@ -1,5 +1,5 @@
 import type { IPagination, IRequestPagination } from 'types'
-import type { IBus, ICreateBus, IUpdateBus } from 'types/bus'
+import type { IBus, IBusCurrentLocation, ICreateBus, IUpdateBus } from 'types/bus'
 
 import { api } from 'utils/axios.instance'
 
@@ -13,6 +13,14 @@ export const getAllBuses = async (query: IRequestPagination<IBus>) => {
 export const getBusById = async (id: string) => {
     const { data } = await api.get<IBus>(`/v1/buses/${id}`)
     return data
+}
+
+export const getCompanyBusCurrentLocation = async (busId: string) => {
+    return api.get<IBusCurrentLocation>(`/v1/buses/${busId}/current-location`)
+}
+
+export const getCompanyBusVersionCurrentLocation = async (busVersionId: string) => {
+    return api.get<IBusCurrentLocation>(`/v1/buses/versions/${busVersionId}/current-location`)
 }
 
 export const createBus = async (payload: ICreateBus) => {

@@ -27,5 +27,4 @@ export interface IRouteStop {
 export enum EStopType {
     PICKUP = 'PICKUP',
     DROPOFF = 'DROPOFF',
-    BOTH = 'BOTH',
 }

@@ -32,6 +32,18 @@ export interface ICancelCompanyTripPayload {
     cancelReason: string
 }
 
+export interface IBusAvailabilityQuery {
+    busVersionId: string
+    departureTime: string
+    arrivalTime: string
+    excludeTripId?: string
+}
+
+export interface IBusAvailabilityResponse {
+    available: boolean
+    conflictTrip?: Pick<ITrip, 'tripId' | 'departureTime' | 'arrivalTime' | 'fromLocationName' | 'toLocationName'> | null
+}
+
 const buildQuery = (query: IGetCompanyTripsQuery = {}) => {
     const params = new URLSearchParams()
     if (query.page) params.set('page', String(query.page))
@@ -55,6 +67,16 @@ export const getCompanyTrips = async (query: IGetCompanyTripsQuery = {}) => {
 
 export const getCompanyTripById = async (tripId: string) => {
     return api.get<ITrip>(`/v1/trips/${tripId}`)
+}
+
+export const checkCompanyTripBusAvailability = async (query: IBusAvailabilityQuery) => {
+    const params = new URLSearchParams()
+    params.set('busVersionId', query.busVersionId)
+    params.set('departureTime', query.departureTime)
+    params.set('arrivalTime', query.arrivalTime)
+    if (query.excludeTripId) params.set('excludeTripId', query.excludeTripId)
+
+    return api.get<IBusAvailabilityResponse>(`/v1/trips/bus-availability?${params.toString()}`)
 }
 
 export const createCompanyTrip = async (payload: ICreateCompanyTripPayload) => {

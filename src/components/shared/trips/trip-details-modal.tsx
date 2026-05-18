@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { MapPin, Calendar, Clock, Bus, Phone, DollarSign, Info, AlertTriangle, User, Mail } from 'lucide-react'
 import { Dialog } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { RouteDirection } from '@/components/shared/route-direction'
+import { StopTypePreview } from '@/components/shared/stop-type-preview'
 import { formatDate, formatTime, formatVnd } from '@/utils/format'
 import type { ITrip, ISeatAvailability } from '@/types/trip'
 import { getTripDisplayStatus } from '@/types/trip'
@@ -141,6 +143,18 @@ export const TripDetailsModal = ({ trip, open, onClose, getTripDetails }: TripDe
   const sortedStops = details.tripStops
     ? [...details.tripStops].sort((a, b) => (a.stopOrder ?? a.sortOrder ?? 0) - (b.stopOrder ?? b.sortOrder ?? 0))
     : []
+  const stopLabel = (stop: ITrip['tripStops'][number]) => {
+    const locationName = stop.routeStop?.location?.name || stop.locationName || tTrips('unknown_location')
+    const locationAddress = stop.routeStop?.location?.address || stop.locationAddress
+    const time = stop.pickupTime || stop.dropoffTime
+    return {
+      time: time ? formatTime(time) : '',
+      name: locationName,
+      address: locationAddress,
+    }
+  }
+  const pickupStopLabels = sortedStops.filter((stop) => stop.stopType === 'PICKUP').map(stopLabel)
+  const dropoffStopLabels = sortedStops.filter((stop) => stop.stopType === 'DROPOFF').map(stopLabel)
 
   return (
     <Dialog open={open} onClose={onClose} title={tTrips('trip_details')} className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -151,11 +165,14 @@ export const TripDetailsModal = ({ trip, open, onClose, getTripDetails }: TripDe
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <p className="mb-1 text-xs font-medium text-muted-foreground">{tTrips('route')}</p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">
-                  {fromLocation} → {toLocation}
-                </span>
+                <RouteDirection
+                  pickup={fromLocation}
+                  dropoff={toLocation}
+                  pickupLabel={tTrips('stop_type_pickup')}
+                  dropoffLabel={tTrips('stop_type_dropoff')}
+                />
               </div>
             </div>
             <div>
@@ -236,48 +253,13 @@ export const TripDetailsModal = ({ trip, open, onClose, getTripDetails }: TripDe
           {sortedStops.length > 0 && (
             <div>
               <p className="mb-3 text-sm font-medium">{tTrips('trip_stops')} ({sortedStops.length})</p>
-              <div className="space-y-2">
-                {sortedStops.map((stop, idx) => {
-                  const stopIndex = stop.stopOrder ?? stop.sortOrder ?? idx + 1
-                  const locationName = stop.routeStop?.location?.name || stop.locationName || tTrips('unknown_location')
-                  const locationAddress = stop.routeStop?.location?.address || stop.locationAddress
-                  const stopTypeKey = stop.stopType ? `stop_type_${stop.stopType.toLowerCase()}` : null
-
-                  return (
-                    <div key={stop.tripStopId} className="flex items-start gap-3 rounded-lg border p-3 hover:bg-accent/50 transition-colors">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                        {stopIndex}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{locationName}</p>
-                        {locationAddress && (
-                          <p className="mt-0.5 text-xs text-muted-foreground truncate">{locationAddress}</p>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {tTrips('stop_type')}: {stopTypeKey ? tTrips(stopTypeKey) : tCommon('common.not_available')}
-                        </p>
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-muted-foreground">
-                          {stop.pickupTime && (
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {tTrips('pickup')}: {formatTime(stop.pickupTime)}
-                            </span>
-                          )}
-                          {stop.dropoffTime && (
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {tTrips('dropoff')}: {formatTime(stop.dropoffTime)}
-                            </span>
-                          )}
-                        </div>
-                        {stop.note && (
-                          <p className="mt-1.5 text-xs text-muted-foreground italic">{stop.note}</p>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+              <StopTypePreview
+                pickupStops={pickupStopLabels}
+                dropoffStops={dropoffStopLabels}
+                pickupLabel={tTrips('stop_type_pickup')}
+                dropoffLabel={tTrips('stop_type_dropoff')}
+                emptyLabel={tCommon('common.not_available')}
+              />
             </div>
           )}
 

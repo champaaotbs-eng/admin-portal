@@ -122,7 +122,7 @@ const toBookingRow = (booking: IBooking): AdminBookingRow => {
             ?? (user?.name as string | undefined)
             ?? (booking as unknown as { userName?: string }).userName
             ?? '',
-        routeLabel: `${fromName || booking.tripId} → ${toName || booking.tripId}`,
+        routeLabel: `PICKUP: ${fromName || booking.tripId}\nDROPOFF: ${toName || booking.tripId}`,
         companyName:
             (company?.name as string | undefined)
             ?? (trip?.busCompanyName as string | undefined)

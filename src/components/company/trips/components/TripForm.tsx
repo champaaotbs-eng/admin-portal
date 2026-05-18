@@ -4,11 +4,13 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { RouteDirection } from '@/components/shared/route-direction'
 import { tripSchema, type TripFormData } from '../validation-schema'
 import { getAllRoutes } from 'services/company/routes.service'
-import { getAllBuses } from 'services/company/bus.service'
+import { getAllBuses, getCompanyBusCurrentLocation } from 'services/company/bus.service'
+import { checkCompanyTripBusAvailability } from 'services/company/trip.service'
 import type { IRoute } from 'types/route'
-import type { IBus } from 'types/bus'
+import type { IBus, IBusCurrentLocation } from 'types/bus'
 import { SeatPriceEditor } from './SeatPriceEditor'
 
 const readRows = <T,>(payload: unknown): T[] => {
@@ -23,14 +25,46 @@ const readRows = <T,>(payload: unknown): T[] => {
     return []
 }
 
+const readObject = <T,>(payload: unknown): T | undefined => {
+    if (!payload || typeof payload !== 'object') return undefined
+    const p = payload as Record<string, unknown>
+    if (p.data && typeof p.data === 'object') return p.data as T
+    return p as T
+}
+
+const isValidDateRange = (departureTime?: string, arrivalTime?: string) => {
+    if (!departureTime || !arrivalTime) return false
+    const departure = new Date(departureTime).getTime()
+    const arrival = new Date(arrivalTime).getTime()
+    return Number.isFinite(departure) && Number.isFinite(arrival) && departure < arrival
+}
+
+const formatCurrentLocation = (
+    location: IBusCurrentLocation | undefined,
+    t: any,
+) => {
+    if (!location || !location.available || location.state === 'UNKNOWN') {
+        return t('current_location_unknown')
+    }
+
+    if (location.locationType === 'ROUTE') {
+        const source = location.source?.label || t('unknown_location')
+        const destination = location.destination?.label || t('unknown_location')
+        return t('current_location_route', { source, destination })
+    }
+
+    return location.label || t('unknown_location')
+}
+
 interface TripFormProps {
     onSubmit: (data: TripFormData) => void
     onCancel: () => void
     defaultValues?: Partial<TripFormData>
     isSubmitting?: boolean
+    excludeTripId?: string
 }
 
-export const TripForm = ({ onSubmit, onCancel, defaultValues, isSubmitting }: TripFormProps) => {
+export const TripForm = ({ onSubmit, onCancel, defaultValues, isSubmitting, excludeTripId }: TripFormProps) => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.trips' })
     const { t: tCommon } = useTranslation()
 
@@ -50,8 +84,11 @@ export const TripForm = ({ onSubmit, onCancel, defaultValues, isSubmitting }: Tr
     })
 
     const busVersionId = useWatch({ control, name: 'busVersionId' })
+    const routeId = useWatch({ control, name: 'routeId' })
     const basePrice = useWatch({ control, name: 'basePrice' })
     const seatPrices = useWatch({ control, name: 'seatPrices' })
+    const departureTime = useWatch({ control, name: 'departureTime' })
+    const arrivalTime = useWatch({ control, name: 'arrivalTime' })
 
     const routesQuery = useQuery({
         queryKey: ['company-routes-select'],
@@ -72,7 +109,33 @@ export const TripForm = ({ onSubmit, onCancel, defaultValues, isSubmitting }: Tr
 
     // Find the selected bus to get its seat layout
     const selectedBus = buses.find(b => b.latestVersion?.busVersionId === busVersionId)
+    const selectedRoute = routes.find(r => r.routeId === routeId)
     const seats = selectedBus?.seatLayout?.seats ?? []
+    const canCheckAvailability = !!busVersionId && isValidDateRange(departureTime, arrivalTime)
+
+    const busLocationQuery = useQuery({
+        queryKey: ['company-bus-current-location', selectedBus?.busId],
+        queryFn: () => getCompanyBusCurrentLocation(selectedBus!.busId),
+        select: (res) => readObject<IBusCurrentLocation>(res),
+        enabled: !!selectedBus?.busId,
+        staleTime: 30_000,
+    })
+
+    const busAvailabilityQuery = useQuery({
+        queryKey: ['company-trip-bus-availability', busVersionId, departureTime, arrivalTime, excludeTripId],
+        queryFn: () => checkCompanyTripBusAvailability({
+            busVersionId: busVersionId!,
+            departureTime: new Date(departureTime).toISOString(),
+            arrivalTime: new Date(arrivalTime).toISOString(),
+            excludeTripId,
+        }),
+        select: (res) => readObject<{ available: boolean }>(res),
+        enabled: canCheckAvailability,
+        staleTime: 10_000,
+    })
+
+    const busUnavailable = busAvailabilityQuery.data?.available === false
+    const currentLocation = busLocationQuery.data
 
     const routeLabel = (r: IRoute) =>
         r.fromLocationName && r.toLocationName
@@ -91,6 +154,16 @@ export const TripForm = ({ onSubmit, onCancel, defaultValues, isSubmitting }: Tr
                         ))}
                     </select>
                     {errors.routeId && <p className="text-xs text-destructive mt-1">{errors.routeId.message}</p>}
+                    {selectedRoute && (
+                        <div className="mt-2 rounded-md border border-border bg-muted/30 px-3 py-2">
+                            <RouteDirection
+                                pickup={selectedRoute.fromLocationName || t('unknown_location')}
+                                dropoff={selectedRoute.toLocationName || t('unknown_location')}
+                                pickupLabel={t('stop_type_pickup')}
+                                dropoffLabel={t('stop_type_dropoff')}
+                            />
+                        </div>
+                    )}
                 </div>
             )} />
 
@@ -110,6 +183,24 @@ export const TripForm = ({ onSubmit, onCancel, defaultValues, isSubmitting }: Tr
                         ) : null)}
                     </select>
                     {errors.busVersionId && <p className="text-xs text-destructive mt-1">{errors.busVersionId.message}</p>}
+                    {selectedBus && (
+                        <div className="mt-2 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                            <p className="font-medium text-foreground">{t('current_location')}</p>
+                            {busLocationQuery.isLoading ? (
+                                <p>{tCommon('common.loading')}</p>
+                            ) : busLocationQuery.isError ? (
+                                <p className="text-destructive">{t('current_location_error')}</p>
+                            ) : (
+                                <p>
+                                    {formatCurrentLocation(currentLocation, t)}
+                                    {currentLocation?.address ? ` - ${currentLocation.address}` : ''}
+                                </p>
+                            )}
+                        </div>
+                    )}
+                    {busUnavailable && (
+                        <p className="text-xs text-destructive mt-1">{t('errors.bus_not_available_for_trip_time')}</p>
+                    )}
                 </div>
             )} />
 
@@ -148,7 +239,7 @@ export const TripForm = ({ onSubmit, onCancel, defaultValues, isSubmitting }: Tr
             )} />
 
             <div className="flex gap-2 pt-1">
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting || busUnavailable}>
                     {isSubmitting ? tCommon('common.loading') : tCommon('common.save')}
                 </Button>
                 <Button type="button" variant="outline" onClick={onCancel}>{tCommon('common.cancel')}</Button>

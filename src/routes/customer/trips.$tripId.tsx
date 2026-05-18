@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, MapPin, Clock, ChevronRight } from 'lucide-react'
+import { ArrowLeft, MapPin, Clock } from 'lucide-react'
 import { getPublicTripById } from 'services/public/trip.service'
 import { createPublicBooking } from 'services/public/booking.service'
 import { initiatePayment } from 'services/public/payment.service'
@@ -14,6 +14,8 @@ import { EPaymentProvider } from 'types/payment'
 import type { ISeatAvailability, ITripStop } from 'types/trip'
 import { APP_ROUTES } from '@/constants/app-routes'
 import { toast } from 'sonner'
+import { RouteDirection } from '@/components/shared/route-direction'
+import { StopTypePreview } from '@/components/shared/stop-type-preview'
 
 export const Route = createFileRoute('/customer/trips/$tripId')({
     component: TripDetailPage,
@@ -197,11 +199,21 @@ function TripDetailPage() {
     const seats: ISeatAvailability[] = trip.seatAvailability ?? []
     const stops: ITripStop[] = trip.tripStops ?? []
     const pickupStops = stops.filter(s =>
-        s.stopType === EStopType.PICKUP || s.stopType === EStopType.BOTH
+        s.stopType === EStopType.PICKUP
     )
     const dropoffStops = stops.filter(s =>
-        s.stopType === EStopType.DROPOFF || s.stopType === EStopType.BOTH
+        s.stopType === EStopType.DROPOFF
     )
+    const pickupStopPreview = pickupStops.map((stop) => ({
+        time: stop.pickupTime ? new Date(stop.pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+        name: stop.routeStop?.location?.name ?? stop.locationName ?? stop.tripStopId,
+        address: stop.routeStop?.location?.address ?? stop.locationAddress,
+    }))
+    const dropoffStopPreview = dropoffStops.map((stop) => ({
+        time: stop.dropoffTime ? new Date(stop.dropoffTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+        name: stop.routeStop?.location?.name ?? stop.locationName ?? stop.tripStopId,
+        address: stop.routeStop?.location?.address ?? stop.locationAddress,
+    }))
 
     const selectedSeats = seats.filter(s => selectedSeatIds.includes(s.seatId))
     const totalAmount = selectedSeats.reduce((sum, s) => sum + s.price, 0)
@@ -220,11 +232,9 @@ function TripDetailPage() {
             <div className="rounded-lg border border-border bg-card p-5">
                 <h1 className="text-xl font-bold">{t('trip_info')}</h1>
                 <div className="mt-3 flex flex-wrap gap-4 text-sm">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-start gap-2">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{from}</span>
-                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="font-medium">{to}</span>
+                        <RouteDirection pickup={from} dropoff={to} emptyLabel="—" />
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="h-4 w-4" />
@@ -272,6 +282,14 @@ function TripDetailPage() {
                             </div>
                         )}
                     </div>
+
+                    <StopTypePreview
+                        pickupStops={pickupStopPreview}
+                        dropoffStops={dropoffStopPreview}
+                        pickupLabel={t('pickup_stop')}
+                        dropoffLabel={t('dropoff_stop')}
+                        emptyLabel="—"
+                    />
 
                     {/* Pickup stop */}
                     <div>

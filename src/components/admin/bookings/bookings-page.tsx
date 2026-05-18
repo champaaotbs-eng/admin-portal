@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PaginatedTable } from '@/components/shared/pagination-table'
+import { RouteDirection } from '@/components/shared/route-direction'
 import { formatDate, formatVnd } from '@/utils/format'
 import { getAdminBookings } from 'services/admins/booking.service'
 import { getBookingSeatLayout } from 'services/company/booking.service'
@@ -212,7 +213,16 @@ export const AdminBookingsPage = () => {
                             ] as [string, string][]).map(([label, value]) => (
                                 <div key={label} className="flex justify-between">
                                     <span className="text-muted-foreground">{label}</span>
-                                    <span className="font-medium">{value}</span>
+                                    {label === t('table.route') ? (
+                                        <RouteDirection
+                                            pickup={(selectedBooking as any).tripInfo?.fromLocationName}
+                                            dropoff={(selectedBooking as any).tripInfo?.toLocationName}
+                                            emptyLabel="—"
+                                            className="text-right"
+                                        />
+                                    ) : (
+                                        <span className="font-medium">{value}</span>
+                                    )}
                                 </div>
                             ))}
                         </div>

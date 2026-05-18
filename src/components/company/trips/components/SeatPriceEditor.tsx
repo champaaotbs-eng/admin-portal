@@ -67,7 +67,7 @@ export function SeatPriceEditor({ seats, basePrice, value, onChange }: SeatPrice
                                     <input
                                         type="number"
                                         min={0}
-                                        step={1000}
+                                        step={1}
                                         value={getPrice(seat.seatId)}
                                         onInput={e => {
                                             const el = e.currentTarget

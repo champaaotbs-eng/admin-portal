@@ -25,6 +25,7 @@ export const errorsVi = {
     bus_not_found: 'Khong tim thay xe',
     bus_version_not_found: 'Khong tim thay phien ban xe',
     bus_version_already_used_in_trips: 'Phien ban xe dang duoc su dung trong chuyen xe',
+    bus_not_available_for_trip_time: 'Xe da duoc gan cho chuyen khac trong khoang thoi gian nay',
     bus_active_version_conflict: 'Xe da co phien ban dang hoat dong',
 
     // Seat layouts

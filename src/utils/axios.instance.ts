@@ -2,7 +2,7 @@ import axios from "axios";
 import i18n from '@/i18n'
 import { refresh } from "services/auth/auth.service";
 import { authStore, logout } from "store/auth.store";
-import { customerAuthStore, logoutCustomer } from "store/customer-auth.store";
+import { logoutCustomer } from "store/customer-auth.store";
 
 const rawBaseUrl = String(import.meta.env.VITE_BASE_API_URL ?? '').replace(/\/+$/, '')
 export const BASE_API_URL = rawBaseUrl.endsWith('/api') ? rawBaseUrl : `${rawBaseUrl}/api`
@@ -46,10 +46,8 @@ const resolveLocalizedMessage = (error: any) => {
 instance.interceptors.request.use(
     function (config) {
         const adminToken = authStore.state.accessToken
-        const customerToken = customerAuthStore.state.accessToken
-        const token = adminToken ?? customerToken
-        if (token) {
-            config.headers['Authorization'] = `Bearer ${token}`
+        if (adminToken) {
+            config.headers['Authorization'] = `Bearer ${adminToken}`
         }
         return config;
     },
@@ -61,7 +59,7 @@ instance.interceptors.request.use(
 // Add a response interceptor
 instance.interceptors.response.use(
     function (response) {
-        if (response?.data) return response?.data
+        if (response.data) return response.data
 
         return response;
     },

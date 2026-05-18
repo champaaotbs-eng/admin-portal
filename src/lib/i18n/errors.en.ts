@@ -25,6 +25,7 @@ export const errorsEn = {
     bus_not_found: 'Bus not found',
     bus_version_not_found: 'Bus version not found',
     bus_version_already_used_in_trips: 'Bus version is already used in trips',
+    bus_not_available_for_trip_time: 'Bus is already assigned to another trip in this time period',
     bus_active_version_conflict: 'Bus already has an active version',
 
     // Seat layouts

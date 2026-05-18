@@ -6,6 +6,7 @@ import { Plus, Trash2 } from 'lucide-react'
 import { Dialog } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { AsyncSelect, type AsyncSelectOption } from '@/components/ui/async-select'
+import { StopTypePreview } from '@/components/shared/stop-type-preview'
 import { ERouteStopType } from 'configs/constants'
 import type { TRouteFormData } from './validation-schema'
 import { routeSchema } from './validation-schema'
@@ -58,27 +59,30 @@ export const RouteAddModal = ({
     const handleAddStop = useCallback(() => {
         append({
             stationId: '',
-            stopType: ERouteStopType.BOTH,
+            stopType: ERouteStopType.PICKUP,
             stopOrder: fields.length + 1,
             offsetMins: '0',
             isActive: true,
         })
     }, [append, fields.length])
 
-    const arrangementPreview = useMemo(() => {
-        if (!watchedRouteStops || watchedRouteStops.length === 0) {
-            return t('form.arrangement_empty')
-        }
-
-        const labels = watchedRouteStops.map((stop, index) => {
-            if (!stop.stationId) {
-                return t('form.unselected_station', { order: index + 1 })
-            }
-
-            return stationLabelById[stop.stationId] || stop.stationId
+    const stopPreview = useMemo(() => {
+        const toPreviewItem = (stop: TRouteFormData['routeStops'][number], index: number) => ({
+            time: `${stop.offsetMins ?? 0} ${t('unit.minutes')}`,
+            name: stop.stationId
+                ? stationLabelById[stop.stationId] || stop.stationId
+                : t('form.unselected_station', { order: index + 1 }),
+            address: '',
         })
 
-        return labels.join(' -> ')
+        const pickupLabels = watchedRouteStops
+            .filter((stop) => stop.stopType === ERouteStopType.PICKUP)
+            .map(toPreviewItem)
+        const dropoffLabels = watchedRouteStops
+            .filter((stop) => stop.stopType === ERouteStopType.DROPOFF)
+            .map(toPreviewItem)
+
+        return { pickupLabels, dropoffLabels }
     }, [watchedRouteStops, stationLabelById, t])
 
     const handleSubmit = form.handleSubmit((values) => {
@@ -173,10 +177,13 @@ export const RouteAddModal = ({
                             </Button>
                         </div>
 
-                        <p className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs">
-                            <span className="font-semibold">{t('form.arrangement_preview')}: </span>
-                            <span>{arrangementPreview}</span>
-                        </p>
+                        <StopTypePreview
+                            pickupStops={stopPreview.pickupLabels}
+                            dropoffStops={stopPreview.dropoffLabels}
+                            pickupLabel={t('stop_type.pickup')}
+                            dropoffLabel={t('stop_type.dropoff')}
+                            emptyLabel={t('form.arrangement_empty')}
+                        />
 
                         {fields.length === 0 ? (
                             <p className="rounded-md border border-dashed border-border px-3 py-4 text-xs text-muted-foreground">
@@ -230,7 +237,6 @@ export const RouteAddModal = ({
                                             >
                                                 <option value={ERouteStopType.PICKUP}>{t('stop_type.pickup')}</option>
                                                 <option value={ERouteStopType.DROPOFF}>{t('stop_type.dropoff')}</option>
-                                                <option value={ERouteStopType.BOTH}>{t('stop_type.both')}</option>
                                             </select>
                                             {stopErrors?.stopType?.message ? (
                                                 <p className="text-xs text-destructive">{stopErrors.stopType.message}</p>

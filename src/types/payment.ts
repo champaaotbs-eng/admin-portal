@@ -7,6 +7,11 @@ export interface IPayment {
     provider: EPaymentProvider | null
     method: EPaymentMethodType | null
     evidence: string | null
+    confirmedByAdminId?: string | null
+    confirmedCompanyId?: string | null
+    confirmedAt?: string | null
+    confirmationNote?: string | null
+    collectedAmount?: number | null
     amount: number
     status: EPaymentStatus
     transactionCode: string | null

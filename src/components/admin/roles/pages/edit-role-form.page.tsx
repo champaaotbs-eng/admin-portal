@@ -5,9 +5,11 @@ import { EditRoleForm } from '../components/edit-role-form'
 
 interface RoleFormPageProps {
     roleId: string
+    basePath?: string
+    scope?: 'system' | 'company'
 }
 
-export const EditRoleFormPage = ({ roleId }: RoleFormPageProps) => {
+export const EditRoleFormPage = ({ roleId, basePath = '/admin/roles', scope = 'system' }: RoleFormPageProps) => {
     const navigate = useNavigate()
     const { t } = useTranslation('translation', { keyPrefix: 'pages.roles' })
 
@@ -15,15 +17,16 @@ export const EditRoleFormPage = ({ roleId }: RoleFormPageProps) => {
         <div className="space-y-6">
             <div className="flex items-center justify-between gap-3">
                 <h1 className="text-2xl font-bold text-slate-900">{t('page.edit_title')}</h1>
-                <Button variant="outline" onClick={() => navigate({ to: '/admin/roles' })}>
+                <Button variant="outline" onClick={() => navigate({ to: basePath })}>
                     {t('actions.back_to_list')}
                 </Button>
             </div>
 
             <EditRoleForm
                 roleId={roleId}
-                onCancel={() => navigate({ to: '/admin/roles' })}
-                onSuccess={() => navigate({ to: '/admin/roles' })}
+                scope={scope}
+                onCancel={() => navigate({ to: basePath })}
+                onSuccess={() => navigate({ to: basePath })}
             />
         </div>
     )

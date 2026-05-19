@@ -11,6 +11,7 @@ export const roleSchema = (t: (key: string) => string) =>
                 (value) => value === ADMIN_TYPE.SYSTEM_ADMIN || value === ADMIN_TYPE.COMPANY_ADMIN,
                 t('errors.type_required')
             ),
+        busCompanyId: z.string().trim().optional(),
         description: z.string().optional(),
         isActive: z.boolean().default(true),
         permissions: z.array(
@@ -20,6 +21,14 @@ export const roleSchema = (t: (key: string) => string) =>
                 write: z.boolean(),
             })
         ).default([]),
+    }).superRefine((value, ctx) => {
+        if (value.type === ADMIN_TYPE.COMPANY_ADMIN && !value.busCompanyId?.trim()) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['busCompanyId'],
+                message: 'Company is required',
+            })
+        }
     })
 
 export type TInsertRole = z.input<ReturnType<typeof roleSchema>>;

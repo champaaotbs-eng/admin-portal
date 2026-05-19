@@ -33,6 +33,11 @@ export const APP_ROUTES = {
         BOOKINGS: '/company/bookings',
         REVENUE: '/company/revenue',
         STAFF: '/company/staff',
+        ROLES: {
+            ROOT: '/company/roles',
+            ADD: '/company/roles/new',
+            EDIT: '/company/roles/:id',
+        },
     },
 
     CUSTOMER: {

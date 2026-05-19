@@ -44,7 +44,12 @@ export const RoleTable = ({
         {
             id: 'name',
             header: t('table.role_name'),
-            renderCell: (role) => <span className="font-medium text-slate-900">{role.roleName}</span>,
+            renderCell: (role) => (
+                <div>
+                    <div className="font-medium text-slate-900">{role.roleName}</div>
+                    <div className="text-xs text-slate-500">{role.busCompanyId ?? 'system'}</div>
+                </div>
+            ),
         },
         {
             id: 'type',

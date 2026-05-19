@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { LineChart } from '@/components/ui/charts'
 import { PaginatedTable } from '@/components/shared/pagination-table'
+import { RevenueDetailModal } from '@/components/shared/revenue-detail-modal'
 import { formatDate, formatVnd } from '@/utils/format'
-import { getRevenues, getRevenueStats } from 'services/company/revenue.service'
+import { getRevenueDetail, getRevenues, getRevenueStats } from 'services/company/revenue.service'
 import type { IRevenue } from 'types/revenue'
 import { CompanySettlementsTab } from './components/company-settlements-tab'
 
@@ -30,6 +31,7 @@ export function CompanyRevenuePage() {
     const { t: tCommon } = useTranslation()
 
     const [page, setPage] = useState(1)
+    const [selectedRevenue, setSelectedRevenue] = useState<IRevenue | null>(null)
     const [dateFrom, setDateFrom] = useState('')
     const [dateTo, setDateTo] = useState('')
 
@@ -139,7 +141,7 @@ export function CompanyRevenuePage() {
                             onPageChange: setPage,
                         }}
                         columns={[
-                            { id: 'booking', header: t('table.booking_code'), renderCell: r => <span className="font-mono text-xs text-muted-foreground">{r.bookingId}</span> },
+                            { id: 'booking', header: t('table.booking_code'), renderCell: r => <span className="font-mono text-xs text-muted-foreground">{r.bookingCode ?? r.bookingId}</span> },
                             { id: 'time', header: t('table.time'), renderCell: r => <span className="text-xs text-muted-foreground">{formatDate(r.createdAt)}</span> },
                             { id: 'gross', header: t('table.gross'), headerClassName: 'text-right', cellClassName: 'text-right', renderCell: r => formatVnd(r.grossAmount) },
                             {
@@ -148,8 +150,17 @@ export function CompanyRevenuePage() {
                             },
                             { id: 'commission', header: t('table.commission'), headerClassName: 'text-right', cellClassName: 'text-right text-red-500', renderCell: r => `-${formatVnd(r.commission)}` },
                             { id: 'net', header: t('table.net'), headerClassName: 'text-right', cellClassName: 'text-right font-semibold text-green-600', renderCell: r => formatVnd(r.netAmount) },
+                            { id: 'actions', header: tCommon('common.actions'), renderCell: r => <Button variant="outline" size="sm" onClick={() => setSelectedRevenue(r)}>{tCommon('common.view')}</Button> },
                         ]}
                     />
+                    {selectedRevenue && (
+                        <RevenueDetailModal
+                            revenueId={selectedRevenue.id}
+                            initialRevenue={selectedRevenue}
+                            loadRevenue={getRevenueDetail}
+                            onClose={() => setSelectedRevenue(null)}
+                        />
+                    )}
                 </TabsContent>
                 <TabsContent value="settlements">
                     <CompanySettlementsTab />

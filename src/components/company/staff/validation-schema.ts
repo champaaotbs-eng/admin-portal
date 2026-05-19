@@ -1,20 +1,19 @@
 import z from 'zod'
 
-export const staffSchema = (t: (key: string) => string) =>
+export const staffSchema = (t: (key: string) => string, isEditMode = false) =>
     z.object({
-        name: z.string().min(1, t('errors.name_required')),
-        email: z
+        username: z
             .string()
-            .min(1, t('errors.email_required'))
-            .email(t('errors.email_invalid')),
-        phone: z.string().min(1, t('errors.phone_required')),
-        role: z.string().min(1, t('errors.role_required')),
-        password: z.string().optional(),
-    })
-
-export const staffCreateSchema = (t: (key: string) => string) =>
-    staffSchema(t).extend({
-        password: z.string().min(6, t('errors.password_min')),
+            .trim()
+            .min(1, t('errors.username_required'))
+            .min(3, t('errors.username_min'))
+            .regex(/^\S+$/, t('errors.username_no_spaces')),
+        fullName: z.string().trim().min(1, t('errors.name_required')),
+        roleId: z.string().trim().min(1, t('errors.role_required')),
+        password: isEditMode
+            ? z.string().trim().optional().refine((value) => !value || value.length >= 6, t('errors.password_min'))
+            : z.string().trim().min(6, t('errors.password_min')),
+        isActive: z.boolean().default(true),
     })
 
 export type StaffFormData = z.infer<ReturnType<typeof staffSchema>>

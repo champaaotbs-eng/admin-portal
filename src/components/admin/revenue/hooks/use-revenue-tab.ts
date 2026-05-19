@@ -18,15 +18,9 @@ interface UseRevenueTabProps {
     setDateTo: Dispatch<SetStateAction<string>>
 }
 
-interface RevenueRow {
-    id: string
-    companyId: string
-    bookingId: string
-    grossAmount: number
+export interface RevenueRow extends IRevenue {
     commissionRate: number
     commissionAmount: number
-    netAmount: number
-    createdAt: string
 }
 
 const readRows = <T,>(payload: unknown): T[] => {
@@ -45,14 +39,11 @@ const toRow = (r: IRevenue): RevenueRow => {
     const gross = r.grossAmount ?? 0
     const commission = r.commission ?? 0
     return {
-        id: r.id,
-        companyId: r.companyId,
-        bookingId: r.bookingId,
+        ...r,
         grossAmount: gross,
         commissionRate: gross > 0 ? Number(((commission / gross) * 100).toFixed(2)) : 0,
         commissionAmount: commission,
         netAmount: r.netAmount ?? Math.max(gross - commission, 0),
-        createdAt: r.createdAt,
     }
 }
 
@@ -91,7 +82,13 @@ export const useRevenueTab = ({ search, companyId, dateFrom, dateTo, setSearch, 
 
     const filtered = useMemo(() => {
         if (!search) return rows
-        return rows.filter(r => companyMap.get(r.companyId)?.toLowerCase().includes(search.toLowerCase()))
+        const query = search.toLowerCase()
+        return rows.filter((r) => {
+            const companyText = (companyMap.get(r.companyId) ?? r.companyName ?? '').toLowerCase()
+            const bookingCodeText = (r.bookingCode ?? '').toLowerCase()
+            const customerText = (r.passengerEmail ?? r.passengerPhone ?? r.passengerName ?? '').toLowerCase()
+            return companyText.includes(query) || bookingCodeText.includes(query) || customerText.includes(query)
+        })
     }, [rows, companyMap, search])
 
     const totals = {

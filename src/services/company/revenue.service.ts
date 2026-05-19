@@ -33,5 +33,8 @@ const buildStatsQuery = (dateFrom?: string, dateTo?: string) => {
 export const getRevenues = async (query: IGetRevenuesQuery = {}) =>
     api.get<IPagination<IRevenue>>(`/v1/revenues${buildQuery(query)}`)
 
+export const getRevenueDetail = async (revenueId: string) =>
+    (await api.get<IRevenue>(`/v1/revenues/${revenueId}`)).data
+
 export const getRevenueStats = async (dateFrom?: string, dateTo?: string) =>
     api.get<IRevenueStats>(`/v1/revenues/stats${buildStatsQuery(dateFrom, dateTo)}`)

@@ -5,12 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { LineChart } from '@/components/ui/charts'
 import { PaginatedTable } from '@/components/shared/pagination-table'
+import { RevenueDetailModal } from '@/components/shared/revenue-detail-modal'
 import { formatDate, formatVnd } from '@/utils/format'
-import { useRevenueTab } from '../hooks/use-revenue-tab'
+import { getRevenueDetail } from 'services/admins/revenue.service'
+import { useRevenueTab, type RevenueRow } from '../hooks/use-revenue-tab'
 
 export const RevenueTab = () => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.revenue' })
     const { t: tCommon } = useTranslation()
+    const [selectedRevenue, setSelectedRevenue] = useState<RevenueRow | null>(null)
     const [search, setSearch] = useState('')
     const [companyId, setCompanyId] = useState('')
     const [dateFrom, setDateFrom] = useState('')
@@ -99,15 +102,25 @@ export const RevenueTab = () => {
                 emptyMessage={t('no_data')}
                 pagination={{ currentPage: page, totalPages, totalItems, pageSize, onPageChange: setPage }}
                 columns={[
-                    { id: 'company', header: t('table.company'), renderCell: r => <span className="truncate max-w-36 block">{companyMap.get(r.companyId) ?? r.companyId}</span> },
-                    { id: 'booking', header: t('table.booking_code'), renderCell: r => <span className="font-mono text-xs text-muted-foreground">{r.bookingId}</span> },
+                    { id: 'company', header: t('table.company'), renderCell: r => <span className="truncate max-w-36 block">{companyMap.get(r.companyId) ?? r.companyName ?? r.companyId}</span> },
+                    { id: 'booking', header: t('table.booking_code'), renderCell: r => <span className="font-mono text-xs text-muted-foreground">{r.bookingCode ?? r.bookingId}</span> },
                     { id: 'time', header: t('table.time'), renderCell: r => <span className="text-xs text-muted-foreground">{formatDate(r.createdAt)}</span> },
                     { id: 'gross', header: t('table.gross'), headerClassName: 'text-right', cellClassName: 'text-right', renderCell: r => formatVnd(r.grossAmount) },
                     { id: 'rate', header: t('table.fee_pct'), headerClassName: 'text-right', cellClassName: 'text-right text-muted-foreground', renderCell: r => `${r.commissionRate}%` },
                     { id: 'commission', header: t('table.commission'), headerClassName: 'text-right', cellClassName: 'text-right text-red-500', renderCell: r => formatVnd(r.commissionAmount) },
                     { id: 'net', header: t('table.net'), headerClassName: 'text-right', cellClassName: 'text-right font-medium text-green-600', renderCell: r => formatVnd(r.netAmount) },
+                    { id: 'actions', header: tCommon('common.actions'), renderCell: r => <Button variant="outline" size="sm" onClick={() => setSelectedRevenue(r)}>{tCommon('common.view')}</Button> },
                 ]}
             />
+            {selectedRevenue && (
+                <RevenueDetailModal
+                    revenueId={selectedRevenue.id}
+                    initialRevenue={selectedRevenue}
+                    loadRevenue={async (revenueId) => await getRevenueDetail(revenueId) as any}
+                    onClose={() => setSelectedRevenue(null)}
+                    showCompany
+                />
+            )}
         </div>
     )
 }

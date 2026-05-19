@@ -3,11 +3,45 @@ import type { EPaymentMethod } from './booking'
 export interface IRevenue {
     id: string
     companyId: string
+    fee?: number
+    companyName?: string
+    companyInfo?: {
+        companyId: string
+        companyName?: string
+    }
     bookingId: string
+    bookingCode?: string
     grossAmount: number
     commission: number
     netAmount: number
     paymentType: EPaymentMethod
+    passengerName?: string
+    passengerEmail?: string
+    passengerPhone?: string
+    customerInfo?: {
+        passengerName?: string
+        passengerEmail?: string
+        passengerPhone?: string
+    }
+    tripInfo?: {
+        departureTime?: string
+        arrivalTime?: string
+        fromLocationName?: string
+        toLocationName?: string
+        busCompanyName?: string
+        pickupStop?: {
+            locationName?: string
+            locationAddress?: string
+            pickupTime?: string
+            dropoffTime?: string
+        }
+        dropoffStop?: {
+            locationName?: string
+            locationAddress?: string
+            pickupTime?: string
+            dropoffTime?: string
+        }
+    }
     createdAt: string
 }
 
@@ -20,7 +54,8 @@ export interface IRevenueStats {
 }
 
 export interface ISettlement {
-    settlementId: string
+    id: string
+    settlementId?: string
     companyId: string
     periodFrom: string
     periodTo: string

@@ -34,12 +34,15 @@ import { Route as AdminCompaniesRouteImport } from './routes/admin/companies'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
 import { Route as CustomerMyBookingsIndexRouteImport } from './routes/customer/my-bookings/index'
 import { Route as CompanySeatLayoutsIndexRouteImport } from './routes/company/seat-layouts/index'
+import { Route as CompanyRolesIndexRouteImport } from './routes/company/roles/index'
 import { Route as CompanyFleetIndexRouteImport } from './routes/company/fleet/index'
 import { Route as AdminRolesIndexRouteImport } from './routes/admin/roles/index'
 import { Route as AdminCompaniesIndexRouteImport } from './routes/admin/companies/index'
 import { Route as AdminAdminsIndexRouteImport } from './routes/admin/admins/index'
 import { Route as CustomerTripsTripIdRouteImport } from './routes/customer/trips.$tripId'
 import { Route as CustomerMyBookingsCodeRouteImport } from './routes/customer/my-bookings/$code'
+import { Route as CompanyRolesNewRouteImport } from './routes/company/roles/new'
+import { Route as CompanyRolesIdRouteImport } from './routes/company/roles/$id'
 import { Route as CompanyFleetAddRouteImport } from './routes/company/fleet/add'
 import { Route as AdminRolesNewRouteImport } from './routes/admin/roles/new'
 import { Route as AdminRolesIdRouteImport } from './routes/admin/roles/$id'
@@ -174,6 +177,11 @@ const CompanySeatLayoutsIndexRoute = CompanySeatLayoutsIndexRouteImport.update({
   path: '/seat-layouts/',
   getParentRoute: () => CompanyRouteRoute,
 } as any)
+const CompanyRolesIndexRoute = CompanyRolesIndexRouteImport.update({
+  id: '/roles/',
+  path: '/roles/',
+  getParentRoute: () => CompanyRouteRoute,
+} as any)
 const CompanyFleetIndexRoute = CompanyFleetIndexRouteImport.update({
   id: '/fleet/',
   path: '/fleet/',
@@ -203,6 +211,16 @@ const CustomerMyBookingsCodeRoute = CustomerMyBookingsCodeRouteImport.update({
   id: '/my-bookings/$code',
   path: '/my-bookings/$code',
   getParentRoute: () => CustomerRouteRoute,
+} as any)
+const CompanyRolesNewRoute = CompanyRolesNewRouteImport.update({
+  id: '/roles/new',
+  path: '/roles/new',
+  getParentRoute: () => CompanyRouteRoute,
+} as any)
+const CompanyRolesIdRoute = CompanyRolesIdRouteImport.update({
+  id: '/roles/$id',
+  path: '/roles/$id',
+  getParentRoute: () => CompanyRouteRoute,
 } as any)
 const CompanyFleetAddRoute = CompanyFleetAddRouteImport.update({
   id: '/fleet/add',
@@ -276,12 +294,15 @@ export interface FileRoutesByFullPath {
   '/admin/roles/$id': typeof AdminRolesIdRoute
   '/admin/roles/new': typeof AdminRolesNewRoute
   '/company/fleet/add': typeof CompanyFleetAddRoute
+  '/company/roles/$id': typeof CompanyRolesIdRoute
+  '/company/roles/new': typeof CompanyRolesNewRoute
   '/customer/my-bookings/$code': typeof CustomerMyBookingsCodeRoute
   '/customer/trips/$tripId': typeof CustomerTripsTripIdRoute
   '/admin/admins/': typeof AdminAdminsIndexRoute
   '/admin/companies/': typeof AdminCompaniesIndexRoute
   '/admin/roles/': typeof AdminRolesIndexRoute
   '/company/fleet/': typeof CompanyFleetIndexRoute
+  '/company/roles/': typeof CompanyRolesIndexRoute
   '/company/seat-layouts/': typeof CompanySeatLayoutsIndexRoute
   '/customer/my-bookings/': typeof CustomerMyBookingsIndexRoute
   '/company/fleet/edit/$busId': typeof CompanyFleetEditBusIdRoute
@@ -313,12 +334,15 @@ export interface FileRoutesByTo {
   '/admin/roles/$id': typeof AdminRolesIdRoute
   '/admin/roles/new': typeof AdminRolesNewRoute
   '/company/fleet/add': typeof CompanyFleetAddRoute
+  '/company/roles/$id': typeof CompanyRolesIdRoute
+  '/company/roles/new': typeof CompanyRolesNewRoute
   '/customer/my-bookings/$code': typeof CustomerMyBookingsCodeRoute
   '/customer/trips/$tripId': typeof CustomerTripsTripIdRoute
   '/admin/admins': typeof AdminAdminsIndexRoute
   '/admin/companies': typeof AdminCompaniesIndexRoute
   '/admin/roles': typeof AdminRolesIndexRoute
   '/company/fleet': typeof CompanyFleetIndexRoute
+  '/company/roles': typeof CompanyRolesIndexRoute
   '/company/seat-layouts': typeof CompanySeatLayoutsIndexRoute
   '/customer/my-bookings': typeof CustomerMyBookingsIndexRoute
   '/company/fleet/edit/$busId': typeof CompanyFleetEditBusIdRoute
@@ -355,12 +379,15 @@ export interface FileRoutesById {
   '/admin/roles/$id': typeof AdminRolesIdRoute
   '/admin/roles/new': typeof AdminRolesNewRoute
   '/company/fleet/add': typeof CompanyFleetAddRoute
+  '/company/roles/$id': typeof CompanyRolesIdRoute
+  '/company/roles/new': typeof CompanyRolesNewRoute
   '/customer/my-bookings/$code': typeof CustomerMyBookingsCodeRoute
   '/customer/trips/$tripId': typeof CustomerTripsTripIdRoute
   '/admin/admins/': typeof AdminAdminsIndexRoute
   '/admin/companies/': typeof AdminCompaniesIndexRoute
   '/admin/roles/': typeof AdminRolesIndexRoute
   '/company/fleet/': typeof CompanyFleetIndexRoute
+  '/company/roles/': typeof CompanyRolesIndexRoute
   '/company/seat-layouts/': typeof CompanySeatLayoutsIndexRoute
   '/customer/my-bookings/': typeof CustomerMyBookingsIndexRoute
   '/company/fleet/edit/$busId': typeof CompanyFleetEditBusIdRoute
@@ -398,12 +425,15 @@ export interface FileRouteTypes {
     | '/admin/roles/$id'
     | '/admin/roles/new'
     | '/company/fleet/add'
+    | '/company/roles/$id'
+    | '/company/roles/new'
     | '/customer/my-bookings/$code'
     | '/customer/trips/$tripId'
     | '/admin/admins/'
     | '/admin/companies/'
     | '/admin/roles/'
     | '/company/fleet/'
+    | '/company/roles/'
     | '/company/seat-layouts/'
     | '/customer/my-bookings/'
     | '/company/fleet/edit/$busId'
@@ -435,12 +465,15 @@ export interface FileRouteTypes {
     | '/admin/roles/$id'
     | '/admin/roles/new'
     | '/company/fleet/add'
+    | '/company/roles/$id'
+    | '/company/roles/new'
     | '/customer/my-bookings/$code'
     | '/customer/trips/$tripId'
     | '/admin/admins'
     | '/admin/companies'
     | '/admin/roles'
     | '/company/fleet'
+    | '/company/roles'
     | '/company/seat-layouts'
     | '/customer/my-bookings'
     | '/company/fleet/edit/$busId'
@@ -476,12 +509,15 @@ export interface FileRouteTypes {
     | '/admin/roles/$id'
     | '/admin/roles/new'
     | '/company/fleet/add'
+    | '/company/roles/$id'
+    | '/company/roles/new'
     | '/customer/my-bookings/$code'
     | '/customer/trips/$tripId'
     | '/admin/admins/'
     | '/admin/companies/'
     | '/admin/roles/'
     | '/company/fleet/'
+    | '/company/roles/'
     | '/company/seat-layouts/'
     | '/customer/my-bookings/'
     | '/company/fleet/edit/$busId'
@@ -673,6 +709,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanySeatLayoutsIndexRouteImport
       parentRoute: typeof CompanyRouteRoute
     }
+    '/company/roles/': {
+      id: '/company/roles/'
+      path: '/roles'
+      fullPath: '/company/roles/'
+      preLoaderRoute: typeof CompanyRolesIndexRouteImport
+      parentRoute: typeof CompanyRouteRoute
+    }
     '/company/fleet/': {
       id: '/company/fleet/'
       path: '/fleet'
@@ -714,6 +757,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/customer/my-bookings/$code'
       preLoaderRoute: typeof CustomerMyBookingsCodeRouteImport
       parentRoute: typeof CustomerRouteRoute
+    }
+    '/company/roles/new': {
+      id: '/company/roles/new'
+      path: '/roles/new'
+      fullPath: '/company/roles/new'
+      preLoaderRoute: typeof CompanyRolesNewRouteImport
+      parentRoute: typeof CompanyRouteRoute
+    }
+    '/company/roles/$id': {
+      id: '/company/roles/$id'
+      path: '/roles/$id'
+      fullPath: '/company/roles/$id'
+      preLoaderRoute: typeof CompanyRolesIdRouteImport
+      parentRoute: typeof CompanyRouteRoute
     }
     '/company/fleet/add': {
       id: '/company/fleet/add'
@@ -836,7 +893,10 @@ interface CompanyRouteRouteChildren {
   CompanyTripsRoute: typeof CompanyTripsRoute
   CompanyIndexRoute: typeof CompanyIndexRoute
   CompanyFleetAddRoute: typeof CompanyFleetAddRoute
+  CompanyRolesIdRoute: typeof CompanyRolesIdRoute
+  CompanyRolesNewRoute: typeof CompanyRolesNewRoute
   CompanyFleetIndexRoute: typeof CompanyFleetIndexRoute
+  CompanyRolesIndexRoute: typeof CompanyRolesIndexRoute
   CompanySeatLayoutsIndexRoute: typeof CompanySeatLayoutsIndexRoute
   CompanyFleetEditBusIdRoute: typeof CompanyFleetEditBusIdRoute
 }
@@ -849,7 +909,10 @@ const CompanyRouteRouteChildren: CompanyRouteRouteChildren = {
   CompanyTripsRoute: CompanyTripsRoute,
   CompanyIndexRoute: CompanyIndexRoute,
   CompanyFleetAddRoute: CompanyFleetAddRoute,
+  CompanyRolesIdRoute: CompanyRolesIdRoute,
+  CompanyRolesNewRoute: CompanyRolesNewRoute,
   CompanyFleetIndexRoute: CompanyFleetIndexRoute,
+  CompanyRolesIndexRoute: CompanyRolesIndexRoute,
   CompanySeatLayoutsIndexRoute: CompanySeatLayoutsIndexRoute,
   CompanyFleetEditBusIdRoute: CompanyFleetEditBusIdRoute,
 }

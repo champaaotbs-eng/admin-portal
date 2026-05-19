@@ -52,11 +52,14 @@ const normalizeStatus = (status: unknown): CompanySettlementRow['status'] => {
 }
 
 const toSettlementRow = (settlement: ISettlement): CompanySettlementRow => {
-    const fallbackCode = `SETTLE-${settlement.settlementId.slice(-6).toUpperCase()}`
+    const settlementId = settlement.settlementId ?? settlement.id
+    const fallbackCode = settlementId
+        ? `SETTLE-${settlementId.slice(-6).toUpperCase()}`
+        : 'SETTLE-UNKNOWN'
     const unknownShape = settlement as unknown as { bookingCount?: number; referenceCode?: string }
 
     return {
-        id: settlement.settlementId,
+        id: settlementId,
         periodFrom: settlement.periodFrom,
         periodTo: settlement.periodTo,
         totalGross: settlement.totalGross,

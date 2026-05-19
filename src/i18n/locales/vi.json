@@ -700,7 +700,7 @@
             "admin_description": "Theo dõi quyết toán và hoa hồng nền tảng",
             "tab_revenue": "Giao dịch",
             "tab_settlements": "Quyết toán",
-            "search_placeholder": "Tìm theo nhà xe...",
+            "search_placeholder": "Tìm theo nhà xe, mã đặt vé hoặc khách hàng...",
             "stats": {
                 "total_gross": "Tổng doanh thu gross",
                 "commission": "Hoa hồng nền tảng",
@@ -745,7 +745,24 @@
             "filter_paid": "Đã TT",
             "company_label": "Nhà xe",
             "date_from": "Từ ngày",
-            "date_to": "Đến ngày"
+            "date_to": "Đến ngày",
+            "detail": {
+                "title": "Chi tiết doanh thu #{{code}}",
+                "company_section": "Nhà xe",
+                "trip_section": "Thông tin chuyến",
+                "customer_section": "Thông tin khách hàng",
+                "pickup_section": "Điểm đón",
+                "dropoff_section": "Điểm trả",
+                "route": "Tuyến đi",
+                "payment_type": "Hình thức thanh toán",
+                "fee_rate": "Tỷ lệ phí",
+                "created_at": "Thời điểm ghi nhận",
+                "departure_time": "Giờ khởi hành",
+                "arrival_time": "Giờ đến",
+                "customer_name": "Tên khách hàng",
+                "customer_phone": "Số điện thoại",
+                "customer_email": "Email"
+            }
         },
         "buses": {
             "title": "Quản lý xe",
@@ -984,8 +1001,8 @@
         },
         "staff": {
             "title": "Quản lý nhân viên",
-            "description": "Danh sách nhân viên và quản lý vai trò công ty",
-            "search_placeholder": "Tìm tên, email, SĐT...",
+            "description": "Quản lý tài khoản nhân viên và vai trò của công ty",
+            "search_placeholder": "Tìm theo tên đăng nhập hoặc họ tên...",
             "add_staff": "Thêm nhân viên",
             "add_staff_title": "Thêm nhân viên mới",
             "edit_staff_title": "Chỉnh sửa nhân viên",
@@ -994,39 +1011,42 @@
                 "active_suffix": "đang làm việc"
             },
             "roles": {
-                "all": "Tất cả",
-                "owner": "Chủ doanh nghiệp",
-                "manager": "Quản lý",
-                "driver": "Tài xế",
-                "agent": "Đại lý"
+                "all": "Tất cả vai trò"
             },
             "table": {
-                "name": "Tên",
-                "email": "Email",
-                "phone": "SĐT",
+                "username": "Tên đăng nhập",
                 "role": "Vai trò",
                 "status": "Trạng thái",
                 "joined_at": "Ngày vào"
             },
             "form": {
+                "username": "Tên đăng nhập",
+                "username_placeholder": "Nhập tên đăng nhập",
                 "name": "Họ và tên",
                 "name_placeholder": "Nhập họ và tên",
-                "email": "Email",
-                "email_placeholder": "Nhập email",
-                "phone": "Số điện thoại",
-                "phone_placeholder": "Nhập số điện thoại",
                 "role": "Vai trò",
-                "password": "Mật khẩu"
+                "role_placeholder": "Chọn vai trò",
+                "password": "Mật khẩu",
+                "password_placeholder": "Để trống nếu muốn giữ mật khẩu hiện tại",
+                "active": "Hoạt động"
+            },
+            "actions": {
+                "edit": "Chỉnh sửa nhân viên",
+                "delete": "Xóa nhân viên"
+            },
+            "messages": {
+                "confirm_delete": "Xóa nhân viên \"{{name}}\"? Hành động này không thể hoàn tác."
             },
             "errors": {
+                "username_required": "Tên đăng nhập là bắt buộc",
+                "username_min": "Tên đăng nhập phải có ít nhất 3 ký tự",
+                "username_no_spaces": "Tên đăng nhập không được chứa khoảng trắng",
                 "name_required": "Họ và tên là bắt buộc",
-                "email_required": "Email là bắt buộc",
-                "email_invalid": "Định dạng email không hợp lệ",
-                "phone_required": "Số điện thoại là bắt buộc",
                 "role_required": "Vai trò là bắt buộc",
-                "password_required": "Mật khẩu là bắt buộc",
                 "password_min": "Mật khẩu phải có ít nhất 6 ký tự"
-            }
+            },
+            "empty": "Không tìm thấy nhân viên nào.",
+            "unknown_role": "Vai trò không xác định"
         },
         "trips": {
             "title": "Quản lý chuyến đi",

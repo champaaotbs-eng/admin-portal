@@ -5,6 +5,7 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { getRoleById, updateRole } from 'services/admins/roles.service'
+import { getAllAdminBusCompanies } from 'services/admins/bus-company.service'
 import { getPermissionModulesByRoleType } from '../constants/permission.constant'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { roleSchema, type TInsertRole } from '../validation-schema'
@@ -15,22 +16,28 @@ import type { IToastState } from 'types'
 import type { IPermissionFormItem } from '../type'
 import { ROLE_QUERY_KEYS } from '../constants/role-query-keys.constant'
 import { ADMIN_TYPE } from 'configs/constants'
+import { useAuthStore } from '@/store/auth.store'
 
 interface IEditRoleFormProps {
     roleId: string
     onSuccess?: () => void
     onCancel?: () => void
+    scope?: 'system' | 'company'
 }
 
-export const EditRoleForm = ({ roleId, onSuccess, onCancel }: IEditRoleFormProps) => {
+export const EditRoleForm = ({ roleId, onSuccess, onCancel, scope = 'system' }: IEditRoleFormProps) => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.roles' })
     const [toast, setToast] = useState<IToastState | null>(null)
     const queryClient = useQueryClient()
+    const { admin } = useAuthStore()
+    const companyRoleOnly = scope === 'company'
 
-    const roleTypeOptions = [
-        { value: ADMIN_TYPE.SYSTEM_ADMIN, label: t('types.system_admin') },
-        { value: ADMIN_TYPE.COMPANY_ADMIN, label: t('types.company_admin') },
-    ]
+    const roleTypeOptions = companyRoleOnly
+        ? [{ value: ADMIN_TYPE.COMPANY_ADMIN, label: t('types.company_admin') }]
+        : [
+            { value: ADMIN_TYPE.SYSTEM_ADMIN, label: t('types.system_admin') },
+            { value: ADMIN_TYPE.COMPANY_ADMIN, label: t('types.company_admin') },
+        ]
 
     const buildPermissionsByType = (roleType: string, sourcePermissions: IPermissionFormItem[] = []): IPermissionFormItem[] => {
         return getPermissionModulesByRoleType(roleType).map(({ module }) => {
@@ -44,12 +51,20 @@ export const EditRoleForm = ({ roleId, onSuccess, onCancel }: IEditRoleFormProps
         })
     }
 
-    const createDefaultPermissions = (): IPermissionFormItem[] => buildPermissionsByType(ADMIN_TYPE.SYSTEM_ADMIN)
+    const defaultRoleType = companyRoleOnly ? ADMIN_TYPE.COMPANY_ADMIN : ADMIN_TYPE.SYSTEM_ADMIN
+    const createDefaultPermissions = (): IPermissionFormItem[] => buildPermissionsByType(defaultRoleType)
 
     const roleDetailQuery = useQuery({
         queryKey: ROLE_QUERY_KEYS.detail(roleId),
         queryFn: () => getRoleById(roleId),
         enabled: Boolean(roleId),
+    })
+
+    const companyOptionsQuery = useQuery({
+        queryKey: ['admin-role-company-options'],
+        queryFn: () => getAllAdminBusCompanies(),
+        enabled: !companyRoleOnly,
+        select: (response) => response.data ?? [],
     })
 
     const updateRoleMutation = useMutation({
@@ -76,7 +91,8 @@ export const EditRoleForm = ({ roleId, onSuccess, onCancel }: IEditRoleFormProps
         resolver: zodResolver(schema),
         defaultValues: {
             roleName: '',
-            type: ADMIN_TYPE.SYSTEM_ADMIN,
+            type: defaultRoleType,
+            busCompanyId: companyRoleOnly ? admin?.busCompanyId ?? '' : '',
             description: '',
             isActive: true,
             permissions: createDefaultPermissions(),
@@ -111,21 +127,34 @@ export const EditRoleForm = ({ roleId, onSuccess, onCancel }: IEditRoleFormProps
 
         const role = roleDetailQuery.data?.data
         if (role) {
-            const normalizedType = role.type ?? ADMIN_TYPE.SYSTEM_ADMIN
+            const normalizedType = role.type ?? defaultRoleType
             reset({
                 roleName: role.roleName,
                 type: normalizedType,
+                busCompanyId: role.busCompanyId ?? '',
                 description: role.description,
                 isActive: role.isActive,
                 permissions: buildPermissionsByType(normalizedType, role.permissions),
             })
         }
-    }, [roleDetailQuery.data, reset, roleId])
+    }, [defaultRoleType, roleDetailQuery.data, reset, roleId])
 
     useEffect(() => {
         if (!roleDetailQuery.isError) return
         setToast({ type: 'error', message: t('messages.load_failed') })
     }, [roleDetailQuery.isError, t])
+
+    useEffect(() => {
+        if (companyRoleOnly) {
+            setValue('type', ADMIN_TYPE.COMPANY_ADMIN, { shouldDirty: false })
+            setValue('busCompanyId', admin?.busCompanyId ?? '', { shouldDirty: false })
+            return
+        }
+
+        if (roleType !== ADMIN_TYPE.COMPANY_ADMIN) {
+            setValue('busCompanyId', '', { shouldDirty: true })
+        }
+    }, [admin?.busCompanyId, companyRoleOnly, roleType, setValue])
 
     const handleReadChange = (index: number, checked: boolean) => {
         const current = fields[index]
@@ -225,7 +254,7 @@ export const EditRoleForm = ({ roleId, onSuccess, onCancel }: IEditRoleFormProps
                                 </label>
                                 <div className="relative">
                                     <select
-                                        disabled
+                                        disabled={companyRoleOnly}
                                         className="h-10 w-full rounded-md border border-slate-300 bg-[#f5f5f5] px-3 pr-10 text-sm text-slate-600 outline-none"
                                         {...register('type')}
                                     >
@@ -234,11 +263,30 @@ export const EditRoleForm = ({ roleId, onSuccess, onCancel }: IEditRoleFormProps
                                             <option key={option.value} value={option.value}>{option.label}</option>
                                         ))}
                                     </select>
-                                    <Lock className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                    {companyRoleOnly ? <Lock className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /> : null}
                                 </div>
-                                <p className="mt-1 text-xs text-slate-500">{t('form.type_locked')}</p>
+                                {companyRoleOnly ? <p className="mt-1 text-xs text-slate-500">{t('form.type_locked')}</p> : null}
                                 {errors.type ? <p className="mt-1 text-xs text-rose-600">{errors.type.message}</p> : null}
                             </div>
+
+                            {roleType === ADMIN_TYPE.COMPANY_ADMIN ? (
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-slate-800">
+                                        Company <span className="text-rose-500">*</span>
+                                    </label>
+                                    <select
+                                        disabled={isSubmitting || companyRoleOnly || companyOptionsQuery.isLoading}
+                                        className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-[#f5f5f5]"
+                                        {...register('busCompanyId')}
+                                    >
+                                        <option value="">Select company</option>
+                                        {(companyRoleOnly ? [] : companyOptionsQuery.data ?? []).map((company) => (
+                                            <option key={company.busCompanyId} value={company.busCompanyId}>{company.name}</option>
+                                        ))}
+                                    </select>
+                                    {errors.busCompanyId ? <p className="mt-1 text-xs text-rose-600">{errors.busCompanyId.message}</p> : null}
+                                </div>
+                            ) : null}
 
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-slate-800">{t('form.active')}</span>

@@ -26,6 +26,9 @@ export const RoleDetailModal = ({ open, role, onClose, onEdit }: RoleDetailModal
                     <div>
                         <h2 className="text-lg font-semibold text-slate-900">{role.roleName}</h2>
                         <p className="mt-1 text-sm text-slate-600">{role.description}</p>
+                        <p className="mt-1 text-xs text-slate-500">
+                            Scope: {role.busCompanyId ?? 'system'}
+                        </p>
                     </div>
                     <RoleStatusBadge isActive={role.isActive} />
                 </div>

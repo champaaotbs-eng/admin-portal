@@ -12,7 +12,12 @@ import { useDebounce } from 'components/shared/hooks/use-debounce'
 /**
  * Role list page.
  */
-export const RoleListPage = () => {
+interface RoleListPageProps {
+    basePath?: string
+    scope?: 'system' | 'company'
+}
+
+export const RoleListPage = ({ basePath = '/admin/roles', scope = 'system' }: RoleListPageProps) => {
     const navigate = useNavigate()
     const { t } = useTranslation('translation', { keyPrefix: 'pages.roles' })
     const [searchText, setSearchText] = useState('')
@@ -36,6 +41,7 @@ export const RoleListPage = () => {
         page,
         searchText: debouncedSearchText,
         statusFilter: debouncedStatusFilter,
+        scope,
     })
 
     useEffect(() => {
@@ -104,7 +110,7 @@ export const RoleListPage = () => {
 
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <h1 className="text-2xl font-bold text-slate-900">{t('list.title')}</h1>
-                <Button onClick={() => navigate({ to: '/admin/roles/new' })}>+ {t('list.add_role')}</Button>
+                <Button onClick={() => navigate({ to: `${basePath}/new` })}>+ {t('list.add_role')}</Button>
             </div>
 
             <RoleFilter
@@ -123,7 +129,7 @@ export const RoleListPage = () => {
                 pageSize={limit}
                 onPageChange={handlePageChange}
                 onView={openViewModal}
-                onEdit={(role) => role.roleId && navigate({ to: `/admin/roles/${role.roleId}` })}
+                onEdit={(role) => role.roleId && navigate({ to: `${basePath}/${role.roleId}` })}
                 onDelete={openDeleteDialog}
             />
 
@@ -134,7 +140,7 @@ export const RoleListPage = () => {
                 onEdit={(role) => {
                     closeViewModal()
                     if (role.roleId) {
-                        navigate({ to: `/admin/roles/${role.roleId}` })
+                        navigate({ to: `${basePath}/${role.roleId}` })
                     }
                 }}
             />

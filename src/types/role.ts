@@ -13,6 +13,8 @@ export interface IRole {
 
     type: 'system_admin' | 'company_admin';
 
+    busCompanyId?: string | null;
+
     isActive: boolean;
 
     description?: string;

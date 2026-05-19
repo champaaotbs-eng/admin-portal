@@ -8,6 +8,7 @@ import {
     DollarSign,
     Users,
     Grid3x3,
+    ShieldCheck,
 } from 'lucide-react'
 import { Sidebar } from 'components/shared/side-bar'
 import { APP_ROUTES } from '@/constants/app-routes'
@@ -24,6 +25,7 @@ export const CompanyLayout = () => {
         { label: t('nav.bookings'), to: APP_ROUTES.COMPANY.BOOKINGS, icon: Ticket },
         { label: t('nav.revenue'), to: APP_ROUTES.COMPANY.REVENUE, icon: DollarSign },
         { label: t('nav.staff'), to: APP_ROUTES.COMPANY.STAFF, icon: Users },
+        { label: t('nav.roles'), to: APP_ROUTES.COMPANY.ROLES.ROOT, icon: ShieldCheck },
     ]
     return (
         <div className="flex h-[calc(100vh-3.5rem)]">

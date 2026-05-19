@@ -1,5 +1,5 @@
 import { RoleListPage } from './pages/role-list.page'
 
 export const AdminRolesPage = () => {
-    return <RoleListPage />
+    return <RoleListPage basePath="/admin/roles" scope="system" />
 }

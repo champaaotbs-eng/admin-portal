@@ -171,11 +171,9 @@ export const useAdminForm = ({ adminId }: UseAdminFormProps) => {
 
     const buildPayload = useCallback(
         (values: AdminFormValues): Record<string, unknown> => {
-            const selectedRole = roles.find((role) => role.roleId === values.roleId)
-
             if (isEditMode) {
                 const payload: Record<string, unknown> = {
-                    role: selectedRole,
+                    roleId: values.roleId,
                     isActive: values.isActive,
                 }
 
@@ -189,12 +187,12 @@ export const useAdminForm = ({ adminId }: UseAdminFormProps) => {
             return {
                 username: values.username,
                 fullName: values.fullName,
-                role: selectedRole,
+                roleId: values.roleId,
                 password: values.password,
                 isActive: values.isActive,
             }
         },
-        [isEditMode, roles],
+        [isEditMode],
     )
 
     const onSubmit = form.handleSubmit(async (values) => {

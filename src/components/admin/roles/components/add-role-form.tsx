@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { createRole } from 'services/admins/roles.service'
+import { getAllAdminBusCompanies } from 'services/admins/bus-company.service'
 import { getPermissionModulesByRoleType } from '../constants/permission.constant'
 import { ROLE_QUERY_KEYS } from '../constants/role-query-keys.constant'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -13,21 +14,27 @@ import { ToggleSwitch } from 'components/shared/toggle-switch'
 import type { IPermissionFormItem } from '../type'
 import type { IToastState } from 'types'
 import { ADMIN_TYPE } from 'configs/constants'
+import { useAuthStore } from '@/store/auth.store'
 
 interface IAddRoleFormProps {
     onSuccess?: () => void
     onCancel?: () => void
+    scope?: 'system' | 'company'
 }
 
-export const AddRoleForm = ({ onSuccess, onCancel }: IAddRoleFormProps) => {
+export const AddRoleForm = ({ onSuccess, onCancel, scope = 'system' }: IAddRoleFormProps) => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.roles' })
     const [toast, setToast] = useState<IToastState | null>(null)
     const queryClient = useQueryClient()
+    const { admin } = useAuthStore()
+    const companyRoleOnly = scope === 'company'
 
-    const roleTypeOptions = [
-        { value: ADMIN_TYPE.SYSTEM_ADMIN, label: t('types.system_admin') },
-        { value: ADMIN_TYPE.COMPANY_ADMIN, label: t('types.company_admin') },
-    ]
+    const roleTypeOptions = companyRoleOnly
+        ? [{ value: ADMIN_TYPE.COMPANY_ADMIN, label: t('types.company_admin') }]
+        : [
+            { value: ADMIN_TYPE.SYSTEM_ADMIN, label: t('types.system_admin') },
+            { value: ADMIN_TYPE.COMPANY_ADMIN, label: t('types.company_admin') },
+        ]
 
     const buildPermissionsByType = (roleType: string, sourcePermissions: IPermissionFormItem[] = []): IPermissionFormItem[] => {
         return getPermissionModulesByRoleType(roleType).map(({ module }) => {
@@ -41,7 +48,15 @@ export const AddRoleForm = ({ onSuccess, onCancel }: IAddRoleFormProps) => {
         })
     }
 
-    const createDefaultPermissions = (): IPermissionFormItem[] => buildPermissionsByType(ADMIN_TYPE.SYSTEM_ADMIN)
+    const defaultRoleType = companyRoleOnly ? ADMIN_TYPE.COMPANY_ADMIN : ADMIN_TYPE.SYSTEM_ADMIN
+    const createDefaultPermissions = (): IPermissionFormItem[] => buildPermissionsByType(defaultRoleType)
+
+    const companyOptionsQuery = useQuery({
+        queryKey: ['admin-role-company-options'],
+        queryFn: () => getAllAdminBusCompanies(),
+        enabled: !companyRoleOnly,
+        select: (response) => response.data ?? [],
+    })
 
     const createRoleMutation = useMutation({
         mutationFn: (payload: TInsertRole) => createRole(payload),
@@ -65,7 +80,8 @@ export const AddRoleForm = ({ onSuccess, onCancel }: IAddRoleFormProps) => {
         resolver: zodResolver(schema),
         defaultValues: {
             roleName: '',
-            type: ADMIN_TYPE.SYSTEM_ADMIN,
+            type: defaultRoleType,
+            busCompanyId: companyRoleOnly ? admin?.busCompanyId ?? '' : '',
             description: '',
             isActive: true,
             permissions: createDefaultPermissions(),
@@ -97,8 +113,20 @@ export const AddRoleForm = ({ onSuccess, onCancel }: IAddRoleFormProps) => {
 
     useEffect(() => {
         const currentPermissions = getValues('permissions') ?? []
-        replace(buildPermissionsByType(roleType || ADMIN_TYPE.SYSTEM_ADMIN, currentPermissions))
-    }, [getValues, replace, roleType])
+        replace(buildPermissionsByType(roleType || defaultRoleType, currentPermissions))
+    }, [defaultRoleType, getValues, replace, roleType])
+
+    useEffect(() => {
+        if (companyRoleOnly) {
+            setValue('type', ADMIN_TYPE.COMPANY_ADMIN, { shouldDirty: false })
+            setValue('busCompanyId', admin?.busCompanyId ?? '', { shouldDirty: false })
+            return
+        }
+
+        if (roleType !== ADMIN_TYPE.COMPANY_ADMIN) {
+            setValue('busCompanyId', '', { shouldDirty: true })
+        }
+    }, [admin?.busCompanyId, companyRoleOnly, roleType, setValue])
 
 
     const handleReadChange = (index: number, checked: boolean) => {
@@ -194,7 +222,7 @@ export const AddRoleForm = ({ onSuccess, onCancel }: IAddRoleFormProps) => {
                                     {t('form.type')} <span className="text-rose-500">*</span>
                                 </label>
                                 <select
-                                    disabled={isSubmitting}
+                                    disabled={isSubmitting || companyRoleOnly}
                                     className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-[#f5f5f5]"
                                     {...register('type')}
                                 >
@@ -205,6 +233,25 @@ export const AddRoleForm = ({ onSuccess, onCancel }: IAddRoleFormProps) => {
                                 </select>
                                 {errors.type ? <p className="mt-1 text-xs text-rose-600">{errors.type.message}</p> : null}
                             </div>
+
+                            {roleType === ADMIN_TYPE.COMPANY_ADMIN ? (
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-slate-800">
+                                        Company <span className="text-rose-500">*</span>
+                                    </label>
+                                    <select
+                                        disabled={isSubmitting || companyRoleOnly || companyOptionsQuery.isLoading}
+                                        className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-[#f5f5f5]"
+                                        {...register('busCompanyId')}
+                                    >
+                                        <option value="">Select company</option>
+                                        {(companyRoleOnly ? [] : companyOptionsQuery.data ?? []).map((company) => (
+                                            <option key={company.busCompanyId} value={company.busCompanyId}>{company.name}</option>
+                                        ))}
+                                    </select>
+                                    {errors.busCompanyId ? <p className="mt-1 text-xs text-rose-600">{errors.busCompanyId.message}</p> : null}
+                                </div>
+                            ) : null}
 
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-slate-800">{t('form.active')}</span>
@@ -264,4 +311,3 @@ export const AddRoleForm = ({ onSuccess, onCancel }: IAddRoleFormProps) => {
         </>
     )
 }
-

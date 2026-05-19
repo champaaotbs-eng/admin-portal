@@ -10,6 +10,7 @@ interface UseRoleListParams {
     limit?: number
     searchText: string
     statusFilter: StatusFilter
+    scope?: 'system' | 'company'
 }
 
 const toErrorMessage = (error: unknown, fallbackMessage: string) => {
@@ -24,7 +25,7 @@ const toErrorMessage = (error: unknown, fallbackMessage: string) => {
 /**
  * Role list data and mutation hook.
  */
-export const useRoleList = ({ page, limit = 10, searchText, statusFilter }: UseRoleListParams) => {
+export const useRoleList = ({ page, limit = 10, searchText, statusFilter, scope = 'system' }: UseRoleListParams) => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.roles' })
     const queryClient = useQueryClient()
     const normalizedSearchText = searchText.trim()
@@ -36,7 +37,8 @@ export const useRoleList = ({ page, limit = 10, searchText, statusFilter }: UseR
                 page,
                 limit,
                 filters: {
-                    roleName: normalizedSearchText,
+                    name: normalizedSearchText,
+                    ...(scope === 'company' ? { type: 'company_admin' } : {}),
                     isActive: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
                 },
             }),

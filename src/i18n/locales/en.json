@@ -700,7 +700,7 @@
             "admin_description": "Platform settlement and commission tracking",
             "tab_revenue": "Transactions",
             "tab_settlements": "Settlements",
-            "search_placeholder": "Search by company...",
+            "search_placeholder": "Search by company, booking code, or customer...",
             "stats": {
                 "total_gross": "Total gross",
                 "commission": "Platform commission",
@@ -745,7 +745,24 @@
             "filter_paid": "Settled",
             "company_label": "Company",
             "date_from": "From date",
-            "date_to": "To date"
+            "date_to": "To date",
+            "detail": {
+                "title": "Revenue detail #{{code}}",
+                "company_section": "Company",
+                "trip_section": "Trip information",
+                "customer_section": "Customer information",
+                "pickup_section": "Pickup",
+                "dropoff_section": "Drop-off",
+                "route": "Route",
+                "payment_type": "Payment method",
+                "fee_rate": "Fee rate",
+                "created_at": "Recorded at",
+                "departure_time": "Departure time",
+                "arrival_time": "Arrival time",
+                "customer_name": "Customer name",
+                "customer_phone": "Phone number",
+                "customer_email": "Email"
+            }
         },
         "buses": {
             "title": "Buses Management",
@@ -984,8 +1001,8 @@
         },
         "staff": {
             "title": "Staff Management",
-            "description": "Staff list and company role management",
-            "search_placeholder": "Search name, email, phone...",
+            "description": "Manage staff accounts and company roles",
+            "search_placeholder": "Search username or full name...",
             "add_staff": "Add staff",
             "add_staff_title": "Add new staff",
             "edit_staff_title": "Edit staff",
@@ -994,39 +1011,42 @@
                 "active_suffix": "active"
             },
             "roles": {
-                "all": "All",
-                "owner": "Owner",
-                "manager": "Manager",
-                "driver": "Driver",
-                "agent": "Agent"
+                "all": "All roles"
             },
             "table": {
-                "name": "Name",
-                "email": "Email",
-                "phone": "Phone",
+                "username": "Username",
                 "role": "Role",
                 "status": "Status",
                 "joined_at": "Joined"
             },
             "form": {
+                "username": "Username",
+                "username_placeholder": "Enter username",
                 "name": "Full name",
                 "name_placeholder": "Enter full name",
-                "email": "Email",
-                "email_placeholder": "Enter email",
-                "phone": "Phone",
-                "phone_placeholder": "Enter phone number",
                 "role": "Role",
-                "password": "Password"
+                "role_placeholder": "Select role",
+                "password": "Password",
+                "password_placeholder": "Leave blank to keep current password",
+                "active": "Active"
+            },
+            "actions": {
+                "edit": "Edit staff",
+                "delete": "Delete staff"
+            },
+            "messages": {
+                "confirm_delete": "Delete staff \"{{name}}\"? This action cannot be undone."
             },
             "errors": {
+                "username_required": "Username is required",
+                "username_min": "Username must be at least 3 characters",
+                "username_no_spaces": "Username cannot contain spaces",
                 "name_required": "Full name is required",
-                "email_required": "Email is required",
-                "email_invalid": "Invalid email format",
-                "phone_required": "Phone number is required",
                 "role_required": "Role is required",
-                "password_required": "Password is required",
                 "password_min": "Password must be at least 6 characters"
-            }
+            },
+            "empty": "No staff found.",
+            "unknown_role": "Unknown role"
         },
         "trips": {
             "title": "Trip Management",

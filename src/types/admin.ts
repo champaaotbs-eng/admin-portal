@@ -16,6 +16,7 @@ export interface IAdmin {
     avatarUrl?: string;
     publicId?: string;
     busCompanyId?: string;
+    companyName?: string | null;
     createdAt: string;
     updatedAt: string;
 }

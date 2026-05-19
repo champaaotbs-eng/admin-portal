@@ -11,7 +11,9 @@ export const getAllAdmins = async (query: IRequestPagination<IAdmin>) => {
 
     urlQuery.set('page', String(query.page))
     urlQuery.set('limit', String(query.limit))
-    urlQuery.set('filters', JSON.stringify(query.filters))
+    if (query.filters) {
+        urlQuery.set('filters', JSON.stringify(query.filters))
+    }
     const response = await api.get<IPagination<IAdmin>>(`/v1/admins?${urlQuery.toString()}`);
     return response;
 }

@@ -5,8 +5,12 @@ type StatusFilter = 'all' | 'active' | 'inactive'
 interface RoleFilterProps {
     searchText: string
     statusFilter: StatusFilter
+    companyFilter?: string
+    companies?: { busCompanyId: string; name: string }[]
+    showCompanyFilter?: boolean
     onSearchChange: (value: string) => void
     onStatusChange: (value: StatusFilter) => void
+    onCompanyChange?: (value: string) => void
 }
 
 /**
@@ -15,14 +19,18 @@ interface RoleFilterProps {
 export const RoleFilter = ({
     searchText,
     statusFilter,
+    companyFilter = '',
+    companies = [],
+    showCompanyFilter = false,
     onSearchChange,
     onStatusChange,
+    onCompanyChange,
 }: RoleFilterProps) => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.roles.filter' })
 
     return (
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="grid gap-3 md:grid-cols-[1fr_220px]">
+            <div className={showCompanyFilter ? 'grid gap-3 md:grid-cols-[1fr_220px_240px]' : 'grid gap-3 md:grid-cols-[1fr_220px]'}>
                 <input
                     type="text"
                     value={searchText}
@@ -40,6 +48,21 @@ export const RoleFilter = ({
                     <option value="active">{t('active')}</option>
                     <option value="inactive">{t('inactive')}</option>
                 </select>
+
+                {showCompanyFilter ? (
+                    <select
+                        value={companyFilter}
+                        onChange={(event) => onCompanyChange?.(event.target.value)}
+                        className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    >
+                        <option value="">{t('all_companies')}</option>
+                        {companies.map((company) => (
+                            <option key={company.busCompanyId} value={company.busCompanyId}>
+                                {company.name}
+                            </option>
+                        ))}
+                    </select>
+                ) : null}
             </div>
         </div>
     )

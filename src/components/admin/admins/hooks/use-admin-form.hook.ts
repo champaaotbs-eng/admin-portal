@@ -8,8 +8,10 @@ import { z } from 'zod'
 import type { IRole } from 'types/role'
 import { createAdmin, getAdminById, updateAdmin } from 'services/admins/admin.service'
 import { getAllRoles } from 'services/admins/roles.service'
+import { getAllAdminBusCompanies } from 'services/admins/bus-company.service'
 import { ADMIN_QUERY_KEYS } from '../constants/admin-query-keys.constant'
 import { ROLE_QUERY_KEYS } from 'components/admin/roles/constants/role-query-keys.constant'
+import { ADMIN_TYPE } from 'configs/constants'
 
 export interface AdminFormValues {
     username: string
@@ -142,8 +144,25 @@ export const useAdminForm = ({ adminId }: UseAdminFormProps) => {
         queryFn: () => getAllRoles({ page: 1, limit: 1000, filters: {} }),
         select: (response) => response.data?.result ?? [],
     })
+    const companyOptionsQuery = useQuery({
+        queryKey: ['admin-company-options'],
+        queryFn: () => getAllAdminBusCompanies(),
+        select: (response) => response.data ?? [],
+    })
 
     const roles = rolesQuery.data ?? []
+    const companyLabelById = useMemo(() => new Map((companyOptionsQuery.data ?? []).map((company) => [company.busCompanyId, company.name])), [companyOptionsQuery.data])
+    const selectedRoleId = form.watch('roleId')
+    const selectedRole = useMemo(() => roles.find((role) => role.roleId === selectedRoleId) ?? null, [roles, selectedRoleId])
+
+    const formatRoleOptionLabel = useCallback((role: IRole) => {
+        if (role.type !== ADMIN_TYPE.COMPANY_ADMIN) {
+            return `${role.roleName} (${t('form.role_scope_system')})`
+        }
+
+        const companyLabel = role.busCompanyId ? companyLabelById.get(role.busCompanyId) ?? role.busCompanyId : '—'
+        return `${role.roleName} (${t('form.role_scope_company', { company: companyLabel })})`
+    }, [companyLabelById, t])
 
     useEffect(() => {
         const admin = adminQuery.data
@@ -232,6 +251,8 @@ export const useAdminForm = ({ adminId }: UseAdminFormProps) => {
         isLoadingAdmin: adminQuery.isLoading,
         roles: roles as IRole[],
         isLoadingRoles: rolesQuery.isLoading,
+        selectedRole: selectedRole as IRole | null,
+        formatRoleOptionLabel,
         showPassword,
         showConfirmPassword,
         toggleShowPassword,

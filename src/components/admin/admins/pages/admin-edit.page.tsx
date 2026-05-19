@@ -22,6 +22,8 @@ export const AdminEditPage = ({ adminId }: AdminEditPageProps) => {
         isLoadingAdmin,
         roles,
         isLoadingRoles,
+        selectedRole,
+        formatRoleOptionLabel,
         showPassword,
         showConfirmPassword,
         toggleShowPassword,
@@ -42,8 +44,6 @@ export const AdminEditPage = ({ adminId }: AdminEditPageProps) => {
     if (isLoadingAdmin) {
         return <LoadingSpinner />
     }
-
-    console.log('AdminEditPage render', { adminId }) // Debug log to track renders and adminId
 
     return (
         <div className="space-y-6">
@@ -95,10 +95,15 @@ export const AdminEditPage = ({ adminId }: AdminEditPageProps) => {
                                 >
                                     <option value="">{t('form.role_placeholder')}</option>
                                     {roles.map((role) => (
-                                        <option key={role.roleId} value={role.roleId}>{role.roleName}</option>
+                                        <option key={role.roleId} value={role.roleId}>{formatRoleOptionLabel(role)}</option>
                                     ))}
                                 </select>
                                 {errors.roleId ? <p className="mt-1 text-xs text-rose-600">{errors.roleId.message}</p> : null}
+                                {selectedRole ? (
+                                    <p className="mt-1 text-xs text-slate-500">
+                                        {formatRoleOptionLabel(selectedRole)}
+                                    </p>
+                                ) : null}
                             </div>
                         </div>
                     </section>

@@ -16,6 +16,8 @@ export const AdminAddPage = () => {
         form,
         roles,
         isLoadingRoles,
+        selectedRole,
+        formatRoleOptionLabel,
         showPassword,
         showConfirmPassword,
         toggleShowPassword,
@@ -79,10 +81,15 @@ export const AdminAddPage = () => {
                                 >
                                     <option value="">{t('form.role_placeholder')}</option>
                                     {roles.map((role) => (
-                                        <option key={role.roleId} value={role.roleId}>{role.roleName}</option>
+                                        <option key={role.roleId} value={role.roleId}>{formatRoleOptionLabel(role)}</option>
                                     ))}
                                 </select>
                                 {errors.roleId ? <p className="mt-1 text-xs text-rose-600">{errors.roleId.message}</p> : null}
+                                {selectedRole ? (
+                                    <p className="mt-1 text-xs text-slate-500">
+                                        {formatRoleOptionLabel(selectedRole)}
+                                    </p>
+                                ) : null}
                             </div>
                         </div>
                     </section>

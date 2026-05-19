@@ -1,15 +1,12 @@
 import type { Control } from 'react-hook-form'
 import { Controller } from 'react-hook-form'
-import { Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { IAdmin } from 'types/admin'
-import { BusCompanyAdminPosition } from 'types/company'
 
 interface PendingAdminRowProps {
-    index: number
     adminOptions: IAdmin[]
     control: Control<any>
-    onRemove: () => void
+    onSelectionChange?: () => void
     isLoadingAdmins: boolean
 }
 
@@ -17,23 +14,29 @@ interface PendingAdminRowProps {
  * Render one pending assigned-admin row for company form.
  */
 export const CompanyAdminRow = ({
-    index,
     adminOptions,
     control,
-    onRemove,
+    onSelectionChange,
     isLoadingAdmins,
 }: PendingAdminRowProps) => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.companies.form' })
 
     return (
-        <div className="flex flex-col gap-3 md:flex-row">
+        <div className="space-y-3">
             <Controller
-                name={`companyAdmins.${index}.adminId`}
+                name="companyAdmins.0.adminId"
                 control={control}
                 render={({ field, fieldState }) => (
                     <div className="flex-1">
+                        <label className="mb-2 block text-sm font-medium text-slate-800">
+                            {t('owner_admin')} <span className="text-rose-500">*</span>
+                        </label>
                         <select
                             {...field}
+                            onChange={(event) => {
+                                field.onChange(event)
+                                onSelectionChange?.()
+                            }}
                             disabled={isLoadingAdmins}
                             className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                         >
@@ -49,32 +52,9 @@ export const CompanyAdminRow = ({
                 )}
             />
 
-            <Controller
-                name={`companyAdmins.${index}.position`}
-                control={control}
-                render={({ field, fieldState }) => (
-                    <div className="flex-1">
-                        <select
-                            {...field}
-                            className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                        >
-                            <option value="">{t('select_position')}</option>
-                            <option value={BusCompanyAdminPosition.OWNER}>{t('position_owner')}</option>
-                            <option value={BusCompanyAdminPosition.STAFF}>{t('position_staff')}</option>
-                        </select>
-                        {fieldState.error ? <p className="mt-1 text-xs text-rose-600">{fieldState.error.message}</p> : null}
-                    </div>
-                )}
-            />
-
-            <button
-                type="button"
-                onClick={onRemove}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-rose-200 text-rose-600 transition hover:bg-rose-50"
-                aria-label={t('remove_row_aria')}
-            >
-                <Trash2 className="h-4 w-4" />
-            </button>
+            <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                {t('owner_admin_hint')}
+            </div>
         </div>
     )
 }

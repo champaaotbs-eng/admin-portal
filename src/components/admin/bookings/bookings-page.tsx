@@ -9,6 +9,7 @@ import { RouteDirection } from '@/components/shared/route-direction'
 import { getBookingStatusVariant, getPaymentMethodLabelKey, getPaymentMethodVariant, getPaymentStatusLabelKey, getPaymentStatusVariant, normalizeStatusKey } from '@/utils/booking-status'
 import { formatDateTime, formatVnd } from '@/utils/format'
 import { getAdminBookings } from 'services/admins/booking.service'
+import { getAllAdminBusCompanies } from 'services/admins/bus-company.service'
 import { getBookingSeatLayout } from 'services/company/booking.service'
 import { getCompanyPaymentByBookingId } from 'services/company/payment.service'
 import type { IBooking } from 'types/booking'
@@ -111,12 +112,18 @@ export const AdminBookingsPage = () => {
 
     const [search, setSearch] = useState('')
     const [page, setPage] = useState(1)
+    const [companyFilter, setCompanyFilter] = useState('')
     const [selectedBooking, setSelectedBooking] = useState<IBooking | null>(null)
     const selectedBookingId = (selectedBooking as any)?.id ?? selectedBooking?.bookingId ?? ''
 
     const { data, isLoading } = useQuery({
-        queryKey: ['admin-bookings', page, search],
-        queryFn: () => getAdminBookings({ page, limit: PAGE_SIZE, search: search || undefined }),
+        queryKey: ['admin-bookings', page, search, companyFilter],
+        queryFn: () => getAdminBookings({ page, limit: PAGE_SIZE, search: search || undefined, companyId: companyFilter || undefined }),
+    })
+    const companiesQuery = useQuery({
+        queryKey: ['admin-booking-company-options'],
+        queryFn: () => getAllAdminBusCompanies(),
+        select: (response) => response.data ?? [],
     })
     const paymentQuery = useQuery({
         queryKey: ['admin-booking-payment', selectedBookingId],
@@ -129,7 +136,11 @@ export const AdminBookingsPage = () => {
     const rows = readRows<IBooking>(data)
     const meta = readMeta(data)
 
-    const hasFilter = !!search
+    useEffect(() => {
+        setPage(1)
+    }, [search, companyFilter])
+
+    const hasFilter = !!search || !!companyFilter
 
     return (
         <div className="space-y-6">
@@ -148,8 +159,20 @@ export const AdminBookingsPage = () => {
                         className="w-full rounded-md border border-input bg-background pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                 </div>
+                <select
+                    value={companyFilter}
+                    onChange={(event) => setCompanyFilter(event.target.value)}
+                    className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none"
+                >
+                    <option value="">{t('filter_all_companies')}</option>
+                    {(companiesQuery.data ?? []).map((company) => (
+                        <option key={company.busCompanyId} value={company.busCompanyId}>
+                            {company.name}
+                        </option>
+                    ))}
+                </select>
                 {hasFilter && (
-                    <Button variant="outline" size="sm" onClick={() => { setSearch(''); setPage(1) }}>
+                    <Button variant="outline" size="sm" onClick={() => { setSearch(''); setCompanyFilter(''); setPage(1) }}>
                         <X className="h-3.5 w-3.5" />
                     </Button>
                 )}

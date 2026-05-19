@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { deleteRole, getAllRoles } from 'services/admins/roles.service'
+import { getAllAdminBusCompanies } from 'services/admins/bus-company.service'
 import { ROLE_QUERY_KEYS } from '../constants/role-query-keys.constant'
 
 type StatusFilter = 'all' | 'active' | 'inactive'
@@ -11,6 +12,7 @@ interface UseRoleListParams {
     searchText: string
     statusFilter: StatusFilter
     scope?: 'system' | 'company'
+    companyId?: string
 }
 
 const toErrorMessage = (error: unknown, fallbackMessage: string) => {
@@ -25,13 +27,14 @@ const toErrorMessage = (error: unknown, fallbackMessage: string) => {
 /**
  * Role list data and mutation hook.
  */
-export const useRoleList = ({ page, limit = 10, searchText, statusFilter, scope = 'system' }: UseRoleListParams) => {
+export const useRoleList = ({ page, limit = 10, searchText, statusFilter, scope = 'system', companyId }: UseRoleListParams) => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.roles' })
     const queryClient = useQueryClient()
     const normalizedSearchText = searchText.trim()
+    const normalizedCompanyId = scope === 'system' ? companyId?.trim() ?? '' : ''
 
     const { data, isLoading, isError } = useQuery({
-        queryKey: ROLE_QUERY_KEYS.list(page, limit, normalizedSearchText, statusFilter),
+        queryKey: ROLE_QUERY_KEYS.list(page, limit, normalizedSearchText, statusFilter, scope, normalizedCompanyId || undefined),
         queryFn: () =>
             getAllRoles({
                 page,
@@ -39,6 +42,7 @@ export const useRoleList = ({ page, limit = 10, searchText, statusFilter, scope 
                 filters: {
                     name: normalizedSearchText,
                     ...(scope === 'company' ? { type: 'company_admin' } : {}),
+                    ...(normalizedCompanyId ? { companyId: normalizedCompanyId } : {}),
                     isActive: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
                 },
             }),
@@ -46,6 +50,12 @@ export const useRoleList = ({ page, limit = 10, searchText, statusFilter, scope 
             roles: response.data?.result ?? [],
             meta: response.data?.meta ?? { page: 1, limit, totalPages: 1, totalItems: 0 },
         }),
+    })
+    const companiesQuery = useQuery({
+        queryKey: ['role-company-options'],
+        queryFn: () => getAllAdminBusCompanies(),
+        select: (response) => response.data ?? [],
+        enabled: scope === 'system',
     })
     const roles = data?.roles ?? []
     const meta = data?.meta ?? { page: 1, limit, totalPages: 1, totalItems: 0 }
@@ -63,8 +73,9 @@ export const useRoleList = ({ page, limit = 10, searchText, statusFilter, scope 
         limit: meta.limit,
         totalPages: meta.totalPages,
         totalItems: meta.totalItems,
-        isLoading,
+        isLoading: isLoading || companiesQuery.isLoading,
         isError,
+        companies: companiesQuery.data ?? [],
         deleteRoleById: async (roleId: string) => {
             try {
                 await deleteMutation.mutateAsync(roleId)

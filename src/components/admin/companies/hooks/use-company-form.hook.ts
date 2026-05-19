@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useFieldArray, useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { IAdmin } from 'types/admin'
 import { BusCompanyAdminPosition, BusCompanyStatus, type ICompany, type ICompanyAdmins } from 'types/company'
@@ -45,22 +45,19 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
         mode: 'onChange',
     })
 
-    const { fields, append, remove } = useFieldArray({
+    const selectedAdminId = useWatch({
         control: form.control,
-        name: 'companyAdmins',
-    })
+        name: 'companyAdmins.0.adminId',
+    }) ?? ''
 
     const [logoFile, setLogoFile] = useState<File | null>(null)
     const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null)
     const [logoError, setLogoError] = useState<string | undefined>(undefined)
     const [existingLogoUrl, setExistingLogoUrl] = useState<string | null>(null)
     const [existingPublicId, setExistingPublicId] = useState<string | null>(null)
-    const [existingAdmins, setExistingAdmins] = useState<ICompanyAdmins[]>([])
+    const [currentOwnerAdmin, setCurrentOwnerAdmin] = useState<ICompanyAdmins | null>(null)
+    const [adminAssignmentError, setAdminAssignmentError] = useState<string | null>(null)
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
-
-    const removeExistingAdmin = (adminId: string) => {
-        setExistingAdmins((previous) => previous.filter((admin) => admin.adminId !== adminId))
-    }
 
     const companyQuery = useQuery({
         queryKey: COMPANY_QUERY_KEYS.detail(companyId ?? ''),
@@ -72,7 +69,7 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
     })
 
     const adminsQuery = useQuery({
-        queryKey: ADMIN_QUERY_KEYS.detail(companyId ?? ''),
+        queryKey: [...ADMIN_QUERY_KEYS.all, 'company-available'],
         queryFn: getAvailableAdmins,
         select: (response) => response.data as IAdmin[],
     })
@@ -89,10 +86,13 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
             status: companyQuery.data.status,
             logoUrl: companyQuery.data.logoUrl ?? '',
             publicId: companyQuery.data.publicId ?? '',
-            companyAdmins: [],
+            companyAdmins: [{
+                adminId: companyQuery.data.companyAdmins?.[0]?.adminId ?? '',
+                position: BusCompanyAdminPosition.OWNER,
+            }],
         })
 
-        setExistingAdmins(companyQuery.data.companyAdmins ?? [])
+        setCurrentOwnerAdmin(companyQuery.data.companyAdmins?.[0] ?? null)
         setExistingLogoUrl(companyQuery.data.logoUrl ?? null)
         setExistingPublicId(companyQuery.data.publicId ?? null)
     }, [companyQuery.data, form])
@@ -141,10 +141,24 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
     }
 
     const availableAdmins = useMemo(() => {
-        const existingSet = new Set(existingAdmins.map((admin) => admin.adminId))
+        const options = [...(adminsQuery.data ?? [])]
 
-        return (adminsQuery.data ?? []).filter((admin) => !existingSet.has(admin.adminId))
-    }, [adminsQuery.data, existingAdmins])
+        if (
+            currentOwnerAdmin
+            && !options.some((admin) => admin.adminId === currentOwnerAdmin.adminId)
+        ) {
+            options.unshift({
+                adminId: currentOwnerAdmin.adminId,
+                fullName: currentOwnerAdmin.fullName,
+                username: currentOwnerAdmin.username,
+                isActive: true,
+                createdAt: '',
+                updatedAt: '',
+            })
+        }
+
+        return options
+    }, [adminsQuery.data, currentOwnerAdmin])
 
     const onSubmit = form.handleSubmit(async (values) => {
         const normalizedServiceFee = values.serviceFee ?? 0
@@ -179,25 +193,13 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
             return
         }
 
-        const pendingAdmins = (values.companyAdmins ?? []).filter(
-            (row): row is { adminId: string; position: BusCompanyAdminPosition } =>
-                Boolean(row.adminId) && (row.position === BusCompanyAdminPosition.OWNER || row.position === BusCompanyAdminPosition.STAFF),
-        )
+        const adminId = values.companyAdmins?.[0]?.adminId?.trim() ?? ''
+        if (!adminId) {
+            setAdminAssignmentError(t('errors.company_admin_required'))
+            return
+        }
 
-        const mergedByAdminId = new Map<string, BusCompanyAdminPosition>()
-        existingAdmins.forEach((admin) => {
-            if (admin.position === BusCompanyAdminPosition.OWNER || admin.position === BusCompanyAdminPosition.STAFF) {
-                mergedByAdminId.set(admin.adminId, admin.position)
-            }
-        })
-        pendingAdmins.forEach((admin) => {
-            mergedByAdminId.set(admin.adminId, admin.position)
-        })
-
-        const companyAdmins = Array.from(mergedByAdminId.entries()).map(([adminId, position]) => ({
-            adminId,
-            position,
-        }))
+        const companyAdmins = [{ adminId, position: BusCompanyAdminPosition.OWNER }]
 
         let uploadedPublicId: string | undefined
 
@@ -254,11 +256,8 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
         isEditMode,
         isLoadingCompany: companyQuery.isLoading,
         isLoadingAdmins: adminsQuery.isLoading,
-        existingAdmins,
-        removeExistingAdmin,
-        pendingFields: fields,
-        appendPendingAdmin: () => append({ adminId: '', position: BusCompanyAdminPosition.OWNER }),
-        removePendingAdmin: remove,
+        currentOwnerAdmin,
+        selectedAdminId,
         logoPreviewUrl,
         logoFile,
         existingLogoUrl,
@@ -266,6 +265,8 @@ export const useCompanyForm = ({ companyId }: UseCompanyFormProps) => {
         handleLogoSelect,
         handleLogoRemove,
         availableAdmins,
+        adminAssignmentError,
+        clearAdminAssignmentError: () => setAdminAssignmentError(null),
         onSubmit,
         isSubmitting,
         toast,

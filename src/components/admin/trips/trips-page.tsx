@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { TripList } from '@/components/shared/trips/trip-list'
 import { TripDetailsModal } from '@/components/shared/trips/trip-details-modal'
+import { getAllAdminBusCompanies } from '@/services/admins/bus-company.service'
 import { getAdminTrips, getAdminTripById } from '@/services/admins/trip.service'
 import type { ITrip } from '@/types/trip'
 
@@ -17,20 +18,31 @@ export const AdminTripsPage = () => {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [companyFilter, setCompanyFilter] = useState('')
   const [viewTrip, setViewTrip] = useState<ITrip | null>(null)
 
   const limit = 10
 
   const { data, isLoading } = useQuery({
-    queryKey: [...QUERY_KEY, page, search, statusFilter],
+    queryKey: [...QUERY_KEY, page, search, statusFilter, companyFilter],
     queryFn: () =>
       getAdminTrips({
         page,
         limit,
+        companyId: companyFilter || undefined,
         status: statusFilter !== 'all' ? (statusFilter as any) : undefined,
       }),
     select: (res) => res.data,
   })
+  const companiesQuery = useQuery({
+    queryKey: ['admin-trip-company-options'],
+    queryFn: () => getAllAdminBusCompanies(),
+    select: (response) => response.data ?? [],
+  })
+
+  useEffect(() => {
+    setPage(1)
+  }, [search, statusFilter, companyFilter])
 
   const trips = useMemo(() => {
     const list = data?.result || []
@@ -45,7 +57,7 @@ export const AdminTripsPage = () => {
     )
   }, [data?.result, search])
 
-  const hasFilter = search || statusFilter !== 'all'
+  const hasFilter = search || statusFilter !== 'all' || companyFilter
 
   return (
     <div className="space-y-6">
@@ -73,6 +85,18 @@ export const AdminTripsPage = () => {
           <option value="ACTIVE">{tCommon('status.active')}</option>
           <option value="INACTIVE">{tCommon('status.inactive')}</option>
         </select>
+        <select
+          value={companyFilter}
+          onChange={(e) => setCompanyFilter(e.target.value)}
+          className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none"
+        >
+          <option value="">{tTrips('filter_all_companies')}</option>
+          {(companiesQuery.data ?? []).map((company) => (
+            <option key={company.busCompanyId} value={company.busCompanyId}>
+              {company.name}
+            </option>
+          ))}
+        </select>
         {hasFilter && (
           <Button
             variant="outline"
@@ -80,6 +104,7 @@ export const AdminTripsPage = () => {
             onClick={() => {
               setSearch('')
               setStatusFilter('all')
+              setCompanyFilter('')
             }}
           >
             <X className="h-3.5 w-3.5" /> {tCommon('common.clear')}

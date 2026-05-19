@@ -34,6 +34,13 @@ export const RoleTable = ({
     onDelete,
 }: RoleTableProps) => {
     const { t } = useTranslation('translation', { keyPrefix: 'pages.roles' })
+    const getDeleteAriaLabel = (role: IRole) => {
+        if ((role.assignedAdminCount ?? 0) > 0) {
+            return t('errors.delete_role_in_use')
+        }
+
+        return `${t('actions.delete_role')}: ${role.roleName}`
+    }
 
     const columns = useMemo<PaginatedTableColumn<IRole>[]>(() => [
         {
@@ -47,7 +54,6 @@ export const RoleTable = ({
             renderCell: (role) => (
                 <div>
                     <div className="font-medium text-slate-900">{role.roleName}</div>
-                    <div className="text-xs text-slate-500">{role.busCompanyId ?? 'system'}</div>
                 </div>
             ),
         },
@@ -71,7 +77,10 @@ export const RoleTable = ({
             header: t('table.actions'),
             headerClassName: 'text-center',
             cellClassName: 'text-center',
-            renderCell: (role) => (
+            renderCell: (role) => {
+                const isDeleteDisabled = (role.assignedAdminCount ?? 0) > 0
+
+                return (
                 <div className="flex items-center justify-center gap-1">
                     <button
                         type="button"
@@ -91,16 +100,22 @@ export const RoleTable = ({
                     </button>
                     <button
                         type="button"
-                        aria-label={t('actions.delete')}
-                        onClick={() => onDelete(role)}
-                        className="rounded p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-rose-600"
+                        aria-label={getDeleteAriaLabel(role)}
+                        title={isDeleteDisabled ? t('errors.delete_role_in_use') : t('actions.delete_role')}
+                        onClick={() => {
+                            if (!isDeleteDisabled) {
+                                onDelete(role)
+                            }
+                        }}
+                        disabled={isDeleteDisabled}
+                        className="rounded p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-500"
                     >
                         <Trash2 className="h-4 w-4" />
                     </button>
                 </div>
-            ),
+            )},
         },
-    ], [onDelete, onEdit, onView, page, pageSize])
+    ], [getDeleteAriaLabel, onDelete, onEdit, onView, page, pageSize, t])
 
     return (
         <PaginatedTable

@@ -286,6 +286,8 @@
                 "remove_admin_title": "Gỡ quản trị viên",
                 "remove_admin_confirm": "Bạn có chắc muốn gỡ quản trị viên này khỏi nhà xe?",
                 "no_assigned_admins": "Chưa có quản trị viên nào",
+                "owner_admin": "Admin chủ nhà xe",
+                "owner_admin_hint": "Mỗi nhà xe chỉ được gán một admin và admin đó luôn là chủ xe.",
                 "select_admin": "Chọn quản trị viên",
                 "select_position": "Chọn vị trí",
                 "position_owner": "Chủ xe",
@@ -323,6 +325,10 @@
                 "address_required": "Địa chỉ là bắt buộc",
                 "service_fee_invalid": "Phí dịch vụ phải từ 0 đến 100",
                 "admin_required": "Vui lòng chọn quản trị viên",
+                "company_admin_required": "Nhà xe phải có ít nhất một quản trị viên",
+                "admin_duplicate": "Mỗi quản trị viên chỉ được gán một lần",
+                "company_owner_required": "Phải có đúng một chủ xe",
+                "company_owner_only_one": "Chỉ được gán một chủ xe",
                 "owner_username_required": "Tên đăng nhập chủ sở hữu là bắt buộc",
                 "owner_password_required": "Mật khẩu là bắt buộc",
                 "owner_password_min": "Mật khẩu phải có ít nhất 6 ký tự",
@@ -383,10 +389,15 @@
             "search": {
                 "placeholder": "Tìm theo tên đăng nhập hoặc họ tên..."
             },
+            "company": {
+                "all": "Tất cả nhà xe"
+            },
             "table": {
                 "username": "Tên đăng nhập",
                 "full_name": "Họ và tên",
                 "role": "Vai trò",
+                "company": "Nhà xe",
+                "system": "Hệ thống",
                 "status": "Trạng thái",
                 "actions": "Thao tác",
                 "unknown_role": "Vai trò không xác định"
@@ -418,6 +429,7 @@
                 "username": "Tên đăng nhập",
                 "full_name": "Họ và tên",
                 "role": "Vai trò",
+                "company": "Nhà xe",
                 "status": "Trạng thái",
                 "not_found": "Không tìm thấy admin",
                 "permissions": {
@@ -439,6 +451,8 @@
                 "confirm_password_placeholder": "Nhập lại mật khẩu",
                 "active": "Hoạt động",
                 "cannot_edit": "Trường này không thể chỉnh sửa",
+                "role_scope_system": "Phạm vi hệ thống",
+                "role_scope_company": "Nhà xe: {{company}}",
                 "password_note_create": "Đặt mật khẩu an toàn với ít nhất 8 ký tự.",
                 "password_note_edit": "Để trống để giữ mật khẩu hiện tại"
             },
@@ -510,7 +524,8 @@
                 "search_placeholder": "Tìm theo tên vai trò...",
                 "all": "Tất cả trạng thái",
                 "active": "Hoạt động",
-                "inactive": "Ngừng hoạt động"
+                "inactive": "Ngừng hoạt động",
+                "all_companies": "Tất cả nhà xe"
             },
             "roles_section": "Danh sách vai trò",
             "add_role": "Thêm vai trò",
@@ -649,6 +664,7 @@
             "company_description": "Danh sách đặt vé của công ty",
             "bookings": "đặt vé",
             "filter_all_trips": "Tất cả chuyến",
+            "filter_all_companies": "Tất cả nhà xe",
             "search_placeholder": "Mã vé, tuyến, email, nhà xe...",
             "date_from": "Từ ngày",
             "date_to": "Đến ngày",
@@ -1058,6 +1074,7 @@
             "my_trips": "Chuyến đi của tôi",
             "company_description": "Quản lý chuyến đi của công ty bạn",
             "search_placeholder": "Tìm theo tuyến, xe...",
+            "filter_all_companies": "Tất cả nhà xe",
             "add_trip": "Thêm chuyến",
             "add_trip_title": "Tạo chuyến mới",
             "edit_trip": "Chỉnh sửa chuyến",

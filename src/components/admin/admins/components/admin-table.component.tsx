@@ -53,7 +53,17 @@ export const AdminTable = ({
             {
                 id: 'role',
                 header: t('table.role'),
-                renderCell: (admin) => <span>{admin.role?.roleName ?? t('table.unknown_role')}</span>,
+                renderCell: (admin) => (
+                    <div>
+                        <div>{admin.role?.roleName ?? t('table.unknown_role')}</div>
+                        <div className="text-xs text-slate-500">{admin.busCompanyId ? (admin.companyName ?? '—') : t('table.system')}</div>
+                    </div>
+                ),
+            },
+            {
+                id: 'company',
+                header: t('table.company'),
+                renderCell: (admin) => <span>{admin.busCompanyId ? (admin.companyName ?? '—') : t('table.system')}</span>,
             },
             {
                 id: 'status',

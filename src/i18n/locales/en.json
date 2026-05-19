@@ -286,6 +286,8 @@
                 "remove_admin_title": "Remove Admin",
                 "remove_admin_confirm": "Are you sure you want to remove this admin from company?",
                 "no_assigned_admins": "No admins assigned yet",
+                "owner_admin": "Owner admin",
+                "owner_admin_hint": "Each bus company can only be assigned one admin, and that admin is always the owner.",
                 "select_admin": "Select admin",
                 "select_position": "Select position",
                 "position_owner": "Owner",
@@ -323,6 +325,10 @@
                 "address_required": "Address is required",
                 "service_fee_invalid": "Service fee must be between 0 and 100",
                 "admin_required": "Admin is required",
+                "company_admin_required": "At least one company admin is required",
+                "admin_duplicate": "Each admin can only be assigned once",
+                "company_owner_required": "Exactly one owner must be assigned",
+                "company_owner_only_one": "Only one owner can be assigned",
                 "owner_username_required": "Owner username is required",
                 "owner_password_required": "Password is required",
                 "owner_password_min": "Password must be at least 6 characters",
@@ -383,10 +389,15 @@
             "search": {
                 "placeholder": "Search by username or full name..."
             },
+            "company": {
+                "all": "All companies"
+            },
             "table": {
                 "username": "Username",
                 "full_name": "Full Name",
                 "role": "Role",
+                "company": "Company",
+                "system": "System",
                 "status": "Status",
                 "actions": "Actions",
                 "unknown_role": "Unknown role"
@@ -418,6 +429,7 @@
                 "username": "Username",
                 "full_name": "Full Name",
                 "role": "Role",
+                "company": "Company",
                 "status": "Status",
                 "not_found": "Admin not found",
                 "permissions": {
@@ -439,6 +451,8 @@
                 "confirm_password_placeholder": "Re-enter password",
                 "active": "Active",
                 "cannot_edit": "This field cannot be edited",
+                "role_scope_system": "System scope",
+                "role_scope_company": "Company: {{company}}",
                 "password_note_create": "Set a secure password with at least 8 characters.",
                 "password_note_edit": "Leave blank to keep current password"
             },
@@ -510,7 +524,8 @@
                 "search_placeholder": "Search by role name...",
                 "all": "All statuses",
                 "active": "Active",
-                "inactive": "Inactive"
+                "inactive": "Inactive",
+                "all_companies": "All companies"
             },
             "roles_section": "Roles",
             "add_role": "Add Role",
@@ -1058,6 +1073,7 @@
             "my_trips": "My Trips",
             "company_description": "Manage your company's trips",
             "search_placeholder": "Search route, vehicle...",
+            "filter_all_companies": "All companies",
             "add_trip": "Add trip",
             "add_trip_title": "Schedule new trip",
             "edit_trip": "Edit Trip",

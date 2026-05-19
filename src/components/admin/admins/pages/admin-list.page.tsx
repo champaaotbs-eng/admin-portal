@@ -24,6 +24,9 @@ export const AdminListPage = () => {
         setSearchText,
         statusFilter,
         setStatusFilter,
+        companyFilter,
+        setCompanyFilter,
+        companies,
         selectedAdminId,
         isDetailOpen,
         openDetail,
@@ -42,6 +45,9 @@ export const AdminListPage = () => {
                 onChange={setSearchText}
                 statusFilter={statusFilter}
                 onStatusChange={setStatusFilter}
+                companyFilter={companyFilter}
+                companies={companies}
+                onCompanyChange={setCompanyFilter}
             />
 
             <AdminTable

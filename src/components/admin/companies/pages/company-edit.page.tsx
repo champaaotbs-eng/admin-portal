@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { ConfirmationModal } from 'components/shared/confirmation-modal'
 import { CompanyLogoUpload } from '../components/company-logo-upload.component'
 import { CompanyAdminRow } from '../components/company-admin-row.component'
 import { useCompanyForm } from '../hooks/use-company-form.hook'
@@ -21,11 +20,7 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
         form,
         isLoadingCompany,
         isLoadingAdmins,
-        existingAdmins,
-        removeExistingAdmin,
-        pendingFields,
-        appendPendingAdmin,
-        removePendingAdmin,
+        currentOwnerAdmin,
         logoPreviewUrl,
         logoFile,
         existingLogoUrl,
@@ -33,6 +28,8 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
         handleLogoSelect,
         handleLogoRemove,
         availableAdmins,
+        adminAssignmentError,
+        clearAdminAssignmentError,
         onSubmit,
         isSubmitting,
         toast,
@@ -43,9 +40,6 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
         register,
         formState: { errors },
     } = form
-
-    const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null)
-
     useEffect(() => {
         if (!toast) return
         const timer = window.setTimeout(() => setToast(null), 3000)
@@ -147,64 +141,22 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
                 <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
                     <h2 className="mb-4 text-base font-semibold text-slate-900">{t('form.assigned_admins')}</h2>
 
-                    <div className="space-y-2">
-                        {existingAdmins.map((admin) => {
-                            const initials = admin.fullName
-                                .split(' ')
-                                .filter(Boolean)
-                                .slice(0, 2)
-                                .map((segment) => segment[0]?.toUpperCase())
-                                .join('')
+                    {currentOwnerAdmin ? (
+                        <div className="mb-4 rounded-md border border-slate-200 bg-slate-50 px-4 py-3">
+                            <p className="text-sm font-medium text-slate-900">{currentOwnerAdmin.fullName}</p>
+                            <p className="text-xs text-slate-500">{currentOwnerAdmin.username}</p>
+                        </div>
+                    ) : (
+                        <p className="mb-4 text-sm text-slate-500">{t('form.no_assigned_admins')}</p>
+                    )}
 
-                            return (
-                                <div key={admin.adminId} className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700">
-                                            {initials}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-slate-900">{admin.fullName}</p>
-                                            <p className="text-xs text-slate-500">{admin.username}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-600">
-                                            {admin.position === 'owner' ? t('detail_position_owner') : t('detail_position_staff')}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => setConfirmRemoveId(admin.adminId)}
-                                            className="text-sm text-rose-600 transition hover:underline"
-                                        >
-                                            {t('form.remove')}
-                                        </button>
-                                    </div>
-                                </div>
-                            )
-                        })}
-
-                        {existingAdmins.length === 0 ? <p className="text-sm text-slate-500">{t('form.no_assigned_admins')}</p> : null}
-                    </div>
-
-                    <div className="mt-4 space-y-3">
-                        {pendingFields.map((field, index) => (
-                            <CompanyAdminRow
-                                key={field.id}
-                                index={index}
-                                adminOptions={availableAdmins}
-                                control={form.control}
-                                onRemove={() => removePendingAdmin(index)}
-                                isLoadingAdmins={isLoadingAdmins}
-                            />
-                        ))}
-                    </div>
-                    <button
-                        type="button"
-                        onClick={appendPendingAdmin}
-                        className="mt-4 text-sm font-medium text-blue-600 transition hover:underline"
-                    >
-                        {`+ ${t('form.add_admin')}`}
-                    </button>
+                    <CompanyAdminRow
+                        adminOptions={availableAdmins}
+                        control={form.control}
+                        onSelectionChange={clearAdminAssignmentError}
+                        isLoadingAdmins={isLoadingAdmins}
+                    />
+                    {adminAssignmentError ? <p className="mt-3 text-sm text-rose-600">{adminAssignmentError}</p> : null}
                 </section>
 
                 <div className="flex justify-end gap-3">
@@ -213,20 +165,6 @@ export const CompanyEditPage = ({ companyId }: CompanyEditPageProps) => {
                 </div>
             </form>
 
-            <ConfirmationModal
-                open={Boolean(confirmRemoveId)}
-                onClose={() => setConfirmRemoveId(null)}
-                title={t('form.remove_admin_title')}
-                description={t('form.remove_admin_confirm')}
-                confirmLabel={t('form.remove')}
-                cancelLabel={t('form.cancel')}
-                destructive
-                onConfirm={() => {
-                    if (!confirmRemoveId) return
-                    removeExistingAdmin(confirmRemoveId)
-                    setConfirmRemoveId(null)
-                }}
-            />
         </div>
     )
 }

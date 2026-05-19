@@ -47,6 +47,7 @@ export const AdminDetailModal = ({ adminId, open, onClose, onEdit }: AdminDetail
                                 <p><span className="font-medium">{t('detail.username')}:</span> {admin.username ?? '—'}</p>
                                 <p><span className="font-medium">{t('detail.full_name')}:</span> {admin.fullName}</p>
                                 <p><span className="font-medium">{t('detail.role')}:</span> {admin.role?.roleName ?? '—'}</p>
+                                <p><span className="font-medium">{t('detail.company')}:</span> {admin.busCompanyId ?? t('table.system')}</p>
                                 <p className="flex items-center gap-2"><span className="font-medium">{t('detail.status')}:</span> <AdminStatusBadge isActive={(admin as { isActive?: boolean }).isActive ?? true} /></p>
                             </div>
                         </div>

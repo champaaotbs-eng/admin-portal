@@ -15,6 +15,8 @@ export interface IRole {
 
     busCompanyId?: string | null;
 
+    assignedAdminCount?: number;
+
     isActive: boolean;
 
     description?: string;

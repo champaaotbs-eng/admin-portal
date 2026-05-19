@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { IAdmin } from 'types/admin'
 import { getAllAdmins } from 'services/admins/admin.service'
+import { getAllAdminBusCompanies } from 'services/admins/bus-company.service'
 import { useDebounce } from 'components/shared/hooks/use-debounce'
 import { ADMIN_QUERY_KEYS } from '../constants/admin-query-keys.constant'
 
@@ -27,12 +28,20 @@ export const useAdminList = () => {
     const [pageSize, setPageSize] = useState(10)
     const [searchText, setSearchText] = useState('')
     const [statusFilter, setStatusFilter] = useState('')
+    const [companyFilter, setCompanyFilter] = useState('')
     const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null)
     const debouncedSearch = useDebounce(searchText, 300)
     const debouncedStatus = useDebounce(statusFilter, 300)
+    const debouncedCompanyFilter = useDebounce(companyFilter, 300)
 
     const { data, isLoading, isError } = useQuery({
-        queryKey: ADMIN_QUERY_KEYS.list(currentPage, pageSize, debouncedSearch, debouncedStatus === 'active' ? true : debouncedStatus === 'inactive' ? false : undefined),
+        queryKey: ADMIN_QUERY_KEYS.list(
+            currentPage,
+            pageSize,
+            debouncedSearch,
+            debouncedStatus === 'active' ? true : debouncedStatus === 'inactive' ? false : undefined,
+            debouncedCompanyFilter || undefined,
+        ),
         queryFn: () => getAllAdmins({
             page: currentPage,
             limit: pageSize,
@@ -40,6 +49,7 @@ export const useAdminList = () => {
                 fullName: debouncedSearch.trim(),
                 username: debouncedSearch.trim(),
                 isActive: debouncedStatus === 'active' ? true : debouncedStatus === 'inactive' ? false : undefined,
+                busCompanyId: debouncedCompanyFilter || undefined,
             }
         }),
         placeholderData: (previousData) => previousData,
@@ -60,32 +70,29 @@ export const useAdminList = () => {
             }
         },
     })
+    const companyOptionsQuery = useQuery({
+        queryKey: ['admin-company-options'],
+        queryFn: () => getAllAdminBusCompanies(),
+        select: (response) => response.data ?? [],
+    })
 
     useEffect(() => {
         setCurrentPage(1)
-    }, [debouncedSearch, pageSize])
+    }, [debouncedSearch, debouncedStatus, debouncedCompanyFilter, pageSize])
 
-    const filteredAdmins = useMemo(() => {
-        const normalizedSearch = debouncedSearch.trim().toLowerCase()
-        const admins = data?.admins ?? []
-
-        if (!normalizedSearch) return admins
-
-        return admins.filter((admin) => {
-            const username = admin.username?.toLowerCase() ?? ''
-            const fullName = admin.fullName?.toLowerCase() ?? ''
-            return username.includes(normalizedSearch) || fullName.includes(normalizedSearch)
-        })
-    }, [data?.admins, debouncedSearch])
-
-    const paginatedAdmins = useMemo(() => {
-        const start = (currentPage - 1) * pageSize
-        const end = start + pageSize
-        return filteredAdmins.slice(start, end)
-    }, [filteredAdmins, currentPage, pageSize])
-
-    const totalItems = filteredAdmins.length
-    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
+    const meta = data?.meta ?? DEFAULT_META
+    const totalPages = meta.totalPages
+    const companyNameById = useMemo(
+        () => new Map((companyOptionsQuery.data ?? []).map((company) => [company.busCompanyId, company.name])),
+        [companyOptionsQuery.data],
+    )
+    const admins = useMemo(
+        () => (data?.admins ?? []).map((admin) => ({
+            ...admin,
+            companyName: admin.busCompanyId ? companyNameById.get(admin.busCompanyId) ?? admin.busCompanyId : null,
+        })),
+        [companyNameById, data?.admins],
+    )
 
     useEffect(() => {
         if (currentPage > totalPages) {
@@ -97,14 +104,9 @@ export const useAdminList = () => {
     const closeDetail = () => setSelectedAdminId(null)
 
     return {
-        admins: paginatedAdmins,
-        meta: {
-            page: currentPage,
-            limit: pageSize,
-            totalItems,
-            totalPages,
-        },
-        isLoading,
+        admins,
+        meta,
+        isLoading: isLoading || companyOptionsQuery.isLoading,
         isError,
         currentPage,
         setCurrentPage,
@@ -113,6 +115,9 @@ export const useAdminList = () => {
         setSearchText,
         statusFilter,
         setStatusFilter,
+        companyFilter,
+        setCompanyFilter,
+        companies: companyOptionsQuery.data ?? [],
         selectedAdminId,
         isDetailOpen: Boolean(selectedAdminId),
         openDetail,

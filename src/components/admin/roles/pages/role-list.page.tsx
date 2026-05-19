@@ -22,6 +22,7 @@ export const RoleListPage = ({ basePath = '/admin/roles', scope = 'system' }: Ro
     const { t } = useTranslation('translation', { keyPrefix: 'pages.roles' })
     const [searchText, setSearchText] = useState('')
     const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+    const [companyFilter, setCompanyFilter] = useState('')
     const [page, setPage] = useState(1)
     const [deleteTargetRole, setDeleteTargetRole] = useState<IRole | null>(null)
     const [viewingRole, setViewingRole] = useState<IRole | null>(null)
@@ -35,6 +36,7 @@ export const RoleListPage = ({ basePath = '/admin/roles', scope = 'system' }: Ro
         limit,
         totalPages,
         totalItems,
+        companies,
         deleteRoleById,
         isDeleting,
     } = useRoleList({
@@ -42,11 +44,12 @@ export const RoleListPage = ({ basePath = '/admin/roles', scope = 'system' }: Ro
         searchText: debouncedSearchText,
         statusFilter: debouncedStatusFilter,
         scope,
+        companyId: scope === 'system' ? companyFilter : undefined,
     })
 
     useEffect(() => {
         setPage(1)
-    }, [debouncedSearchText, debouncedStatusFilter])
+    }, [debouncedSearchText, debouncedStatusFilter, companyFilter])
 
     useEffect(() => {
         if (!toast) return
@@ -116,8 +119,12 @@ export const RoleListPage = ({ basePath = '/admin/roles', scope = 'system' }: Ro
             <RoleFilter
                 searchText={searchText}
                 statusFilter={statusFilter}
+                companyFilter={companyFilter}
+                companies={companies}
+                showCompanyFilter={scope === 'system'}
                 onSearchChange={setSearchText}
                 onStatusChange={setStatusFilter}
+                onCompanyChange={setCompanyFilter}
             />
 
             <RoleTable

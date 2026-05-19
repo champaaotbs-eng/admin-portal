@@ -15,9 +15,6 @@ export const CompanyAddPage = () => {
     const {
         form,
         isLoadingAdmins,
-        pendingFields,
-        appendPendingAdmin,
-        removePendingAdmin,
         logoPreviewUrl,
         logoFile,
         existingLogoUrl,
@@ -25,6 +22,8 @@ export const CompanyAddPage = () => {
         handleLogoSelect,
         handleLogoRemove,
         availableAdmins,
+        adminAssignmentError,
+        clearAdminAssignmentError,
         onSubmit,
         isSubmitting,
         toast,
@@ -126,25 +125,13 @@ export const CompanyAddPage = () => {
 
                 <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
                     <h2 className="mb-4 text-base font-semibold text-slate-900">{t('form.assigned_admins')}</h2>
-                    <div className="space-y-3">
-                        {pendingFields.map((field, index) => (
-                            <CompanyAdminRow
-                                key={field.id}
-                                index={index}
-                                adminOptions={availableAdmins}
-                                control={form.control}
-                                onRemove={() => removePendingAdmin(index)}
-                                isLoadingAdmins={isLoadingAdmins}
-                            />
-                        ))}
-                    </div>
-                    <button
-                        type="button"
-                        onClick={appendPendingAdmin}
-                        className="mt-4 text-sm font-medium text-blue-600 transition hover:underline"
-                    >
-                        {`+ ${t('form.add_another_admin')}`}
-                    </button>
+                    <CompanyAdminRow
+                        adminOptions={availableAdmins}
+                        control={form.control}
+                        onSelectionChange={clearAdminAssignmentError}
+                        isLoadingAdmins={isLoadingAdmins}
+                    />
+                    {adminAssignmentError ? <p className="mt-3 text-sm text-rose-600">{adminAssignmentError}</p> : null}
                 </section>
 
                 <div className="flex justify-end gap-3">

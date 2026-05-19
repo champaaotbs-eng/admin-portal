@@ -8,7 +8,7 @@ export interface IPayment {
     provider: EPaymentProvider | null
     method: EPaymentMethodType | null
     evidence: string | null
-    confirmedByAdminId?: string | null
+    confirmedBy?: string | null
     confirmedCompanyId?: string | null
     confirmedAt?: string | null
     confirmationNote?: string | null

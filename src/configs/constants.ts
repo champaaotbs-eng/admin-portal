@@ -5,6 +5,7 @@ export const ADMIN_MODULES = {
     COMPANY: 'company',
     ROUTE: 'route',
     STATION: 'station',
+    TRIP: 'trip',
     BOOKING: 'booking',
     REPORT: 'report',
     REVENUE: 'revenue',
@@ -12,11 +13,14 @@ export const ADMIN_MODULES = {
 
 export const COMPANY_MODULES = {
     DASHBOARD: 'dashboard',
+    BUS: 'bus',
+    SEAT_LAYOUT: 'seat_layout',
     ROUTE: 'route',
-    LOCATION: 'location',
+    TRIP: 'trip',
     BOOKING: 'booking',
     REVENUE: 'revenue',
-    REPORT: 'report'
+    STAFF: 'staff',
+    ROLE: 'role',
 }
 
 export const ADMIN_TYPE = {

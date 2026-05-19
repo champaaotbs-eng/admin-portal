@@ -97,11 +97,11 @@ export const useStaffPage = ({ search, roleFilter, page, pageSize }: UseStaffPag
     const deleteMutation = useMutation({
         mutationFn: (adminId: string) => deleteCompanyStaff(adminId),
         onSuccess: () => {
-            toast.success('Staff removed successfully')
+            toast.success('Staff deactivated successfully')
             void queryClient.invalidateQueries({ queryKey: STAFF_QUERY_KEY })
             void queryClient.invalidateQueries({ queryKey: STAFF_STATS_QUERY_KEY })
         },
-        onError: (error) => toast.error(resolveErrorMessage(error, 'Failed to remove staff')),
+        onError: (error) => toast.error(resolveErrorMessage(error, 'Failed to deactivate staff')),
     })
 
     const submitStaff = async (selected: IAdmin | null, values: StaffFormData) => {

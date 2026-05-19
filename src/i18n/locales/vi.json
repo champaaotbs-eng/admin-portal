@@ -614,10 +614,13 @@
                 "admin": "Quản trị viên",
                 "role": "Vai trò",
                 "company": "Nhà xe",
+                "bus": "Xe",
+                "seat_layout": "Sơ đồ ghế",
                 "route": "Tuyến đường",
                 "station": "Điểm dừng tuyến",
+                "trip": "Chuyến xe",
                 "booking": "Đặt vé",
-                "report": "Báo cáo",
+                "staff": "Nhân viên",
                 "revenue": "Doanh thu"
             },
             "types": {
@@ -1032,10 +1035,10 @@
             },
             "actions": {
                 "edit": "Chỉnh sửa nhân viên",
-                "delete": "Xóa nhân viên"
+                "delete": "Ngừng kích hoạt nhân viên"
             },
             "messages": {
-                "confirm_delete": "Xóa nhân viên \"{{name}}\"? Hành động này không thể hoàn tác."
+                "confirm_delete": "Ngừng kích hoạt nhân viên \"{{name}}\"? Tài khoản này sẽ không thể đăng nhập."
             },
             "errors": {
                 "username_required": "Tên đăng nhập là bắt buộc",

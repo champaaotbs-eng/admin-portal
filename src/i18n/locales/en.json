@@ -614,10 +614,13 @@
                 "admin": "Admin",
                 "role": "Role",
                 "company": "Company",
+                "bus": "Bus",
+                "seat_layout": "Seat layout",
                 "route": "Route",
                 "station": "Station",
+                "trip": "Trip",
                 "booking": "Booking",
-                "report": "Report",
+                "staff": "Staff",
                 "revenue": "Revenue"
             },
             "types": {
@@ -1032,10 +1035,10 @@
             },
             "actions": {
                 "edit": "Edit staff",
-                "delete": "Delete staff"
+                "delete": "Deactivate staff"
             },
             "messages": {
-                "confirm_delete": "Delete staff \"{{name}}\"? This action cannot be undone."
+                "confirm_delete": "Deactivate staff \"{{name}}\"? They will no longer be able to log in."
             },
             "errors": {
                 "username_required": "Username is required",
